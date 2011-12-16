@@ -10,6 +10,6 @@
  *
  * @section learn_more Learn More
  *
- * You can learn more about this package at our website.
+ * You can learn more about this package at http://build.hpcloud.com
  */
 ?>
