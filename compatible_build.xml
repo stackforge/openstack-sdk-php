@@ -1,0 +1,751 @@
+<?xml version="1.0"?>
+<project 
+  name="HPCloud-PHP" 
+  description="A PHP project"
+  default="longhelp">
+<!--
+This is the Phing build file for HPCloud-PHP.
+
+THIS BUILD FILE SHOWS EXAMPLES USING BUILT-IN Phing COMMANDS.
+
+Phing is a build tool. Learn more about it at http://phing.info.
+
+Copyright (c) 2011, mattbutcher.
+-->
+  <target name="help" description="Print short help message.">
+    <echo>
+      
+ #############
+# Basic Usage #
+ #############
+
+Use Phing to manage this project. 
+
+To list all of the available commands, do:
+
+  phing -l
+
+To build a release, type:
+
+  phing build -Dversion=1.0.0
+  
+Leaving -Dversion off will result in a "snapshot" release.
+
+To learn about more options, type
+
+  phing longhelp
+    </echo>
+  </target>
+  <target name="longhelp" description="Information on the build system.">
+    <echo>
+ ############
+# THE BASICS #    
+ ############
+
+To build HPCloud-PHP, run:
+
+  phing build
+  
+This will create a complete distribution of the project in /dist, with the build files in /bin/build. Documentation will be generated if the appropriate target is configured.
+
+A versioned release can be built with:
+
+  phing build -Dversion=2.1.1alpha1
+
+To see all available build targets, run this command:
+
+  phing -l
+  
+Check Configuration
+===================
+
+To check how your project is configured, use the 'info' target:
+
+  phing info
+
+This will print details about the project.
+
+Syntax Check
+============
+
+To check the syntax of all of your PHP source code, run this:
+
+  phing lint
+
+It will generate a report on any files that fail to parse correctly.
+  
+Generating Documentation
+========================
+
+To generate docs, do:
+
+  phing doc
+
+Documentation will be stored in doc/. You can start with doc/index.html.
+
+Running Unit Tests
+==================
+
+To run any configured tests, do:
+
+  phing test
+
+The above will generate HTML test results which will be placed in test/reports/. If you wish to run the test and print the results directly the the command line (fast tests), you should run 'phing ftest' instead.
+
+  phing ftest
+
+Code Coverage Reports
+=====================
+
+To run coverage analysis, do:
+
+  phing coverage
+  
+This will create HTML pages describing code coverage. The coverage analysis will be available in test/coverage
+
+ ###################
+# OPTIONAL FEATURES #
+ ###################
+
+Phar Packages
+=============
+
+This script can produce Phar packages on systems with PHP 5.3:
+
+  phing pharBuild
+
+TextMate Integration
+====================
+
+If you are a TextMate user, you can install the Phing TextMate bundle 
+(http://github.com/technosophos/phing-tmbundle) to get some special TextMate features.
+
+Special TextMate keybindings:
+
+  CMD-U: Run any target in the build file
+  CMD-SHIFT-I: Run the tmtest unit test target
+  CMD-SHIFT-U: Run the tmtarget target, which you can configure to do whatever you want
+
+Pear Channel Support
+====================
+
+This script will generate PEAR-compatible packages, provided you configure your settings correctly.
+If you use Pirum (http://pirum-project.org) to manage your PEAR channel, you can use the 
+Phing-Pirum package (http://github.com/technosophos/Phing-Pirum) to build or manage the channel from
+these scripts. You need to edit the Pirum configuration in build.xml, though.
+
+Pyrus Support
+=============
+
+We are experimenting with supporting Pyrus, the next generation PEAR client. Pyrus can build
+packages much more effectively, and supports a wide range of useful commands. Currently, we are
+working on two targets:
+
+   phing pyrusMake
+   phing pyrusPackage
+
+========  
+To print this message, do:
+
+  phing longhelp
+
+    </echo>
+  </target>
+  
+  <property file="project.properties"/>
+
+  <!-- IMPORTANT: Project settings. -->
+  <property name="projectname" value="HPCloud-PHP"/>
+  <property name="project.homepage" value="http://github.com/technosophos/metaphing"/>
+  <property name="project.summary" value="A PHP project"/>
+  <property name="project.description">
+    This is a useful PHP project.
+  </property>
+  <property name="project.license" value="MIT License"/>
+  <property name="project.php.version" value="5.1.0"/>
+  <property name="project.lead" value="mattbutcher"/>
+  <property name="project.lead.email" value="someone@example.com"/>
+  
+  <!-- PEAR-specific settings -->
+  <property name="pear.version" value="1.4.6"/>
+  <property name="pear.channel" value="pear.myserver.net"/>
+
+  <!-- PhpDocumentor-specific settings. -->
+  <!-- Documentation style used by PHPDocumentor -->
+  <property name="phpdoc.style" value="HTML:frames:earthli"/>
+  
+  <property name="doxygen.config" value="./config.doxy"/>
+  
+  <!-- 
+  If you are using Pirum to manage PEAR channels, install Phing-Pirum
+  and uncomment this section:
+    * Includepath only if you didn't install Phing-Pirum from http://pear.querypath.org
+    * Two taskdefs for Phing Pirum tasks
+    * A property, pearchannel, setting the location of your PEAR channel.
+  -->
+  <!--
+  <includepath classpath="../Phing-Pirum/src"/>
+  <taskdef classname="PhingPirum.Task.PirumBuildTask" name="pirumbuild"/>
+  <taskdef classname="PhingPirum.Task.PirumAddTask" name="pirumadd"/>
+  <property name="pearchannel" value="../pear.querypath.org/pear"/>
+  -->
+  
+  <includepath classpath="../PhingDoxygen/src"/>
+  <taskdef classname="PhingDoxygen.Task.DoxygenTask" name="doxygen"/>
+  
+  <!-- Pyrus tasks. -->
+  <includepath classpath="/Users/mbutcher/Code"/> <!-- Pyrus is here. -->
+  <includepath classpath="../PhingPyrus/src"/>
+  <taskdef classname="PhingPyrus.Task.PyrusMakeTask" name="pyrusmake"/>
+  <taskdef classname="PhingPyrus.Task.PyrusPackageTask" name="pyruspackage"/>
+  <taskdef classname="PhingPyrus.Task.PyrusHelpTask" name="pyrushelp"/>
+  <taskdef classname="PhingPyrus.Task.PyrusExecTask" name="pyrusexec"/>
+  
+  <!-- Directory locations -->
+  <property name="srcdir" value="./src"/>
+  <property name="testdir" value="./test"/>
+  <property name="builddir" value="./bin/build"/>
+  <property name="docsdir" value="./doc/api"/>
+  <property name="packagedir" value="./dist"/>
+  <property name="datadir" value="./data"/>
+  <property name="exampledir" value="./examples"/>
+  <property name="tutorialdir" value="./tutorials"/>
+  
+  <!-- If you are writing Phar files, use this for Phar stubs: -->
+  <property name="phardir" value="./phar"/>
+  
+
+  <!-- ====================================================================
+                PHING FILE SETS
+       ==================================================================== -->    
+  
+  <!-- Files that must be included in the release -->
+  <fileset id="licensefiles" dir=".">
+    <include name="README.md"/>
+    <include name="INSTALL"/>
+    <include name="COPYING-MIT.txt"/>
+    <include name="CREDITS"/>
+    <include name="README.pear"/>
+    <include name="RELEASE"/>
+    <include name="API"/>
+  </fileset>
+  
+  <!-- Files to be treated as source code -->
+  <fileset id="sourcecode" dir="${srcdir}">
+    <include name="**/*" />
+  </fileset>
+  
+  <!-- Unit tests and auxilliary files -->
+  <fileset id="unittests" dir="${testdir}/Tests">
+    <include name="**/*Test.php" />
+  </fileset>
+  
+  <!-- Examples -->
+  <fileset id="examplecode" dir="${exampledir}">
+    <include name="**/*" />
+  </fileset>
+  
+  <!-- DocBook Tutorials imported into PhpDocumentor -->
+  <fileset id="tutorials" dir="${tutorialdir}">
+    <include name="**/*" />
+  </fileset>
+  
+  <!-- Documentation -->
+  <fileset id="docs" dir="${docsdir}">
+    <include name="**/*" />
+  </fileset>
+  
+  <!-- Data -->
+  <fileset id="data" dir="${datadir}">
+    <include name="**/*" />
+  </fileset>
+  
+  <!-- ====================================================================
+                PHING TARGETS
+       ==================================================================== -->  
+  
+  <!-- TARGET
+  Print useful information and exit.
+  -->
+  <target name="info" description="Print information about this project" depends="setup">
+    <echo>
+      
+    Project name: ${projectname}
+    By ${project.lead} (${project.lead.email})
+    Summary: ${project.summary}
+    Description: ${project.description}
+
+    Source code: ${srcdir}
+    Complete packages: ${packagedir}
+    Version string pattern: ${projectname}-dev${DSTAMP}
+
+Edit project.properties (or build.xml) to set the above.
+    </echo>
+  </target>
+       
+  <!-- TARGET
+  The primary build target. 
+  
+  Runs the following:
+     * lint
+     * setup
+     * prebuild
+     * docBuild
+     * fullBuild
+  -->
+  <target name="build" depends="lint, setup, prebuild, docBuild, fullBuild"
+    description="Generate docs, and full build and then creates packages."
+    >
+    <!-- Main build target. Calls all dependencies and exits. -->  
+  </target>
+  
+  <!-- TARGET
+  Target that should be run always.
+  -->
+  <target name="setup" description="Run required configuration for any build.">
+    <tstamp/>
+    <!-- 
+    Default version. 
+    Note that this is designed to appear to match the PEAR conventions. However, 
+    it uses a date stamp instead of an incrementing integer, making this more suitable
+    for daily snapshots.
+    -->
+    <property name="version" value="dev${DSTAMP}"/>
+  </target>
+  
+  <!-- TARGET
+  Tasks to do before any build. 
+  -->
+  <target name="prebuild" description="Prepare for building. No need to call directly.">
+    <mkdir dir="./dist"/>
+  </target>
+
+  
+  <!-- TARGET
+  Build the full package.
+  
+  We do this by copying all important components into ${builddir} and then 
+  packaging them all up. Along the way, we create a package.xml file. With a little 
+  tweaking, you can use the distributed package as a PEAR package.
+  -->
+  <target name="fullBuild" description="Full ${projectname} build, including docs."
+    depends="setup,prebuild,setPearStability">
+    <property name="releasedir" value="${builddir}/${projectname}-${version}" override="true"/>
+    <delete dir="${releasedir}" />
+    
+    <!-- Make all necessary directories. -->
+    <mkdir dir="${releasedir}"/>
+    <mkdir dir="${releasedir}/data"/>
+    <mkdir dir="${releasedir}/doc"/>
+    <mkdir dir="${releasedir}/examples"/>
+    <mkdir dir="${releasedir}/scripts"/>
+    <mkdir dir="${releasedir}/src"/>
+    <mkdir dir="${releasedir}/test"/>
+    <!-- mkdir dir="${releasedir}/tutorials"/ -->
+    
+    <!-- Copy license files. -->
+    <copy todir="${releasedir}">
+      <filterchain>
+        <replacetokens begintoken="%" endtoken="%">
+          <token key="UNSTABLE" value="${version}"/>
+          <token key="PROJECT" value="${projectname}"/>
+          <token key="SUMMARY" value="${project.summary}"/>
+          <token key="DESCRIPTION" value="${project.description}"
+        </replacetokens>
+      </filterchain>
+      <fileset refid="licensefiles"/>
+    </copy>
+    
+    <!-- Pyrus wants README, not README.md -->
+    <copy file="${releasedir}/README.pear" tofile="${releasedir}/README"/>
+
+    <!-- Create API and RELEASE files -->
+    <copy file="{$releasedir}/API" tofile="${releasedir}/API-${version}"/>
+    <copy file="{$releasedir}/API" tofile="${releasedir}/RELEASE-${version}"/>
+    
+    <!-- Copy source code, doing token replacement on version. -->
+    <copy todir="${releasedir}/src">
+      <filterchain>
+        <replacetokens begintoken="%" endtoken="%">
+          <token key="UNSTABLE" value="${version}"/>
+        </replacetokens>
+      </filterchain>
+      <fileset refid="sourcecode"/>
+    </copy>
+
+    <!-- Copy examples. -->
+    <copy todir="${releasedir}/examples">
+      <fileset refid="examplecode"/>
+    </copy>
+    
+    <!-- Copy tests. -->
+    <copy todir="${releasedir}/tests">
+      <fileset refid="unittests"/>
+    </copy>
+    
+    <!-- Copy tutorials -->
+    <!--
+    <copy todir="${releasedir}/tutorials">
+      <fileset refid="tutorials"/>
+    </copy>
+    -->
+    
+    <!-- Copy documentation --> 
+    <copy todir="${releasedir}/doc">
+      <fileset refid="docs"/>
+    </copy>
+    
+    <!-- Copy data dir -->
+    <copy todir="${releasedir}/data">
+      <fileset refid="data"/>
+    </copy>
+    
+    <!-- Alternate toolchain: Use Pyrus and Pirum to create a package. -->
+    <!--
+    <pyrusmake dir="${releasedir}" packagename="${projectname}" channel="${pear.channel}"/>
+    <pyruspackage packagexml="${releasedir}/package.xml"/>
+    <move file="./${projectname}-${version}.tgz" tofile="${packagedir}/${projectname}-${version}.tgz"/>
+    <pirumadd targetdir="${pearchannel}" packagefile="${packagedir}/${projectname}-${version}.tgz"/>
+    -->
+    
+    
+    <!-- Create a PEAR package.xml file -->
+    <pearpkg2 name="${projectname}" dir="./">
+       <fileset dir="${releasedir}">
+         <include name="**/**"/>
+       </fileset>
+       <option name="uri" value="${project.homepage}"/>
+       <option name="packagefile" value="package2.xml"/>
+       <option name="channel" value="${pear.channel}"/>
+       <option name="baseinstalldir" value="${projectname}"/>
+       <option name="summary" value="${project.summary}"/>
+       <option name="description" value="${project.description}"/>
+       <option name="apiversion" value="${version}"/>
+       <option name="apistability" value="${stability}"/>
+       <option name="releaseversion" value="${version}"/>
+       <option name="releasestability" value="${stability}"/>
+       <option name="license" value="${project.license}"/>
+       <option name="phpdep" value="${project.php.version}"/>
+       <option name="pearinstallerdep" value="${pear.version}"/>
+       <option name="packagetype" value="php"/>
+       <option name="notes" value="This package was built automatically by Phing/MetaPhing"/>
+       <option name="outputdirectory" value="./${builddir}"/>
+       <option name="packagedirectory" value="./${releasedir}"/>
+       <mapping name="maintainers">
+        <element>
+         <element key="handle" value="${project.lead}"/>
+         <element key="name" value="${project.lead}"/>
+         <element key="email" value="${project.lead.email}"/>
+         <element key="role" value="lead"/>
+        </element>
+       </mapping>
+    </pearpkg2>
+    
+    <!-- Move the package.xml to the releasedir -->
+    <move file="${builddir}/package2.xml" tofile="${packagedir}/package.xml"/>
+    
+    <!-- Create Gzipped Tar file that acts like a PEAR package. This will be put in dist/ -->
+    <tar destfile="${packagedir}/${projectname}-${version}.tgz" compression="gzip">
+      <fileset dir="${builddir}">
+        <include name="${projectname}-${version}/**/*"/>
+        <include name="package.xml"/>
+      </fileset>
+    </tar>
+    
+    <!-- Create a ZIP version which is NOT a PEAR package. Put in dist/. -->
+    <zip destfile="${packagedir}/${projectname}-${version}.zip" basedir="${releasedir}"/>
+  </target>
+  
+  <!-- TARGET
+    
+    Check syntax of all source code files.
+  -->
+  <target name="lint" description="Check syntax of source.">
+    <phplint>
+      <fileset refid="sourcecode" />
+    </phplint>
+  </target>
+  
+  <!-- TARGET
+  
+  Build documentation.
+  
+  Run PhpDocumentor to generate the documentation for a site.
+  -->
+  <target name="doc" depends="lint,setup" description="Generate API docs.">
+    <delete dir="${docsdir}"/>
+    <doxygen config="${doxygen.config}"/>
+    <!--
+    <phpdoc title="${projectname} ${version}"
+      sourcecode="yes"
+      destdir="${docsdir}"
+      output="${phpdoc.style}" 
+      defaultcategoryname="${projectname}"
+      defaultpackagename="${projectname}"
+      examplesdir="examples"
+      quiet="true"
+      >
+      <fileset refid="sourcecode"/>
+      <fileset refid="tutorials"/>
+      <fileset refid="examplecode"/>
+      <projdocfileset dir=".">
+        <include name="README.md"/>
+        <include name="README"/>
+        <include name="INSTALL"/>
+        <include name="COPYING-MIT.txt"/>
+        <include name="RELEASE-*"/>
+        <include name="API-*"/>
+      </projdocfileset>
+    </phpdoc>
+    -->
+    
+    <!-- 
+    During documentation generation, this will replace the string @UNSTABLE@ with
+    the release version ID. You can use this to generate documents with information
+    about the release they are part of.
+    -->
+    <reflexive>
+      <fileset refid="docs"/>
+      <filterchain>
+        <replacetokens begintoken="%" endtoken="%">
+          <token key="UNSTABLE" value="${version}"/>
+          <token key="PROJECT" value="${projectname}"/>
+          <token key="SUMMARY" value="${project.summary}"/>
+          <token key="DESCRIPTION" value="${project.description}"
+        </replacetokens>
+      </filterchain>
+    </reflexive>
+  </target>
+  
+  <!-- TARGET
+  This is the tmtarget for the TextMate Phing package. This allows you to run 
+  your phing builds from inside of TextMate.
+  
+  To execute this in TextMate, use CMD-SHIFT-I.
+  
+  See http://github.com/technosophos/phing-tmbundle
+  
+  To set this to execute different things, simply change depends= to something else.
+  -->
+  <target name="tmtarget" depends="info" description="Target for textmate">
+    <echo>Executed tmtarget in build.xml.</echo>
+  </target>
+  
+  <!-- TARGET
+  Run a fast test and print the results to the console.
+  -->
+  <target name="ftest" description="Run a quick unit test." depends="pretest">
+    <!-- Fast test. -->
+    <phpunit>
+      <formatter type="summary" usefile="no"/>
+      <batchtest>
+        <fileset refid="unittests"/>
+      </batchtest>
+    </phpunit>    
+  </target>
+  
+  <!-- TARGET
+  
+  Run any necessary preliminaries before executing tests.
+  -->
+  <target name="pretest" description="tasks done before any unit testing.">
+    <mkdir dir="test/reports"/>
+    <mkdir dir="test/reports/html"/>
+  </target>
+  
+  <!-- TARGET
+  
+  Run unit tests with HTML output optimized for display inside of TextMate.
+  
+  If you have Phing-TMBundle installed (http://github.com/technosophos/phing-tmbundle) then
+  you can press CMD-SHIFT-I to run these tests.
+  -->
+  <target name="tmtest" description="Run test, optimized for TextMate output." depends="pretest">
+    <phpunit>
+      <formatter todir="test/reports" type="xml" usefile="yes"/>
+      <batchtest>
+        <fileset refid="unittests"/>
+      </batchtest>
+    </phpunit>
+     <phpunitreport 
+        infile="test/reports/testsuites.xml" 
+        format="noframes" 
+        todir="test/reports/html" 
+        />
+  </target>
+  
+  <!-- TARGET 
+  Run a coverage report.
+  
+  Run a report to determine to what extent your code has been covered by the unit tests.
+  -->
+  <target name="coverage" depends="lint" description="Run a coverage analysis.">
+    <coverage-setup database="./test/db/coverage.db">
+      <fileset refid="sourcecode"/>
+    </coverage-setup>
+    <phpunit codecoverage="true" haltonfailure="true">
+      <formatter type="plain" todir="test/reports" outfile="coverage.xml"/>
+      <batchtest>
+        <fileset dir="test/Tests">
+          <include name="**/*Test.php"/>
+        </fileset>
+      </batchtest>
+    </phpunit>
+    <coverage-report outfile="test/reports/coverage.xml">
+      <report todir="test/coverage"/>
+    </coverage-report>
+  </target>
+  
+  <!-- TARGET
+  Run a full test and format an HTML report.
+  
+  This differs from tmtest in that the output for this report is more robust, designed for
+  detailed viewing, not viewing quickly in a pop-up window.
+  -->
+  <target name="test" depends="lint,pretest" description="Run full tests">
+    <mkdir dir="test/reports/html"/>
+    <mkdir dir="test/db"/>
+    <phpunit>
+      <formatter todir="test/reports" type="xml"/>
+      <batchtest>
+        <fileset dir="test/Tests">
+          <include name="**/*Test.php"/>
+        </fileset>
+      </batchtest>
+    </phpunit>
+    <phpunitreport 
+      infile="test/reports/testsuites.xml" 
+      format="frames" 
+      todir="test/reports/html" 
+      />
+  </target>
+  
+  <!-- TARGET
+  Build a documentation-only package.
+  
+  This just runs the 'doc' target and then packages the output into a tar and a zip file.
+  -->
+  <target name="docBuild" description="Build a package containing just docs." 
+    depends="setup,prebuild,doc">
+    <property name="releasedir" value="${builddir}/${projectname}-${version}-docs"/>
+    <delete dir="${releasedir}" />
+    
+    <!-- Make all necessary directories. -->
+    <mkdir dir="${releasedir}"/>
+    
+    <!-- Copy license files. -->
+    <copy todir="${releasedir}">
+      <fileset refid="licensefiles"/>
+    </copy>
+        
+    <!-- Copy documentation --> 
+    <copy todir="${releasedir}/doc">
+      <fileset refid="docs"/>
+    </copy>
+    
+    <!-- Create tgz and zip versions. -->
+    <tar destfile="${packagedir}/${projectname}-${version}-docs.tgz" compression="gzip">
+      <fileset dir="${builddir}">
+        <include name="${projectname}-${version}-docs/**/*"/>
+      </fileset>
+    </tar>
+    <zip destfile="${packagedir}/${projectname}-${version}-docs.zip" basedir="${releasedir}"/>
+  </target>
+  
+  <!-- TARGET
+  Build a Phar package.
+  
+  For PHP 5.3 and up, this is another way of building a release - a much better way.
+  
+  This target is not called by the default build.
+  -->
+  <target name="pharBuild" depends="setup,prebuild" description="Build a Phar package of this project.">
+    
+    <property name="releasedir" value="${builddir}/${projectname}-${version}-phar" override="true"/>
+    <echo>${releasedir}</echo>
+    <delete dir="${releasedir}" />
+    <mkdir dir="${releasedir}"/>
+    <copy todir="${releasedir}">
+      <filterchain>
+        <stripphpcomments/>
+        <stripwhitespace/>
+        <replacetokens begintoken="@" endtoken="@">
+          <token key="UNSTABLE" value="${version}"/>
+          <token key="PHAR_FILENAME" value="${projectname}.phar"/>
+        </replacetokens>
+      </filterchain>
+      <fileset dir="${srcdir}">
+        <include name="**/*"/>
+      </fileset>
+    </copy>
+    <copy todir="${releasedir}">
+      <fileset refid="licensefiles"/>
+    </copy>
+    
+    <pharpackage 
+      destfile="${packagedir}/${projectname}-${version}.phar" 
+      basedir="${releasedir}"
+      alias="${projectname}.phar">
+      <!-- stub="${releasedir}/basic_loader.php" -->
+      <fileset dir="${releasedir}">
+        <include name="**/**"/>
+      </fileset>
+      <metadata>
+          <element name="version" value="${version}" />
+          <element name="authors">
+            <element name="${project.lead}">
+              <element name="e-mail" value="${project.lead.email}" />
+            </element>
+          </element>
+      </metadata>
+    </pharpackage>
+  </target>
+  
+  <!-- TARGET
+  Use Pyrus to generate package.xml files. 
+  -->
+  <target name="pyrusMake" depends="setup,prebuild" description="EXPERIMENTAL: Use Pyrus to generate a package.xml file from this project.">
+    
+  </target>
+  
+  <!-- TARGET
+  
+  Use Pyrus to create a PEAR package. 
+  -->
+  <target name="pyrusPackage" depends="setup,prebuild" description="EXPERIMENTAL: Use Pyrus to generate a PEAR package.">
+    
+  </target>
+
+  <!-- TARGET
+  Release code to a PEAR channel.
+  -->
+  <!--
+  <target name="release" depends="build">
+    <property name="pirumdir" value="${pearchannel}"/>
+    <pirumbuild targetdir="${pirumdir}"/>
+    <pirumadd targetdir="${pirumdir}" packagefile="${packagedir}/${packagename}-${version}.tgz"/>
+  </target>
+  -->
+  <target name="setPearStability" depends="setup">
+    <property name="stability">stable</property>
+    <if>
+      <contains string="${version}" substring="dev"/>
+      <then>
+        <property name="stability" override="true">snapshot</property>
+      </then>
+      <elseif>
+        <contains string="${version}" substring="alpha"/>
+        <then>
+          <property name="stability" override="true">alpha</property>
+        </then>
+      </elseif>
+      <elseif>
+        <contains string="${version}" substring="beta"/>
+        <then>
+          <property name="stability" override="true">beta</property>
+        </then>
+      </elseif>
+    </if>
+    <echo>${stability}</echo>
+  </target>
+</project>
