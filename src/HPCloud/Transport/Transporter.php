@@ -19,6 +19,8 @@ namespace HPCloud\Transport;
  */
 interface Transporter {
 
+  const HTTP_USER_AGENT = 'HPCloud-PHP/1.0';
+
   /**
    * Perform a request.
    *
@@ -35,5 +37,5 @@ interface Transporter {
    * @param string $body
    *   The string containing the request body.
    */
-  public function doRequest($uri, $method = 'GET' $headers = array(), $body = '');
+  public function doRequest($uri, $method = 'GET', $headers = array(), $body = '');
 }
