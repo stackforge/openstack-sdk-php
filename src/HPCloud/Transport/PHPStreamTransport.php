@@ -50,7 +50,7 @@ class PHPStreamTransport implements Transporter {
   public function doRequest($uri, $method = 'GET', $headers = array(), $body = '') {
     $cxt = $this->buildStreamContext($method, $headers, $body);
 
-    $res = @fopen($uri, 'r', FALSE, $cxt);
+    $res = @fopen($uri, 'rb', FALSE, $cxt);
 
     // If there is an error, we try to react
     // intelligently.
@@ -64,12 +64,9 @@ class PHPStreamTransport implements Transporter {
 
     $metadata = stream_get_meta_data($res);
 
-    print_r($metadata);
+    $response = new Response($res, $metadata);
 
-    print fread($res, $metadata['unread_bytes']);
-
-    fclose($res);
-
+    return $response;
   }
 
   /**
@@ -131,15 +128,25 @@ class PHPStreamTransport implements Transporter {
    *
    * @param array $headers
    *   An associative array of header names to header values.
-   * @return
+   * @return string
    *   A string containing formatted headers.
    */
   protected function smashHeaders($headers) {
+
+    if (empty($headers)) {
+      return;
+    }
+
     $buffer = array();
     foreach ($headers as $name => $value) {
-      $buffer[] = sprintf("%s: %s", $name, urlencode($value));
+      // $buffer[] = sprintf("%s: %s", $name, urlencode($value));
+      $buffer[] = sprintf("%s: %s", $name, $value);
     }
-    return implode("\r\n", $buffer);
+    $headerStr = implode("\r\n", $buffer);
+
+    print $headerStr;
+
+    return $headerStr . "\r\n";
   }
 
   /**
@@ -155,7 +162,7 @@ class PHPStreamTransport implements Transporter {
       'http' => array(
         'protocol_version' => $this->httpVersion,
         'method' => strtoupper($method),
-        'headers' => $this->smashHeaders($headers),
+        'header' => $this->smashHeaders($headers),
         'user_agent' => Transporter::HTTP_USER_AGENT . self::HTTP_USER_AGENT_SUFFIX,
       ),
     );
