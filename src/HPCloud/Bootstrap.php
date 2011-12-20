@@ -47,6 +47,7 @@ namespace HPCloud;
  * commands like file_get_contents() and fopen().
  *
  * It's awesome. Trust me.
+ *
  */
 class Bootstrap {
 
@@ -54,6 +55,10 @@ class Bootstrap {
    * The directory where HPCloud is located.
    */
   public static $basedir = __DIR__;
+
+  public static $config = array(
+    'transport' => '\HPCloud\Transport\PHPStreamTransport',
+  );
 
   /**
    * Add the autoloader to PHP's autoloader list.
@@ -69,6 +74,22 @@ class Bootstrap {
    */
   public static function useAutoloader() {
     spl_autoload_register(__NAMESPACE__ . '\Bootstrap::autoload');
+  }
+
+  /**
+   * Set configuration directives for HPCloud.
+   *
+   * This merges the provided associative array into the existing
+   * configuration parameters (Bootstrap::$config).
+   *
+   * All of the HPCloud classes share the same configuration. This
+   * ensures that a stable runtime environment is maintained.
+   *
+   * @param array $array
+   *   An associative array of configuration directives.
+   */
+  public static function setConfiguration($array) {
+    self::$config += $array;
   }
 
   /**
