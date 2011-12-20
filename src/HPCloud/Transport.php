@@ -5,53 +5,39 @@
  */
 namespace HPCloud;
 /**
- * Provide underlying transportation logic.
+ * Provide an HTTP client (Transporter) for interaction with HPCloud.
  *
  * Interaction with the OpenStack/HPCloud services is handled via
- * HTTPS/REST requests. This class provides transport for requests, with
- * a simple and abstracted interface for issuing requests and processing
- * results.
+ * HTTPS/REST requests. This class provides transport for requests.
  *
  */
 class Transport {
 
-  /**
-   * Construct a new transport.
-   */
-  public function __construct() {
-
-    // Need to know what transporter we're using.
-  }
+  protected static $inst = NULL;
 
   /**
-   * Handle an HTTP GET request.
+   * Get an instance of a Transporter.
+   *
+   * @return \HPCloud\Transport\Transporter
+   *   An initialized transporter.
    */
-  public function doGet() {
+  public static function instance() {
+
+    if (empty(self::$inst)) {
+      $klass = Bootstrap::$config['transport'];
+      self::$inst = new $klass();
+    }
+    return self::$inst;
   }
 
   /**
-   * Handle an HTTP POST request.
+   * Rebuild the transporter.
+   *
+   * This will rebuild the client transporter,
+   * re-reading any configuration data in the process.
    */
-  public function doPost() {
+  public static function reset() {
+    self::$inst = NULL;
   }
-  /**
-   * Handle an HTTP PUT request.
-   */
-  public function doPut() {
-  }
-  /**
-   * Handle an HTTP DELETE request.
-   */
-  public function doDelete() {
-  }
-  /**
-   * Handle an HTTP HEAD request.
-   */
-  public function doHead() {
-  }
-
 
 }
-
-// Farm transport encoding to a separate class?
-// class TransportEncoder{}
