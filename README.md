@@ -10,7 +10,6 @@ You can use this library to:
 Coming soon:
 
 * Intect with the Compute (Nova) manager.
-* Intearct with the DaaS (Database as a service) provider.
 * Interact with other HP Cloud services
 
 ## Requirements
