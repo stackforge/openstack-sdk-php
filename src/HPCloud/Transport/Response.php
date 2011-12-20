@@ -45,7 +45,7 @@ class Response {
   public function __construct($handle, $metadata) {
     $this->handle = $handle;
     $this->metadata = $metadata;
-    $this->headers = &$metadata['wrapper_data'];
+    $this->headers = $this->parseHeaders($metadata['wrapper_data']);
   }
 
   /**
@@ -105,6 +105,14 @@ class Response {
     return $this->metadata;
   }
 
+  public function getHeader($name, $default = NULL) {
+    if (isset($this->headers[$name])) {
+      return $this->headers[$name];
+    }
+    return $default;
+  }
+
+
   /**
    * Get the HTTP headers.
    *
@@ -122,6 +130,31 @@ class Response {
     fclose($this->handle);
 
     return $out;
+  }
+
+  /**
+   * Parse the HTTP headers.
+   *
+   * @param array $headerArray
+   *   An indexed array of headers, as returned by the PHP stream
+   *   library.
+   * @return array
+   *   An associative array of header name/value pairs.
+   */
+  protected function parseHeaders($headerArray) {
+    $count = count($headerArray);
+
+    $buffer = array();
+
+    // Skip the HTTP header.
+    for ($i = 1; $i < $count; ++$i) {
+      list($name, $value) = explode(':', $headerArray[$i], 2);
+      $name = filter_var($name, FILTER_SANITIZE_STRING);
+      $value = filter_var(trim($value), FILTER_SANITIZE_STRING);
+      $buffer[$name] = $value;
+    }
+
+    return $buffer;
   }
 
 }

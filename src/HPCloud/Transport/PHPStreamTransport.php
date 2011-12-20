@@ -144,8 +144,6 @@ class PHPStreamTransport implements Transporter {
     }
     $headerStr = implode("\r\n", $buffer);
 
-    print $headerStr;
-
     return $headerStr . "\r\n";
   }
 
