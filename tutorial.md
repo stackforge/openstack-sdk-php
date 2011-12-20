@@ -13,6 +13,18 @@ in your cloud (and optionally is availably publically).
 This section of the tutorial describes how you can write PHP code to
 interact with the Object Storage service.
 
+## Authenticating to Object Storage
+
+There are two ways to authenticate to Object Storage:
+
+- Legacy Swift authentication
+- Control Services authentication (Coming soon!)
+
+For legacy swift authentication, you will need to use your Account ID
+and your secret Key, along with the URL to the Object Storage endpoint.
+If you are an existing HP Cloud customer, you can find all of this
+information on your management dashboard.
+
 ### Using Stream Wrappers
 
 There are two main methods for accessing HPCloud through this library.

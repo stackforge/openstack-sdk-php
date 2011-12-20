@@ -43,6 +43,25 @@ class ObjectStorage {
    * to swift, get a new token, and then create a new ObjectStorage 
    * instance with that token.
    *
+   * To use the legacy Object Storage authentication mechanism, you will
+   * need the follwing pieces of information:
+   *
+   * - Account ID: Your account username or ID. For HP Cloud customers,
+   *   this is typically a long string of numbers and letters.
+   * - Key: Your secret key. For HP Customers, this is a string of
+   *   random letters and numbers.
+   * - Endpoint URL: The URL given to you by your service provider.
+   *
+   * HP Cloud users can find all of this information on your Object
+   * Storage account dashboard.
+   *
+   * @param string $account
+   *   Your account name.
+   * @param string $key
+   *   Your secret key.
+   * @param string $url
+   *   The URL to the object storage endpoint.
+   *
    * @throws \HPCloud\Transport\AuthorizationException if the 
    *   authentication failed.
    * @throws \HPCloud\Transport\FileNotFoundException if the URL is

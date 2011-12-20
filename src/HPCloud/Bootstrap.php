@@ -57,6 +57,8 @@ class Bootstrap {
   public static $basedir = __DIR__;
 
   public static $config = array(
+    // The transport implementation. By default, we use the PHP stream
+    // wrapper's HTTP mechanism to process transactions.
     'transport' => '\HPCloud\Transport\PHPStreamTransport',
   );
 
