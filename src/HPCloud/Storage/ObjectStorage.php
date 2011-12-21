@@ -95,7 +95,13 @@ class ObjectStorage {
     return $store;
   }
 
+  /**
+   * The authorization token.
+   */
   protected $token = NULL;
+  /**
+   * The URL to the Swift endpoint.
+   */
   protected $url = NULL;
 
   /**
