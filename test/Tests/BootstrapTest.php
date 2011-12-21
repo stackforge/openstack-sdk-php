@@ -4,14 +4,22 @@
  *
  * Unit tests for the Bootstrap.
  */
-namespace HPCloud\tests\units;
+namespace HPCloud\Tests\Units;
 
 require_once  'mageekguy.atoum.phar';
 require_once 'src/HPCloud/Bootstrap.php';
+require_once 'test/TestCase.php';
 
 use \mageekguy\atoum;
 
-class Bootstrap extends atoum\test {
+class Bootstrap extends \HPCloud\TestCase {
+
+  /**
+   * Canary test.
+   */
+  public function testSettings() {
+    $this->assert->array($this->settings)->isNotEmpty();
+  }
 
   /**
    * Test the BaseDir.
