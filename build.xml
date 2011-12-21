@@ -188,12 +188,12 @@ To print this message, do:
   <property name="pearchannel" value="../pear.querypath.org/pear"/>
   -->
   
-  <includepath classpath="../PhingDoxygen/src"/>
+  <includepath classpath="../../PhingDoxygen/src"/>
   <taskdef classname="PhingDoxygen.Task.DoxygenTask" name="doxygen"/>
   
   <!-- Pyrus tasks. -->
   <includepath classpath="/Users/mbutcher/Code"/> <!-- Pyrus is here. -->
-  <includepath classpath="../PhingPyrus/src"/>
+  <includepath classpath="../../PhingPyrus/src"/>
   <taskdef classname="PhingPyrus.Task.PyrusMakeTask" name="pyrusmake"/>
   <taskdef classname="PhingPyrus.Task.PyrusPackageTask" name="pyruspackage"/>
   <taskdef classname="PhingPyrus.Task.PyrusHelpTask" name="pyrushelp"/>
@@ -463,13 +463,7 @@ Edit project.properties (or build.xml) to set the above.
   Run a fast test and print the results to the console.
   -->
   <target name="ftest" description="Run a quick unit test." depends="pretest">
-    <!-- Fast test. -->
-    <phpunit>
-      <formatter type="summary" usefile="no"/>
-      <batchtest>
-        <fileset refid="unittests"/>
-      </batchtest>
-    </phpunit>    
+    <exec command="php mageekguy.atoum.phar -d test/Tests" passthru="true"/>
   </target>
   
   <!-- TARGET
