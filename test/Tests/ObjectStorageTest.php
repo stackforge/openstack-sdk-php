@@ -66,10 +66,24 @@ class ObjectStorage extends \HPCloud\TestCase {
   }
 
   public function testCreateContainer() {
-    $this->assert->boolean(FALSE)->isTrue();
+    $testCollection = $this->settings['hpcloud.swift.container'];
+
+    $this->assert->boolean(empty($testCollection))->isFalse("CANARY FAILED");
+
+    $store = $this->auth();
+    $ret = $store->createContainer($testCollection, "Collection exists already.");
+
+    $this->assert->boolean($ret)->isTrue();
   }
   public function testDeleteContainer() {
-    $this->assert->boolean(FALSE)->isTrue();
+    $testCollection = $this->settings['hpcloud.swift.container'];
+
+    $this->assert->boolean(empty($testCollection))->isFalse("CANARY FAILED");
+
+    $store = $this->auth();
+    $ret = $store->deleteContainer($testCollection);
+
+    $this->assert->boolean($ret)->isTrue();
   }
 
 }

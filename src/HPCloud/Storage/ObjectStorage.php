@@ -249,7 +249,7 @@ class ObjectStorage {
   }
 
   public function deleteContainer($name) {
-
+    return FALSE;
   }
 
   /**
