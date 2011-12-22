@@ -13,7 +13,8 @@ require_once 'src/HPCloud/Bootstrap.php';
 use \mageekguy\atoum;
 
 class TestCase extends atoum\test {
-  public function __construct(score $score = null, locale $locale = null, adapter $adapter = null) {
+
+  public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
 
     $this->setTestNamespace('Tests\Units');
     if (file_exists('test/settings.ini')) {
@@ -22,6 +23,7 @@ class TestCase extends atoum\test {
     else {
       throw new Exception('Could not access test/settings.ini');
     }
+    \HPCloud\Bootstrap::useAutoloader();
 
     parent::__construct($score, $locale, $adapter);
   }
