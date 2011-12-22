@@ -51,3 +51,10 @@ stream wrappers.)
 
 In this section of the tutorial, we focus on using this API as a
 data-access layer.
+
+#### Main Classes
+
+- \HPCloud\Bootstrap: Provides services for bootstrapping the library.
+  It's not necessary, but it can be helpful.
+- \HPCloud\ObjectStorage: The main interface to the OpenStack object
+  storage.

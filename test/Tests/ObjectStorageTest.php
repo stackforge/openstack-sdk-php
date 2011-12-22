@@ -52,6 +52,7 @@ class ObjectStorage extends \HPCloud\TestCase {
    * Test the process of fetching a list of containers.
    *
    * @FIXME This needs to be updated to check an actual container.
+   * @FIXME Needs to check byte and object count.
    */
   public function testContainers() {
     $store = $this->auth();
