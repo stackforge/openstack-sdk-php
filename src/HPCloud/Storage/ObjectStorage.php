@@ -25,15 +25,22 @@ use HPCloud\Storage\ObjectStorage\Container;
  * to PHP's streams system. For common use of an object store, you may
  * prefer to use that system. (See \HPCloud\Bootstrap).
  *
- * When constructing a new ObjectStorage object, you will need to know 
- * what kind of authentication you are going to perform. Older 
- * implementations of OpenStack provide a separate authentication 
- * mechanism for Swift. You can use ObjectStorage::newFromSwiftAuth() to 
+ * When constructing a new ObjectStorage object, you will need to know
+ * what kind of authentication you are going to perform. Older
+ * implementations of OpenStack provide a separate authentication
+ * mechanism for Swift. You can use ObjectStorage::newFromSwiftAuth() to
  * perform this type of authentication.
  *
- * Newer versions use the Control Services authentication mechanism (see 
- * \HPCloud\Services\ControlServices). That method is the preferred 
+ * Newer versions use the Control Services authentication mechanism (see
+ * \HPCloud\Services\ControlServices). That method is the preferred
  * method.
+ *
+ * Common Tasks
+ *
+ * - Create a new container with addContainer().
+ * - List containers with containers().
+ * - Remove a container with deleteContainer().
+ *
  */
 class ObjectStorage {
 
@@ -140,9 +147,46 @@ class ObjectStorage {
     return $this->url;
   }
 
-  public function containers() {
+  /**
+   * Fetch a list of containers for this account.
+   *
+   * By default, this fetches the entire list of containers for the
+   * given account. If you have more than 10,000 containers (who
+   * wouldn't?), you will need to use $marker for paging.
+   *
+   * If you want more controlled paging, you can use $limit to indicate
+   * the number of containers returned per page, and $marker to indicate
+   * the last container retrieved.
+   *
+   * Containers are ordered. That is, they will always come back in the
+   * same order. For that reason, the pager takes $marker (the name of
+   * the last container) as a paging parameter, rather than an offset
+   * number.
+   *
+   * @param int $limit
+   *   The maximum number to return at a time. The default is -- brace
+   *   yourself -- 10,000 (as determined by OpenStack. Implementations
+   *   may vary).
+   * @param string $marker
+   *   The name of the last object seen. Used when paging.
+   *
+   * @return array
+   *   An associative array of containers, where the key is the
+   *   container's name and the value is an
+   *   \HPCloud\Storage\ObjectStorage\Container object. Results are
+   *   ordered in server order (the order that the remote host puts them
+   *   in).
+   */
+  public function containers($limit = 0, $marker = NULL) {
 
     $url = $this->url() . '?format=json';
+
+    if ($limit > 0) {
+      $url .= sprintf('&limit=%d', $limit);
+    }
+    if (!empty($marker)) {
+      $url .= sprintf('&marker=%d', $marker);
+    }
 
     $containers = $this->get($url);
 
@@ -165,7 +209,24 @@ class ObjectStorage {
     return isset($containers[$name]);
   }
 
+  /**
+   * Create a container with the given name.
+   *
+   * This creates a new container on the ObjectStorage
+   * server with the name provided in $name.
+   *
+   * It will throw an exception if the container already exists.
+   *
+   * @param string $name
+   *   The name of the container.
+   */
   public function createContainer($name) {
+    $url = $this->url() . '/' . urlencode($name);
+    $data = $this->req($url, 'PUT', FALSE);
+    //$md = $data->
+  }
+
+  public function deleteContainer($name) {
 
   }
 
@@ -176,15 +237,20 @@ class ObjectStorage {
    * most common case of Swift requests.
    */
   protected function get($url, $jsonDecode = TRUE) {
+    return $this->req($url, 'GET', $jsonDecode);
+  }
+
+  protected function req($url, $method = 'GET', $jsonDecode = TRUE, $body = '') {
     $client = \HPCloud\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token(),
     );
 
-    $raw = $client->doRequest($url, 'GET', $headers);
+    $raw = $client->doRequest($url, $method, $headers, $body);
     if (!$jsonDecode) {
       return $raw;
     }
     return json_decode($raw->content(), TRUE);
+
   }
 }
