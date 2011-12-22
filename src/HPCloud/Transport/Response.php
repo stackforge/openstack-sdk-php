@@ -85,7 +85,18 @@ class Response {
    *   The contents of the response body.
    */
   public function content() {
-    $out = fread($this->handle, $this->metadata['unread_bytes']);
+
+    // This should always be set... but...
+    if (isset($this->metadata['unread_bytes'])) {
+      $out = fread($this->handle, $this->metadata['unread_bytes']);
+    }
+    // XXX: In cases of large files, isn't this the safer default?
+    else {
+      $out = '';
+      while (!feof($this->handle)) {
+        $out .= fread($this->handle, 8192);
+      }
+    }
 
     // Should we close or rewind?
     fclose($this->handle);
@@ -132,6 +143,59 @@ class Response {
     return $this->headers;
   }
 
+  /**
+   * Get the HTTP status code.
+   *
+   * This will give the HTTP status codes on successful
+   * transactions.
+   *
+   * A successful transaction is one that does not generate an HTTP
+   * error. This does not necessarily mean that the REST-level request
+   * was fulfilled in the desired way.
+   *
+   * Example: Attempting to create a container in object storage when
+   * such a container already exists results in a 202 response code,
+   * which is an HTTP success code, but indicates failure to fulfill the
+   * requested action.
+   *
+   * Unsuccessful transactions throw exceptions and do not return
+   * Response objects. Example codes of this sort: 403, 404, 500.
+   *
+   * Redirects are typically followed, and thus rarely (if ever)
+   * appear in a Response object.
+   *
+   * @return int
+   *   The HTTP code, e.g. 200 or 202.
+   */
+  public function status() {
+    return $this->code;
+  }
+
+  /**
+   * The server-returned status message.
+   *
+   * Typically these follow the HTTP protocol specification's
+   * recommendations. e.g. 200 returns 'OK'.
+   *
+   * @return string
+   *  A server-generated status message.
+   */
+  public function statusMessage() {
+    return $this->message;
+  }
+
+  /**
+   * The protocol and version used for this transaction.
+   *
+   * Example: HTTP/1.1
+   *
+   * @return string
+   *   The protocol name and version.
+   */
+  public function protocol() {
+    return $this->protocol;
+  }
+
   public function __toString() {
     return $this->content();
   }
@@ -146,12 +210,17 @@ class Response {
    *   An associative array of header name/value pairs.
    */
   protected function parseHeaders($headerArray) {
+    $ret = array_shift($headerArray);
+    $responseLine = preg_split('/\s/', $ret);
+
     $count = count($headerArray);
+    $this->protocol = $responseLine[0];
+    $this->code = (int) $responseLine[1];
+    $this->message = $responseLine[2];
 
     $buffer = array();
 
-    // Skip the HTTP header.
-    for ($i = 1; $i < $count; ++$i) {
+    for ($i = 0; $i < $count; ++$i) {
       list($name, $value) = explode(':', $headerArray[$i], 2);
       $name = filter_var($name, FILTER_SANITIZE_STRING);
       $value = filter_var(trim($value), FILTER_SANITIZE_STRING);
