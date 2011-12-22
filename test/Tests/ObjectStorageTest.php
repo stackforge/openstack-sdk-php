@@ -6,7 +6,7 @@
  */
 namespace HPCloud\Storage\Tests\Units;
 
-require_once  'mageekguy.atoum.phar';
+require_once 'mageekguy.atoum.phar';
 require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
@@ -63,6 +63,13 @@ class ObjectStorage extends \HPCloud\TestCase {
     $first = array_shift($containers);
 
     $this->assert->string($first->name())->isNotEmpty();
+  }
+
+  public function testCreateContainer() {
+    $this->assert->boolean(FALSE)->isTrue();
+  }
+  public function testDeleteContainer() {
+    $this->assert->boolean(FALSE)->isTrue();
   }
 
 }

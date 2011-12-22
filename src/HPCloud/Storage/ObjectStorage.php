@@ -215,15 +215,37 @@ class ObjectStorage {
    * This creates a new container on the ObjectStorage
    * server with the name provided in $name.
    *
-   * It will throw an exception if the container already exists.
+   * A boolean is returned when the operation did not generate an error
+   * condition.
+   *
+   * - TRUE means that the container was created.
+   * - FALSE means that the container was not created because it already
+   * exists.
+   *
+   * Any actual error will cause an exception to be thrown. These will
+   * be the HTTP-level exceptions.
    *
    * @param string $name
    *   The name of the container.
+   * @return boolean
+   *   TRUE if the container was created, FALSE if the container was not
+   *   created because it already exists.
    */
   public function createContainer($name) {
     $url = $this->url() . '/' . urlencode($name);
     $data = $this->req($url, 'PUT', FALSE);
-    //$md = $data->
+
+    $status = $data->status();
+
+    if ($status == 201) {
+      return TRUE;
+    } elseif ($status == 202) {
+      return FALSE;
+    }
+    // According to the OpenStack docs, there are no other return codes.
+    else {
+      throw new \HPCloud\Exception('Server returned unexpected code: ' . $status);
+    }
   }
 
   public function deleteContainer($name) {
