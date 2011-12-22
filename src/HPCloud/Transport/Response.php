@@ -23,7 +23,7 @@ namespace HPCloud\Transport;
  * object. Either you can work with the raw file data directly
  * or you can work with the string content of the file.
  *
- * You should work with the raw file directly (using getFile())
+ * You should work with the raw file directly (using file())
  * if you are working with large objects, such as those returned
  * from Object Storage.
  *
@@ -52,7 +52,11 @@ class Response {
    * Destroy the object.
    */
   public function __destruct() {
-    fclose($this->handle);
+    // There are two issues with fclosing here:
+    // 1. file()'s handle can get closed on it.
+    // 2. If anything else closes the handle, this generates a warning.
+
+    //fclose($this->handle);
   }
 
   /**
@@ -61,13 +65,13 @@ class Response {
    * are responsible for all IO management.
    *
    * Note that if the handle is closed through this object,
-   * the handle returned by getFile() will also be closed
+   * the handle returned by file() will also be closed
    * (they are one and the same).
    *
    * @return resource
    *   A file handle.
    */
-  public function getFile() {
+  public function file() {
     return $this->handle;
   }
 
@@ -80,11 +84,11 @@ class Response {
    * @return string
    *   The contents of the response body.
    */
-  public function getContents() {
+  public function content() {
     $out = fread($this->handle, $this->metadata['unread_bytes']);
 
     // Should we close or rewind?
-    // fclose($this->handle);
+    fclose($this->handle);
 
     return $out;
   }
@@ -101,11 +105,14 @@ class Response {
    *   An associative array of metadata about the
    *   transaction resulting in this response.
    */
-  public function getMetadata() {
+  public function metadata() {
     return $this->metadata;
   }
 
-  public function getHeader($name, $default = NULL) {
+  /**
+   * Convenience function to retrieve a single header.
+   */
+  public function header($name, $default = NULL) {
     if (isset($this->headers[$name])) {
       return $this->headers[$name];
     }
@@ -121,15 +128,12 @@ class Response {
    *
    * These are available even if the stream has been closed.
    */
-  public function getHeaders() {
+  public function headers() {
     return $this->headers;
   }
 
   public function __toString() {
-    $out = fread($this->handle, $this->metadata['unread_bytes']);
-    fclose($this->handle);
-
-    return $out;
+    return $this->content();
   }
 
   /**
