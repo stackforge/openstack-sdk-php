@@ -39,5 +39,4 @@ class Transport {
   public static function reset() {
     self::$inst = NULL;
   }
-
 }
