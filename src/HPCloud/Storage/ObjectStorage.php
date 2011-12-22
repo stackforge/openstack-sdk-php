@@ -12,6 +12,8 @@
 
 namespace HPCloud\Storage;
 
+use HPCloud\Storage\ObjectStorage\Container;
+
 /**
  * Access to ObjectStorage (Swift).
  *
@@ -88,9 +90,11 @@ class ObjectStorage {
     // X-Trans-Id: tx33f1257e09f64bc58f28e66e0577268a
 
 
-    $token = $res->getHeader('X-Auth-Token');
+    $token = $res->header('X-Auth-Token');
+    $newUrl = $res->header('X-Storage-Url');
 
-    $store = new ObjectStorage($token, $url);
+
+    $store = new ObjectStorage($token, $newUrl);
 
     return $store;
   }
@@ -122,7 +126,7 @@ class ObjectStorage {
    * @return string
    *   The authentication token.
    */
-  public function getAuthToken() {
+  public function token() {
     return $this->token;
   }
 
@@ -132,7 +136,55 @@ class ObjectStorage {
    * @return string
    *   The URL that is the endpoint for this service.
    */
-  public function getUrl() {
+  public function url() {
     return $this->url;
+  }
+
+  public function containers() {
+
+    $url = $this->url() . '?format=json';
+
+    $containers = $this->get($url);
+
+    $containerList = array();
+    foreach ($containers as $container) {
+      $containerList[$container['name']] = Container::newFromJSON($container);
+    }
+
+    return $containerList;
+  }
+
+  /**
+   * Check to see if this container name exists.
+   *
+   * Unless you are working with a huge list of containers, this
+   * operation is as slow as simply fetching the entire container list.
+   */
+  public function hasContainer($name) {
+    $containers = $this->containers();
+    return isset($containers[$name]);
+  }
+
+  public function createContainer($name) {
+
+  }
+
+  /**
+   * Do a GET on Swift.
+   *
+   * This is a convenience method that handles the
+   * most common case of Swift requests.
+   */
+  protected function get($url, $jsonDecode = TRUE) {
+    $client = \HPCloud\Transport::instance();
+    $headers = array(
+      'X-Auth-Token' => $this->token(),
+    );
+
+    $raw = $client->doRequest($url, 'GET', $headers);
+    if (!$jsonDecode) {
+      return $raw;
+    }
+    return json_decode($raw->content(), TRUE);
   }
 }
