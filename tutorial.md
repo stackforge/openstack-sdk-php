@@ -58,3 +58,20 @@ data-access layer.
   It's not necessary, but it can be helpful.
 - \HPCloud\ObjectStorage: The main interface to the OpenStack object
   storage.
+
+## Slightly Irreverant Glossary
+
+*Account ID:* You service provider (ahem, HPCloud) will provide you with
+an account ID and a secret key, along with a URL, that can be used to
+access the cloud APIs.
+
+*Container:* A namespace extension useful for differentiating object
+space with pseudo-containment logical units. Or, a directory. (see
+_Object Storage_)
+
+*Object Storage:* A service provided by OpenStack (and implemented by
+HPCloud) that allows you to store entire files on the cloud. Files can
+be organized into _containers_, which are rough analogs to file system
+directories (or folders).
+
+
