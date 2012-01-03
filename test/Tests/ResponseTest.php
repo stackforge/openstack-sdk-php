@@ -52,13 +52,10 @@ class Response extends \HPCloud\Tests\TestCase {
 
     $file = $response->file();
 
-    //$this->assert->stream($file)->isRead();
-    //$this->assert->boolean(is_resource($file))->isTrue();
     $this->assertTrue(is_resource($file));
 
     $content = fread($file, 1024);
 
-    //$this->assert->string($content)->isEqualTo($this->fakeBody);
     $this->assertEquals($this->fakeBody, $content);
 
     fclose($file);
@@ -68,7 +65,6 @@ class Response extends \HPCloud\Tests\TestCase {
     $response = $this->mockFile();
 
     $this->assertEquals($this->fakeBody, $response->content());
-    //$this->assert->string($response->content())->isEqualTo($this->fakeBody);
   }
 
   public function testMetadata() {
@@ -76,18 +72,15 @@ class Response extends \HPCloud\Tests\TestCase {
     $md = $response->metadata();
     $this->assertTrue(is_array($md));
     $this->assertTrue(!empty($md));
-    //$this->assert->phpArray($response->metadata())->isNotEmpty();
   }
 
   public function testHeaders() {
     $response = $this->mockFile();
     $hdr = $response->headers();
     $this->assertTrue(!empty($hdr));
-    //$this->assert->phpArray($response->headers())->isNotEmpty();
 
     $headers = $response->headers();
     $this->assertEquals('close', $headers['Connection']);
-    //$this->assert->string($headers['Connection'])->isEqualTo('close');
   }
 
   public function testHeader() {
@@ -96,15 +89,11 @@ class Response extends \HPCloud\Tests\TestCase {
     $this->assertEquals('close', $response->header('Connection'));
     $this->assertNull($response->header('FAKE'));
     $this->assertEquals('YAY', $response->header('FAKE', 'YAY'));
-    // $this->assert->string($response->header('Connection'))->isEqualTo('close');
-    // $this->assert->boolean(is_null($response->header('FAKE')));
-    // $this->assert->string($response->header('FAKE', 'YAY'))->isEqualTo('YAY');
   }
 
   public function testStatus() {
     $response = $this->mockFile();
 
-    //$this->assert->integer($response->status())->isEqualTo(200);
     $this->assertEquals(200, $response->status());
   }
 
@@ -112,13 +101,11 @@ class Response extends \HPCloud\Tests\TestCase {
     $response = $this->mockFile();
 
     $this->assertEquals('OK', $response->statusMessage());
-    //$this->assert->string($response->statusMessage())->isEqualTo('OK');
   }
 
   public function testProtocol() {
     $response = $this->mockFile();
 
     $this->assertEquals('HTTP/1.1', $response->protocol());
-    //$this->assert->string($response->protocol())->isEqualTo('HTTP/1.1');
   }
 }
