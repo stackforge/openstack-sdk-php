@@ -199,15 +199,53 @@ class ObjectStorage {
   }
 
   /**
+   * Get a single specific container.
+   *
+   * This loads only the named container from the remote server.
+   *
+   * @param string $name
+   *   The name of the container to load.
+   * @return \HPCloud\Storage\ObjectStorage\Container
+   *   A container.
+   * @throws \HPCloud\Transport\FileNotFoundException
+   *   if the named container is not found on the remote server.
+   */
+  public function container($name) {
+
+    $url = $this->url() . '/' . urlencode($name);
+    $data = $this->req($url, 'HEAD', FALSE);
+
+    $status = $data->status();
+    if ($status == 204) {
+      return Container::newFromResponse($name, $data);
+    }
+
+    // If we get here, it's not a 404 and it's not a 204.
+    throw new \HPCloud\Exception("Unknown status: $status");
+  }
+
+  /**
    * Check to see if this container name exists.
    *
-   * Unless you are working with a huge list of containers, this
-   * operation is as slow as simply fetching the entire container list.
+   * This method directly checks the remote server. Calling container() 
+   * or containers() might be more efficient if you plan to work with 
+   * the resulting container.
+   *
+   * @param string $name
+   *   The name of the container to test.
+   * @return boolean
+   *   TRUE if the container exists, FALSE if it does not.
+   * @throws \HPCloud\Exception
+   *   If an unexpected network error occurs.
    */
   public function hasContainer($name) {
-    $containers = $this->containers();
-    print_r($containers);
-    return isset($containers[$name]);
+    try {
+      $container = $this->container($name);
+    }
+    catch (\HPCloud\Transport\FileNotFoundException $fnfe) {
+      return FALSE;
+    }
+    return TRUE;
   }
 
   /**

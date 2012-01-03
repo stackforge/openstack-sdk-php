@@ -42,6 +42,28 @@ class Container implements \Countable {
   }
 
   /**
+   * Given an OpenStack HTTP response, build a Container.
+   *
+   * This factory is intended for use by low-level libraries. In most
+   * cases, the standard constructor is preferred for client-size
+   * Container initialization.
+   *
+   * @param string $name
+   *   The name of the container.
+   * @param \HPCloud\Transport\Response $respose
+   *   The HTTP response object from the Transporter layer.
+   * @return Container
+   *   The Container object, initialized and ready for use.
+   */
+  public static function newFromResponse($name, $response) {
+    $container = new Container($name);
+    $container->bytes = $response->header('X-Container-Bytes-Used', 0);
+    $container->count = $response->header('X-Container-Object-Count', 0);
+
+    return $container;
+  }
+
+  /**
    * Construct a new Container.
    */
   public function __construct($name) {
@@ -84,7 +106,7 @@ class Container implements \Countable {
    *   The number of items in this container.
    */
   public function count() {
-    return $this->count();
+    return $this->count;
   }
 
 }
