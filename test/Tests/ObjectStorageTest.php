@@ -45,22 +45,6 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
-  /**
-   * Test the process of fetching a list of containers.
-   *
-   * @FIXME This needs to be updated to check an actual container.
-   * @FIXME Needs to check byte and object count.
-   */
-  public function testContainers() {
-    $store = $this->auth();
-    $containers = $store->containers();
-
-    $this->assertNotEmpty($containers);
-
-    $first = array_shift($containers);
-    $this->assertNotEmpty($first->name());
-  }
-
   public function testCreateContainer() {
     $testCollection = self::$settings['hpcloud.swift.container'];
 
@@ -76,15 +60,76 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  /**
+   * Test the process of fetching a list of containers.
+   * @depends testCreateContainer
+   */
+  public function testContainers() {
+    $store = $this->auth();
+    $containers = $store->containers();
+
+    $this->assertNotEmpty($containers);
+
+    //$first = array_shift($containers);
+
+    $testCollection = self::$settings['hpcloud.swift.container'];
+    $testContainer = $containers[$testCollection];
+    $this->assertEquals($testCollection, $testContainer->name());
+    $this->assertEquals(0, $testContainer->bytes());
+    $this->assertEquals(0, $testContainer->count());
+
+  }
+
+  /**
+   * @depends testCreateContainer
+   */
+  public function testContainer() {
+    $testCollection = self::$settings['hpcloud.swift.container'];
+    $store = $this->auth();
+
+    $container = $store->container($testCollection);
+
+    $this->assertEquals(0, $container->bytes());
+    $this->assertEquals(0, $container->count());
+    $this->assertEquals($testCollection, $container->name());
+  }
+
+  /**
+   * @depends testCreateContainer
+   */
   public function testHasContainer() {
     $testCollection = self::$settings['hpcloud.swift.container'];
     $store = $this->auth();
-    $store->createContainer($testCollection);
 
     $this->assertTrue($store->hasContainer($testCollection));
+    $this->assertFalse($store->hasContainer('nihil'));
   }
-  public function XtestDeleteContainer() {
-    $testCollection = self::$settings['hpcloud.swift.container'] . 'testDelete';
+
+  /**
+   * @depends testHasContainer
+   */
+  public function testDeleteContainer() {
+    $testCollection = self::$settings['hpcloud.swift.container'];
+
+    $store = $this->auth();
+    //$ret = $store->createContainer($testCollection);
+    //$this->assertTrue($store->hasContainer($testCollection));
+
+    $ret = $store->deleteContainer($testCollection);
+
+    $this->assertTrue($ret);
+
+    // Now we try to delete a container that does not exist.
+    $ret = $store->deleteContainer('nihil');
+    $this->assertFalse($ret);
+  }
+
+  /**
+   * @expectedException \HPCloud\Storage\ObjectStorage\ContainerNotEmptyException
+   */
+  public function testDeleteNonEmptyContainer() {
+
+    $testCollection = self::$settings['hpcloud.swift.container'];
 
     $this->assertNotEmpty($testCollection);
 
