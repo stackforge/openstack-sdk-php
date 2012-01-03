@@ -5,26 +5,31 @@
  */
 
 
-namespace HPCloud;
+namespace HPCloud\Tests;
 
-require_once  'mageekguy.atoum.phar';
+#require_once  'mageekguy.atoum.phar';
+require_once 'PHPUnit/Autoload.php';
 require_once 'src/HPCloud/Bootstrap.php';
 
-use \mageekguy\atoum;
+//use \mageekguy\atoum;
 
-class TestCase extends atoum\test {
+class TestCase extends \PHPUnit_Framework_TestCase {
 
-  public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
+  public static $settings = array();
 
-    $this->setTestNamespace('Tests\Units');
+  //public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
+  public static function setUpBeforeClass() {
+
+
+    //$this->setTestNamespace('Tests\Units');
     if (file_exists('test/settings.ini')) {
-      $this->settings = parse_ini_file('test/settings.ini');
+      self::$settings = parse_ini_file('test/settings.ini');
     }
     else {
       throw new Exception('Could not access test/settings.ini');
     }
     \HPCloud\Bootstrap::useAutoloader();
 
-    parent::__construct($score, $locale, $adapter);
+    //parent::__construct($score, $locale, $adapter);
   }
 }
