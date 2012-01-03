@@ -6,11 +6,8 @@
  */
 namespace HPCloud\Tests;
 
-//require_once  'mageekguy.atoum.phar';
 require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
-
-//use \mageekguy\atoum;
 
 class Bootstrap extends \HPCloud\Tests\TestCase {
 
@@ -18,7 +15,6 @@ class Bootstrap extends \HPCloud\Tests\TestCase {
    * Canary test.
    */
   public function testSettings() {
-    //$this->assert->array(self::$settings)->isNotEmpty();
     $this->assertTrue(!empty(self::$settings));
   }
 
@@ -27,8 +23,6 @@ class Bootstrap extends \HPCloud\Tests\TestCase {
    */
   public function testBasedir() {
     $basedir = \HPCloud\Bootstrap::$basedir;
-
-    //$this->assert->string($basedir)->match('/HPCloud/');
     $this->assertRegExp('/HPCloud/', $basedir);
   }
 
@@ -41,7 +35,6 @@ class Bootstrap extends \HPCloud\Tests\TestCase {
     // If we can construct a class, we are okay.
     $test = new \HPCloud\Exception("TEST");
 
-    //$this->assert->object($test)->isInstanceOf('\HPCloud\Exception');
     $this->assertInstanceOf('\HPCloud\Exception', $test);
   }
 }
