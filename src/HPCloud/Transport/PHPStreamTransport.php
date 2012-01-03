@@ -56,6 +56,10 @@ class PHPStreamTransport implements Transporter {
     // intelligently.
     if ($res === FALSE) {
       $err = error_get_last();
+
+      if (empty($err['message'])) {
+        throw new \HPCloud\Exception("An unknown exception occurred while sending a request.");
+      }
       $this->guessError($err['message']);
 
       // Should not get here.
