@@ -8,7 +8,7 @@ namespace HPCloud\Tests\Transport;
 
 require_once 'test/TestCase.php';
 
-class Response extends \HPCloud\Tests\TestCase {
+class ResponseTest extends \HPCloud\Tests\TestCase {
 
   protected $fakeBody = '{"msg":"This is a fake response"}';
   protected $fakeHeaders = array(

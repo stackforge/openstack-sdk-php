@@ -9,7 +9,7 @@ namespace HPCloud\Tests;
 require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-class Bootstrap extends \HPCloud\Tests\TestCase {
+class BootstrapTest extends \HPCloud\Tests\TestCase {
 
   /**
    * Canary test.
