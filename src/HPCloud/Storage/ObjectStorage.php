@@ -248,8 +248,56 @@ class ObjectStorage {
     }
   }
 
+  /**
+   * Delete an empty container.
+   *
+   * Given a container name, this attempts to delete the container in
+   * the object storage.
+   *
+   * The container MUST be empty before it can be deleted. If it is not, 
+   * an \HPCloud\Storage\ObjectStorage\ContainerNotEmptyException will 
+   * be thrown.
+   *
+   * @param string $name
+   *   The name of the container.
+   * @return boolean
+   *   TRUE if the container was deleted, FALSE if the container was not
+   *   found (and hence, was not deleted).
+   * @throws \HPCloud\Storage\ObjectStorage\ContainerNotEmptyException
+   *   if the container is not empty.
+   * @throws \HPCloud\Exception if an unexpected response code is returned.
+   *   While this should never happen on HPCloud servers, forks of
+   *   OpenStack may choose to extend object storage in a way that
+   *   results in a non-standard code.
+   */
   public function deleteContainer($name) {
-    return FALSE;
+    $url = $this->url() . '/' . urlencode($name);
+    $data = $this->req($url, 'DELETE', FALSE);
+
+    $status = $data->status();
+
+    // 204 indicates that the container has been deleted.
+    if ($status == 204) {
+      return TRUE;
+    }
+
+    // Container not found. We return false, as this isn't really an
+    // error condition.
+    elseif ($status == 404) {
+      return FALSE;
+    }
+
+    // The container must be empty before it can be deleted. This is an
+    // actual failure, so we throw an exception.
+    elseif ($status == 409) {
+      throw new ObjectStorage\ContainerNotEmptyException("Non-empty container cannot be deleted.");
+    }
+
+    // OpenStacks documentation doesn't suggest any other return
+    // codes.
+    else {
+      throw new \HPCloud\Exception('Server returned unexpected code: ' . $status);
+    }
   }
 
   /**
