@@ -206,6 +206,7 @@ class ObjectStorage {
    */
   public function hasContainer($name) {
     $containers = $this->containers();
+    print_r($containers);
     return isset($containers[$name]);
   }
 
@@ -272,7 +273,13 @@ class ObjectStorage {
    */
   public function deleteContainer($name) {
     $url = $this->url() . '/' . urlencode($name);
-    $data = $this->req($url, 'DELETE', FALSE);
+
+    try {
+      $data = $this->req($url, 'DELETE', FALSE);
+    }
+    catch (\HPCloud\Transport\FileNotFoundException $e) {
+      return FALSE;
+    }
 
     $status = $data->status();
 
@@ -280,13 +287,6 @@ class ObjectStorage {
     if ($status == 204) {
       return TRUE;
     }
-
-    // Container not found. We return false, as this isn't really an
-    // error condition.
-    elseif ($status == 404) {
-      return FALSE;
-    }
-
     // The container must be empty before it can be deleted. This is an
     // actual failure, so we throw an exception.
     elseif ($status == 409) {
