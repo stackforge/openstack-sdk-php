@@ -40,7 +40,6 @@ use HPCloud\Storage\ObjectStorage\Container;
  * - Create a new container with addContainer().
  * - List containers with containers().
  * - Remove a container with deleteContainer().
- *
  */
 class ObjectStorage {
 
@@ -217,7 +216,7 @@ class ObjectStorage {
 
     $status = $data->status();
     if ($status == 204) {
-      return Container::newFromResponse($name, $data);
+      return Container::newFromResponse($name, $data, $this->url(), $this->token());
     }
 
     // If we get here, it's not a 404 and it's not a 204.
@@ -378,7 +377,7 @@ class ObjectStorage {
   protected function req($url, $method = 'GET', $jsonDecode = TRUE, $body = '') {
     $client = \HPCloud\Transport::instance();
     $headers = array(
-      'X-Auth-Token' => $this->token(),
+        'X-Auth-Token' => $this->token(),
     );
 
     $raw = $client->doRequest($url, $method, $headers, $body);

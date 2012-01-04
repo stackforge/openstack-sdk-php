@@ -269,7 +269,32 @@ class Object {
    * @return string
    *   An MD5 value as a string of 32 hex digits (0-9a-f).
    */
-  public function etag() {
+  public function eTag() {
     return md5($this->content);
+  }
+
+  /**
+   * This object should be transmitted in chunks.
+   *
+   * Indicates whether or not this object should be transmitted as
+   * chunked data (in HTTP).
+   *
+   * This should be used when (a) the file size is large, or (b) the
+   * exact size of the file is unknown.
+   *
+   * If this returns TRUE, it does not <i>guarantee</i> that the data
+   * will be transmitted in chunks. But it recommends that the
+   * underlying transport layer use chunked encoding.
+   *
+   * The contentLength() method is not called for chunked transfers. So
+   * if this returns TRUE, contentLength() is ignored.
+   *
+   * @return boolean
+   *   TRUE to recommend chunked transfer, FALSE otherwise.
+   */
+  public function isChunked() {
+    // Currently, this value is hard-coded. The default Object
+    // implementation does not get chunked.
+    return FALSE;
   }
 }

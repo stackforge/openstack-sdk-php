@@ -67,7 +67,12 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
     $o = $this->basicObjectFixture();
     $md5 = md5(self::FCONTENT);
 
-    $this->assertEquals($md5, $o->etag());
+    $this->assertEquals($md5, $o->eTag());
+  }
+
+  public function testIsChunked() {
+    $o = $this->basicObjectFixture();
+    $this->assertFalse($o->isChunked());
   }
 
   public function testContentLength() {

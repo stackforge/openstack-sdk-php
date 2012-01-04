@@ -34,13 +34,13 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
     $mockJSON = array('count' => 5, 'bytes' => 128, 'name' => 'foo');
 
-    $container = Container::newFromJSON($mockJSON);
+    $container = Container::newFromJSON($mockJSON, 'fake', 'fake');
 
     $this->assertEquals(5, count($container));
 
   }
 
-  public function testAdd() {
+  public function testSave() {
 
   }
 
