@@ -61,7 +61,18 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
-   * Test the process of fetching a list of containers.
+   * @depends testCreateContainer
+   */
+  public function testAccountInfo () {
+    $store = $this->auth();
+
+    $info = $store->accountInfo();
+
+    $this->assertTrue($info['count'] > 0);
+    $this->assertTrue($info['bytes'] > 0);
+  }
+
+  /**
    * @depends testCreateContainer
    */
   public function testContainers() {

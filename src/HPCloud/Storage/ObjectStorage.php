@@ -339,6 +339,33 @@ class ObjectStorage {
   }
 
   /**
+   * Retrieve account info.
+   *
+   * This returns information about:
+   *
+   * - The total bytes used by this Object Storage instance (`bytes`).
+   * - The number of containers (`count`).
+   *
+   * @return array
+   *  An associative array of account info. Typical keys are:
+   *  - bytes
+   *  - count
+   * @throws \HPCloud\Transport\AuthorizationException
+   *   if the user credentials are invalid or have expired.
+   */
+  public function accountInfo() {
+    $url = $this->url();
+    $data = $this->req($url, 'HEAD', FALSE);
+
+    $results = array(
+      'bytes' => $data->header('X-Account-Bytes-Used', 0),
+      'count' => $data->header('X-Account-Container-Count', 0),
+    );
+
+    return $results;
+  }
+
+  /**
    * Do a GET on Swift.
    *
    * This is a convenience method that handles the
