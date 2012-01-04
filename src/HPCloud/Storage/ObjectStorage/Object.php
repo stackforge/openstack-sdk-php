@@ -34,6 +34,8 @@ namespace HPCloud\Storage\ObjectStorage;
  */
 class Object {
 
+  const DEFAULT_CONTENT_TYPE = 'application/octet-stream';
+
   /**
    * The name of the object.
    *
@@ -55,7 +57,7 @@ class Object {
    * The default type is 'application/octet-stream', which marks this as
    * a generic byte stream.
    */
-  protected $contentType = 'application/octet-stream';
+  protected $contentType = self::DEFAULT_CONTENT_TYPE;
   /**
    * Associative array of stored metadata.
    */
@@ -251,7 +253,7 @@ class Object {
    *   The length of the content, in bytes.
    */
   public function contentLength() {
-    // XXX: Need to verify that this ALWAYS returns byte count.
+    // strlen() is binary safe (or at least it seems to be).
     return strlen($this->content);
   }
 
@@ -263,7 +265,11 @@ class Object {
    *
    * When extending this class, generate an ETag by creating an MD5 of
    * the entire object's content (but not the metadata or name).
+   *
+   * @return string
+   *   An MD5 value as a string of 32 hex digits (0-9a-f).
+   */
   public function etag() {
-
+    return md5($this->content);
   }
 }
