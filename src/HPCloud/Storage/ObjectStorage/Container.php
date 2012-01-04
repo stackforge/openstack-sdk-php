@@ -109,4 +109,11 @@ class Container implements \Countable {
     return $this->count;
   }
 
+  /**
+   * Save a file into Object Storage.
+   */
+  public function save($name, $contents, $type = 'application/octet-stream') {
+
+  }
+
 }
