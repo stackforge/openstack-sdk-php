@@ -113,8 +113,11 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
     $ret = $container->delete(self::FNAME);
 
+    $fail = $container->delete('no_such_file.txt');
+
     $this->destroyContainerFixture();
     $this->assertTrue($ret);
+    $this->assertFalse($fail);
 
   }
 

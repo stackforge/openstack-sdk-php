@@ -260,10 +260,15 @@ class Container implements \Countable {
     $client = \HPCloud\Transport::instance();
 
     try {
+      print $url;
       $response = $client->doRequest($url, 'DELETE', $headers);
     }
     catch (\HPCloud\Transport\FileNotFoundException $fnfe) {
       return FALSE;
+    }
+    catch (\HPCloud\Transport\MethodNotAllowedException $e) {
+      $e->setMessage('DELETE ' . $url);
+      throw $e;
     }
 
     if ($response->status() != 204) {
