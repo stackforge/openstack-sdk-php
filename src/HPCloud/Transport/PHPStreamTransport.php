@@ -60,7 +60,7 @@ class PHPStreamTransport implements Transporter {
       if (empty($err['message'])) {
         throw new \HPCloud\Exception("An unknown exception occurred while sending a request.");
       }
-      $this->guessError($err['message']);
+      $this->guessError($err['message'], $uri, $method);
 
       // Should not get here.
       return;
@@ -84,7 +84,7 @@ class PHPStreamTransport implements Transporter {
    * during the request. It then throws an exception that seems appropriate for the
    * given context.
    */
-  protected function guessError($err) {
+  protected function guessError($err, $uri, $method) {
 
     $regex = '/HTTP\/1\.[01]? ([0-9]+) ([ a-zA-Z]+)/';
     $matches = array();
@@ -100,13 +100,15 @@ class PHPStreamTransport implements Transporter {
       case '401':
         throw new \HPCloud\Transport\AuthorizationException($matches[0]);
       case '404':
-        throw new \HPCloud\Transport\FileNotFoundException($matches[0]);
+        throw new \HPCloud\Transport\FileNotFoundException($matches[0] . "($uri)");
+      case '405':
+        throw new \HPCloud\Transport\MethodNotAllowedException($matches[0] . " ($method $uri)");
       case '409':
         throw new \HPCloud\Transport\ConflictException($matches[0]);
       case '412':
         throw new \HPCloud\Transport\LengthRequiredException($matches[0]);
       case '422':
-        throw new \HPCloud\Transport\UnpresscessableEntityException($matches[0]);
+        throw new \HPCloud\Transport\UnprocessableEntityException($matches[0]);
       case '500':
         throw new \HPCloud\Transport\ServerException($matches[0]);
       default:
