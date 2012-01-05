@@ -145,7 +145,13 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
       $store->deleteContainer($testCollection);
       throw $e;
     }
-    $container->delete('test');
+
+    try {
+      $container->delete('test');
+    }
+    // Skip 404s.
+    catch (\Exception $e) {}
+
     $store->deleteContainer($testCollection);
   }
 

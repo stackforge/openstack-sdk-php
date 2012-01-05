@@ -85,7 +85,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   const FCONTENT = 'This is a test.';
   const FTYPE = 'text/plain';
 
-  public function XtestSave() {
+  public function testSave() {
     $container = $this->containerFixture();
 
     $obj = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
@@ -106,7 +106,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
-   * @ depends testSave.
+   * @depends testSave
    */
   public function testDelete() {
     $container = $this->containerFixture();
