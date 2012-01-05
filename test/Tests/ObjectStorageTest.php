@@ -9,6 +9,8 @@ namespace HPCloud\Tests\Storage;
 require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
+use \HPCloud\Storage\ObjectStorage\Object;
+
 
 class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
@@ -148,12 +150,21 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($testCollection);
 
     $store = $this->auth();
-    $ret = $store->createContainer($testCollection);
-    $this->assertTrue($store->hasContainer($testCollection));
+    $store->createContainer($testCollection);
 
-    $ret = $store->deleteContainer($testCollection);
+    $container = $store->container($testCollection);
+    $container->save(new Object('test', 'test', 'text/plain'));
 
-    $this->assertTrue($ret);
+    try {
+      $ret = $store->deleteContainer($testCollection);
+    }
+    catch (\Exception $e) {
+      $container->delete('test');
+      $store->deleteContainer($testCollection);
+      throw $e;
+    }
+    $container->delete('test');
+    $store->deleteContainer($testCollection);
   }
 
 }
