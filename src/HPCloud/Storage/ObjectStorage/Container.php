@@ -216,6 +216,9 @@ class Container implements \Countable {
     // Now build up the rest of the headers:
     $headers['ETag'] = $obj->eTag();
 
+    // Set the content type.
+    $headers['Content-Type'] = $obj->contentType();
+
     // If chunked, we set transfer encoding; else
     // we set the content length.
     if ($obj->isChunked()) {
@@ -237,6 +240,36 @@ class Container implements \Countable {
     if ($response->status() != 201) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
     }
+    return TRUE;
+  }
+
+  /**
+   * Remove the named object from storage.
+   *
+   * @param string $name
+   *   The name of the object to remove.
+   * @return boolean
+   *   TRUE if the file was deleted, FALSE if no such file is found.
+   */
+  public function delete($name) {
+    $url = $this->url . '/' . urlencode($name);
+    $headers = array(
+      'X-Auth-Token' => $this->token,
+    );
+
+    $client = \HPCloud\Transport::instance();
+
+    try {
+      $response = $client->doRequest($url, 'DELETE', $headers);
+    }
+    catch (\HPCloud\Transport\FileNotFoundException $fnfe) {
+      return FALSE;
+    }
+
+    if ($response->status() != 204) {
+      throw new \HPCloud\Exception("An unknown exception occured while deleting $name.");
+    }
+
     return TRUE;
   }
 

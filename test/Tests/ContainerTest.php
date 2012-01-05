@@ -41,26 +41,32 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  protected $containerFixture = NULL;
+
   /**
    * Get a container from the server.
    */
   protected function containerFixture() {
-    $store = $this->swiftAuth();
-    $cname = self::$settings['hpcloud.swift.container'];
 
-    try {
-      $store->createContainer($cname);
-      $container = $store->container($cname);
+    if (empty($this->containerFixture)) {
+      $store = $this->swiftAuth();
+      $cname = self::$settings['hpcloud.swift.container'];
+
+      try {
+        $store->createContainer($cname);
+        $this->containerFixture = $store->container($cname);
+
+      }
+      // This is why PHP needs 'finally'.
+      catch (\Exception $e) {
+        // Delete the container.
+        $store->deleteContainer($cname);
+        throw $e;
+      }
 
     }
-    // This is why PHP needs 'finally'.
-    catch (\Exception $e) {
-      // Delete the container.
-      $store->deleteContainer($cname);
-      throw $e;
-    }
 
-    return $container;
+    return $this->containerFixture;
   }
 
   /**
@@ -75,30 +81,40 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $store->deleteContainer($cname);
   }
 
-  public function testSave() {
+  const FNAME = 'testSave';
+  const FCONTENT = 'This is a test.';
+  const FTYPE = 'text/plain';
+
+  public function XtestSave() {
     $container = $this->containerFixture();
 
-    $name = __FUNCTION__;
-    $content = "This is a test.";
-    $type = 'text/plain';
+    $obj = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
 
-    $obj = new Object($name, $content, $type);
+    try {
+      $ret = $container->save($obj);
+    }
+    catch (\Exception $e) {
+      $this->destroyContainerFixture();
+      throw $e;
+    }
 
-    $container->save($obj);
-
-
-    $this->destroyContainerFixture();
+    $this->assertTrue($ret);
   }
 
   public function testContents() {
 
   }
 
-  public function testRemove() {
+  /**
+   * @ depends testSave.
+   */
+  public function testDelete() {
+    $container = $this->containerFixture();
 
-  }
+    $ret = $container->delete(self::FNAME);
 
-  public function testUpdate() {
+    $this->destroyContainerFixture();
+    $this->assertTrue($ret);
 
   }
 
