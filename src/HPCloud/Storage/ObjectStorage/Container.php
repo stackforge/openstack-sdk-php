@@ -216,6 +216,11 @@ class Container implements \Countable {
 
     $response = $client->doRequest($url, 'PUT', $headers, $obj->content());
 
+    if ($response->status() != 201) {
+
+      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+    }
+    return TRUE;
   }
 
   /**

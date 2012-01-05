@@ -69,9 +69,22 @@ class Object {
    *
    * @param string $name
    *   A name (may be pathlike) for the object.
+   * @param string $content
+   *   Optional content to store in this object. This is the same
+   *   as calling setContent().
+   * @param string $type
+   *   Optional content type for this content. This is the same as
+   *   calling setContentType().
    */
-  public function __construct($name) {
+  public function __construct($name, $content = NULL, $type = NULL) {
     $this->name = $name;
+
+    if (!is_null($content)) {
+      $this->content = $content;
+    }
+    if (!empty($type)) {
+      $this->contentType = $type;
+    }
   }
 
   /**

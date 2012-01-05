@@ -16,10 +16,6 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   const FILENAME = 'unit-test-dummy.txt';
   const FILESTR = 'This is a test.';
 
-  protected function liveContainerFixture() {
-
-  }
-
   // The factory functions (newFrom*) are tested in the
   // ObjectStorage tests, as they are required there.
   // Rather than build a Mock to achieve the same test here,
@@ -44,8 +40,53 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
   }
 
-  public function testSave() {
+  /**
+   * Get a container from the server.
+   */
+  protected function containerFixture() {
+    $store = $this->swiftAuth();
+    $cname = self::$settings['hpcloud.swift.container'];
 
+    try {
+      $store->createContainer($cname);
+      $container = $store->container($cname);
+
+    }
+    // This is why PHP needs 'finally'.
+    catch (\Exception $e) {
+      // Delete the container.
+      $store->deleteContainer($cname);
+      throw $e;
+    }
+
+    return $container;
+  }
+
+  /**
+   * Destroy a container fixture.
+   *
+   * This should be called in any method that uses containerFixture().
+   */
+  protected function destroyContainerFixture() {
+    $store = $this->swiftAuth();
+    $cname = self::$settings['hpcloud.swift.container'];
+
+    $store->deleteContainer($cname);
+  }
+
+  public function testSave() {
+    $container = $this->containerFixture();
+
+    $name = __FUNCTION__;
+    $content = "This is a test.";
+    $type = 'text/plain';
+
+    $obj = new Object($name, $content, $type);
+
+    $container->save($obj);
+
+
+    $this->destroyContainerFixture();
   }
 
   public function testContents() {

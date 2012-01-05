@@ -38,6 +38,12 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
     $o = $this->basicObjectFixture();
 
     $this->assertEquals(self::FNAME, $o->name());
+
+    $o = new Object('a', 'b', 'text/plain');
+
+    $this->assertEquals('a', $o->name());
+    $this->assertEquals('b', $o->content());
+    $this->assertEquals('text/plain', $o->contentType());
   }
 
   public function testContentType() {
