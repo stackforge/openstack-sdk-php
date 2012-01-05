@@ -14,6 +14,8 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
   protected function auth() {
 
+    return $this->swiftAuth();
+/*
     static $ostore = NULL;
 
     if (empty($ostore)) {
@@ -25,6 +27,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     }
 
     return $ostore;
+*/
   }
 
   /**

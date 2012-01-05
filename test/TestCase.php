@@ -32,4 +32,22 @@ class TestCase extends \PHPUnit_Framework_TestCase {
 
     //parent::__construct($score, $locale, $adapter);
   }
+
+  /**
+   * Authenticate to a Swift account.
+   */
+  protected function swiftAuth() {
+
+    static $ostore = NULL;
+
+    if (empty($ostore)) {
+      $user = self::$settings['hpcloud.swift.account'];
+      $key = self::$settings['hpcloud.swift.key'];
+      $url = self::$settings['hpcloud.swift.url'];
+
+      $ostore = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
+    }
+
+    return $ostore;
+  }
 }

@@ -191,7 +191,7 @@ class ObjectStorage {
 
     $containerList = array();
     foreach ($containers as $container) {
-      $containerList[$container['name']] = Container::newFromJSON($container);
+      $containerList[$container['name']] = Container::newFromJSON($container, $this->url(), $this->token());
     }
 
     return $containerList;

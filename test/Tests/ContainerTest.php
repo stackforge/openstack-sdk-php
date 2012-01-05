@@ -16,6 +16,10 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   const FILENAME = 'unit-test-dummy.txt';
   const FILESTR = 'This is a test.';
 
+  protected function liveContainerFixture() {
+
+  }
+
   // The factory functions (newFrom*) are tested in the
   // ObjectStorage tests, as they are required there.
   // Rather than build a Mock to achieve the same test here,
