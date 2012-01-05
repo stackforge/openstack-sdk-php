@@ -266,10 +266,6 @@ class Container implements \Countable {
     catch (\HPCloud\Transport\FileNotFoundException $fnfe) {
       return FALSE;
     }
-    catch (\HPCloud\Transport\MethodNotAllowedException $e) {
-      $e->setMessage('DELETE ' . $url);
-      throw $e;
-    }
 
     if ($response->status() != 204) {
       throw new \HPCloud\Exception("An unknown exception occured while deleting $name.");
