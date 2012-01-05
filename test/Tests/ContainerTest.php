@@ -78,6 +78,15 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $store = $this->swiftAuth();
     $cname = self::$settings['hpcloud.swift.container'];
 
+    $container = $store->container($cname);
+
+    foreach ($container as $object) {
+      try {
+        $container->delete($object->name());
+      }
+      catch (\Exception $e) {}
+    }
+
     $store->deleteContainer($cname);
   }
 
@@ -101,7 +110,33 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $this->assertTrue($ret);
   }
 
-  public function testContents() {
+  /**
+   * @depends testSave
+   */
+  public function testObjects() {
+    $obj = new Object(self::FNAME . '-2', self::FCONTENT, self::FTYPE);
+    $obj = new Object(self::FNAME . '-3', self::FCONTENT, self::FTYPE);
+
+  }
+
+  /**
+   * @depends testObjects
+   */
+  public function testObjectsWithPrefix() {
+
+  }
+
+  /**
+   * @depends testObjects
+   */
+  public function testObjectsWithPath() {
+
+  }
+
+  /**
+   * @depends testObjects
+   */
+  public function testGetIterator() {
 
   }
 
@@ -121,8 +156,5 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
   }
 
-  public function testIterable() {
-
-  }
 
 }

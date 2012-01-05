@@ -48,7 +48,7 @@ namespace HPCloud\Storage\ObjectStorage;
  * Once you have a Container, you manipulate objects inside of the
  * container.
  */
-class Container implements \Countable {
+class Container implements \Countable, \IteratorAggregate {
   /**
    * The prefix for any piece of metadata passed in HTTP headers.
    */
@@ -244,6 +244,159 @@ class Container implements \Countable {
   }
 
   /**
+   * Get a list of objects in this container.
+   *
+   * This will return a list of objects in the container. With no
+   * parameters, it will attempt to return a listing of <i>all</i>
+   * objects in the container. However, by setting contraints, you can
+   * retrieve only a specific subset of objects.
+   *
+   * Note that OpenStacks Swift will return no more than 10,000 objects
+   * per request. When dealing with large datasets, you are encouraged
+   * to use paging.
+   *
+   * Paging
+   *
+   * Paging is done with a combination of a limit and a marker. The
+   * limit is an integer indicating the maximum number of items to
+   * return. The marker is the string name of an object. Typically, this
+   * is the last object in the previously returned set. The next batch
+   * will begin with the next item after the marker (assuming the marker
+   * is found.)
+   *
+   * @param int $limit
+   *   An integer indicating the maximum number of items to return. This 
+   *   cannot be greater than the Swift maximum (10k).
+   * @param string $maker
+   *   The name of the object to start with. The query will begin with
+   *   the next object AFTER this one.
+   */
+  public function objects($limit = NULL, $marker = NULL) {
+    $params = array();
+    return $this->objectQuery($params, $limit, $marker);
+  }
+
+  /**
+   * Retrieve a list of Objects with the given prefix.
+   *
+   * Object Storage containers support directory-like organization. To
+   * get a list of items inside of a particular "subdirectory", provide
+   * the directory name as a "prefix". This will return only objects
+   * that begin with that prefix.
+   *
+   * @param string $prefix
+   *   The leading prefix.
+   * @param string $delimiter
+   *   The character used to delimit names. By default, this is '/'.
+   * @param int $limit
+   *   An integer indicating the maximum number of items to return. This
+   *   cannot be greater than the Swift maximum (10k).
+   * @param string $maker
+   *   The name of the object to start with. The query will begin with
+   *   the next object AFTER this one.
+   */
+  public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $offset = 0) {
+    $params = array(
+      'prefix' => $prefix,
+      'delimiter' => $delimiter,
+    );
+    return $this->objectQuery($params, $limit, $marker);
+  }
+
+  /**
+   * Legacy method for retrieving objects by path.
+   *
+   * Older versions of Rackspace's OpenStack implementation used a path
+   * instead of a prefix. This provides support for legacy code.
+   *
+   * @param string $path
+   *   The path prefix.
+   *
+   * @deprecated Use objectsWithPrefix() instead.
+   */
+  public function objectsByPath($path, $limit = NULL, $offset = 0) {
+    $params = array(
+      'path' => $path,
+    );
+    return $this->objectQuery($params, $limit, $marker);
+  }
+
+  /**
+   * Perform the HTTP query for a list of objects and de-serialize the
+   * results.
+   */
+  protected function objectQuery($params = array(), $limit = NULL, $marker = NULL) {
+    if (isset($limit)) {
+      $params['limit'] = (int) $limit;
+      if (!empty($marker)) {
+        $params['marker'] = (string) $marker;
+      }
+    }
+
+    // We always want JSON.
+    $params['format'] = 'json';
+
+    $query = http_build_query($params);
+    $url = $this->url . '?' . $query;
+
+    $client = \HPCloud\Transport::instance();
+    $headers = array(
+      'X-Auth-Token' => $this->token,
+    );
+
+    $response = $client->doRequest($url, 'GET', $headers);
+
+    // The only codes that should be returned are 200 and the ones
+    // already thrown by doRequest.
+    if ($response->status() != 200) {
+      throw new \HPCloud\Exception('An unknown exception occurred while processing the request.');
+    }
+
+    $json = json_decode($response->content(), TRUE);
+
+    // Turn the array into a list of RemoteObject instances.
+    $list = array();
+    foreach ($json as $item) {
+      $url = $this->url . '/' . urlencode($item['name']);
+      $list[] = RemoteObject::newFromJSON($item, $this->token, $url);
+    }
+
+    return $list;
+  }
+
+  /**
+   * Return the iterator of contents.
+   *
+   * A Container is Iterable. This means that you can use a container in 
+   * a `foreach` loop directly:
+   *
+   * @code
+   * <?php
+   * foreach ($container as $object) {
+   *  print $object->name();
+   * }
+   * ?>
+   * @endcode
+   *
+   * The above is equivalent to doing the following:
+   * @code
+   * <?php
+   * $objects = $container->objects();
+   * foreach ($objects as $object) {
+   *  print $object->name();
+   * }
+   * ?>
+   * @endcode
+   *
+   * Note that there is no way to pass any constraints into an iterator.
+   * You cannot limit the number of items, set an offset, or add a
+   * prefix.
+   */
+  public function getIterator() {
+    return $this->objects();
+  }
+
+  /**
    * Remove the named object from storage.
    *
    * @param string $name
@@ -260,7 +413,6 @@ class Container implements \Countable {
     $client = \HPCloud\Transport::instance();
 
     try {
-      print $url;
       $response = $client->doRequest($url, 'DELETE', $headers);
     }
     catch (\HPCloud\Transport\FileNotFoundException $fnfe) {
