@@ -99,10 +99,14 @@ class PHPStreamTransport implements Transporter {
       case '403':
       case '401':
         throw new \HPCloud\Transport\AuthorizationException($matches[0]);
-      case '412':
-        throw new \HPCloud\Transport\LengthRequiredException($matches[0]);
       case '404':
         throw new \HPCloud\Transport\FileNotFoundException($matches[0]);
+      case '409':
+        throw new \HPCloud\Transport\ConflictException($matches[0]);
+      case '412':
+        throw new \HPCloud\Transport\LengthRequiredException($matches[0]);
+      case '422':
+        throw new \HPCloud\Transport\UnpresscessableEntityException($matches[0]);
       case '500':
         throw new \HPCloud\Transport\ServerException($matches[0]);
       default:
