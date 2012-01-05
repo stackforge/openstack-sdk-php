@@ -95,6 +95,10 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   const FTYPE = 'text/plain';
 
   public function testSave() {
+
+    // Clean up anything left.
+    $this->destroyContainerFixture();
+
     $container = $this->containerFixture();
 
     $obj = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
@@ -114,8 +118,13 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
    * @depends testSave
    */
   public function testObjects() {
-    $obj = new Object(self::FNAME . '-2', self::FCONTENT, self::FTYPE);
-    $obj = new Object(self::FNAME . '-3', self::FCONTENT, self::FTYPE);
+    $container = $this->containerFixture();
+    $obj1 = new Object(self::FNAME . '-2', self::FCONTENT, self::FTYPE);
+    $obj2 = new Object(self::FNAME . '-3', self::FCONTENT, self::FTYPE);
+
+    $container->save($obj1);
+    $container->save($obj2);
+
 
   }
 
@@ -137,6 +146,17 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
    * @depends testObjects
    */
   public function testGetIterator() {
+
+    $container = $this->containerFixture();
+
+    $it = $container->getIterator();
+    $this->assertInstanceOf('Traversable', $it);
+
+    $i = 0;
+    foreach ($container as $item) {
+      ++$i;
+    }
+    $this->assertEquals(3, $i);
 
   }
 

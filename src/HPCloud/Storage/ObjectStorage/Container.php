@@ -393,7 +393,7 @@ class Container implements \Countable, \IteratorAggregate {
    * prefix.
    */
   public function getIterator() {
-    return $this->objects();
+    return new \ArrayIterator($this->objects());
   }
 
   /**

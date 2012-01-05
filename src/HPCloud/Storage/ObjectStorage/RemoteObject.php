@@ -28,17 +28,26 @@ class RemoteObject extends Object {
     $object = new RemoteObject($data['name']);
     $object->setContentType($data['content_type']);
 
-    $this->contentLength = (int) $data['bytes'];
-    $this->etag = (string) $data['hash'];
-    $this->lastModified = strtotime($data['last_modified']);
+    $object->contentLength = (int) $data['bytes'];
+    $object->etag = (string) $data['hash'];
+    $object->lastModified = strtotime($data['last_modified']);
 
+    return $object;
   }
 
   public function contentLength() {
+    if (!empty($this->content)) {
+      return parent::contentLength();
+    }
     return $this->contentLength;
   }
 
   public function eTag() {
+
+    if (!empty($this->content)) {
+      return parent::eTag();
+    }
+
     return $this->etag;
   }
 
@@ -54,7 +63,7 @@ class RemoteObject extends Object {
 
   public function metadata() {
     // How do we get this?
-    return array();
+    return $this->metadata;
   }
 
   /**
@@ -76,6 +85,12 @@ class RemoteObject extends Object {
    *   occurs.
    */
   public function content() {
+
+    // XXX: This allows local overwrites. Is this a good idea?
+    if (!empty($this->content)) {
+      return $this->content;
+    }
+
     $client = \HPCloud\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
@@ -89,6 +104,7 @@ class RemoteObject extends Object {
     return $response->content();
   }
 
+  /*
   public function setContent($content, $type = NULL) {
     throw new ReadOnlyObjectException(__CLASS__ . ' is read-only.');
   }
@@ -98,5 +114,6 @@ class RemoteObject extends Object {
   public function setMetadata(array $array) {
     throw new ReadOnlyObjectException(__CLASS__ . ' is read-only.');
   }
+  */
 
 }
