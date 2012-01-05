@@ -191,7 +191,7 @@ class ObjectStorage {
 
     $containerList = array();
     foreach ($containers as $container) {
-      $containerList[$container['name']] = Container::newFromJSON($container, $this->url(), $this->token());
+      $containerList[$container['name']] = Container::newFromJSON($container, $this->token(), $this->url());
     }
 
     return $containerList;
@@ -216,7 +216,7 @@ class ObjectStorage {
 
     $status = $data->status();
     if ($status == 204) {
-      return Container::newFromResponse($name, $data, $this->url(), $this->token());
+      return Container::newFromResponse($name, $data, $this->token(), $this->url());
     }
 
     // If we get here, it's not a 404 and it's not a 204.
@@ -317,6 +317,11 @@ class ObjectStorage {
     catch (\HPCloud\Transport\FileNotFoundException $e) {
       return FALSE;
     }
+    // XXX: I'm not terribly sure about this. Why not just throw the
+    // ConflictException?
+    catch (\HPCloud\Transport\ConflictException $e) {
+      throw new ObjectStorage\ContainerNotEmptyException("Non-empty container cannot be deleted.");
+    }
 
     $status = $data->status();
 
@@ -324,12 +329,6 @@ class ObjectStorage {
     if ($status == 204) {
       return TRUE;
     }
-    // The container must be empty before it can be deleted. This is an
-    // actual failure, so we throw an exception.
-    elseif ($status == 409) {
-      throw new ObjectStorage\ContainerNotEmptyException("Non-empty container cannot be deleted.");
-    }
-
     // OpenStacks documentation doesn't suggest any other return
     // codes.
     else {

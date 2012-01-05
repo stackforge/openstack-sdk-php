@@ -10,6 +10,7 @@ require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
 use \HPCloud\Storage\ObjectStorage\Container;
+use \HPCloud\Storage\ObjectStorage\Object;
 
 class ContainerTest extends \HPCloud\Tests\TestCase {
 

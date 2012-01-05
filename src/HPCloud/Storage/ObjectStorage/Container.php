@@ -179,6 +179,21 @@ class Container implements \Countable {
    * This takes an \HPCloud\Storage\ObjectStorage\Object
    * and stores it in the given container in the present
    * container on the remote object store.
+   *
+   * @param \HPCloud\Storage\ObjectStorage\Object $obj
+   *   The object to store.
+   * @return boolean
+   *   TRUE if the object was saved.
+   * @throws \HPCloud\Transport\LengthRequiredException
+   *   if the Content-Length could not be determined and chunked
+   *   encoding was not enabled. This should not occur for this class,
+   *   which always automatically generates Content-Length headers.
+   *   However, subclasses could generate this error.
+   * @throws \HPCloud\Transport\UnprocessableEntityException
+   *   if the checksome passed here does not match the checksum
+   *   calculated remotely.
+   * @throws \HPCloud\Exception when an unexpected (usually
+   *   network-related) error condition arises.
    */
   public function save(Object $obj) {
 
@@ -201,6 +216,8 @@ class Container implements \Countable {
     // Now build up the rest of the headers:
     $headers['ETag'] = $obj->eTag();
 
+    // If chunked, we set transfer encoding; else
+    // we set the content length.
     if ($obj->isChunked()) {
       // How do we handle this? Does the underlying
       // stream wrapper pay any attention to this?
@@ -210,6 +227,7 @@ class Container implements \Countable {
       $headers['Content-Length'] = $obj->contentLength();
     }
 
+    // Auth token.
     $headers['X-Auth-Token'] = $this->token;
 
     $client = \HPCloud\Transport::instance();
@@ -217,7 +235,6 @@ class Container implements \Countable {
     $response = $client->doRequest($url, 'PUT', $headers, $obj->content());
 
     if ($response->status() != 201) {
-
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
     }
     return TRUE;
