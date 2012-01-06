@@ -108,6 +108,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $container = $this->containerFixture();
 
     $obj = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
+    $obj->setMetadata(array('foo' => '1234'));
 
     try {
       $ret = $container->save($obj);
@@ -144,6 +145,24 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   /**
    * @depends testObjects
    */
+  public function testGetIterator() {
+
+    $container = $this->containerFixture();
+
+    $it = $container->getIterator();
+    $this->assertInstanceOf('Traversable', $it);
+
+    $i = 0;
+    foreach ($container as $item) {
+      ++$i;
+    }
+    $this->assertEquals(3, $i);
+
+  }
+
+  /**
+   * @depends testObjects
+   */
   public function testObjectsWithPrefix() {
     $container = $this->containerFixture();
 
@@ -161,7 +180,8 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     }
 
     // Since we set the delimiter to ':' we will get back
-    // all of the objects in a/.
+    // all of the objects in a/. This is because none of
+    // the objects contain ':' in their names.
     $objects = $container->objectsWithPrefix('a/', ':');
     $this->assertEquals(2, count($objects));
 
@@ -169,32 +189,62 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
       $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\Object', $o);
     }
 
+    // This should give us one file and one subdir.
+    $objects = $container->objectsWithPrefix('', '/');
+    $this->assertEquals(2, count($objects));
+
+    foreach ($objects as $o) {
+      if ($o instanceof Object) {
+        $this->assertEquals(self::FNAME, $o->name());
+      }
+      else {
+        $this->assertEquals('a/', $o->path());
+      }
+    }
   }
 
   /**
    * @depends testObjects
    */
   public function testObjectsWithPath() {
-
-  }
-
-  /**
-   * @depends testObjects
-   */
-  public function testGetIterator() {
-
     $container = $this->containerFixture();
+    $objects = $container->objectsByPath('a/b/');
 
-    $it = $container->getIterator();
-    $this->assertInstanceOf('Traversable', $it);
+    $this->assertEquals(1, count($objects));
 
-    $i = 0;
-    foreach ($container as $item) {
-      ++$i;
-    }
-    $this->assertEquals(3, $i);
+    $o = array_shift($objects);
+    $this->assertEquals('a/b/' . self::FNAME, $o->name());
 
+    /*
+     * The Open Stack documentation is unclear about how best to
+     * use paths. Experimentation suggests that if you rely on paths
+     * instead of prefixes, your best bet is to create directory
+     * markers.
+     */
+
+    // Test subdir listings:
+    // This does not work (by design?) with Path. You have to use prefix
+    // or else create directory markers.
+    // $obj1 = new Object('a/aa/aaa/' . self::FNAME, self::FCONTENT, self::FTYPE);
+    // $container->save($obj1);
+    // $objects = $container->objectsByPath('a/aaa', '/');
+
+    // $this->assertEquals(1, count($objects), 'One subdir');
+
+    // $objects = $container->objectsByPath('a/');
+    // throw new \Exception(print_r($objects, TRUE));
+    // $this->assertEquals(2, count($objects));
+
+    // foreach ($objects as $o) {
+    //   if ($o instanceof Object) {
+    //     $this->assertEquals('a/' . self::FNAME, $o->name());
+    //   }
+    //   else {
+    //     $this->assertEquals('a/b/', $o->path());
+    //   }
+    // }
   }
+
 
   /**
    * @depends testSave

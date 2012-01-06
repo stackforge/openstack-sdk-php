@@ -284,6 +284,9 @@ class Container implements \Countable, \IteratorAggregate {
    * the directory name as a "prefix". This will return only objects
    * that begin with that prefix.
    *
+   * (Directory-like behavior is also supported by using "directory 
+   * markers". See objectsWithPath().)
+   *
    * Prefixes
    *
    * Prefixes are basically substring patterns that are matched against
@@ -336,19 +339,48 @@ class Container implements \Countable, \IteratorAggregate {
   }
 
   /**
-   * Legacy method for retrieving objects by path.
+   * Specify a path (subdirectory) to traverse.
    *
-   * Older versions of Rackspace's OpenStack implementation used a path
-   * instead of a prefix. This provides support for legacy code.
+   * OpenStack Swift provides two basic ways to handle directory-like 
+   * structures. The first is using a prefix (see objectsByPrefix()). 
+   * The second is to create directory markers and use a path.
+   *
+   * A directory marker is just a file with a name that is 
+   * directory-like. You create it exactly as you create any other file. 
+   * Typically, it is 0 bytes long.
+   *
+   * @code
+   * <?php
+   * $dir = new Object('a/b/c', '');
+   * $container->save($dir);
+   * ?>
+   * @endcode
+   *
+   * Using objectsByPath() with directory markers will return a list of
+   * Object instances, some of which are regular files, and some of
+   * which are just empty directory marker files. When creating
+   * directory markers, you may wish to set metadata or content-type
+   * information indicating that they are directory markers.
+   *
+   * At one point, the OpenStack documentation suggested that the path
+   * method was legacy. More recent versions of the documentation no
+   * longer indicate this.
    *
    * @param string $path
    *   The path prefix.
-   *
-   * @deprecated Use objectsWithPrefix() instead.
+   * @param string $delimiter
+   *   The character used to delimit names. By default, this is '/'.
+   * @param int $limit
+   *   An integer indicating the maximum number of items to return. This
+   *   cannot be greater than the Swift maximum (10k).
+   * @param string $marker
+   *   The name of the object to start with. The query will begin with
+   *   the next object AFTER this one.
    */
-  public function objectsByPath($path, $limit = NULL, $marker = NULL) {
+  public function objectsByPath($path, $delimiter = '/', $limit = NULL, $marker = NULL) {
     $params = array(
       'path' => $path,
+      'delimiter' => $delimiter,
     );
     return $this->objectQuery($params, $limit, $marker);
   }
