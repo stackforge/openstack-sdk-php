@@ -284,6 +284,38 @@ class Container implements \Countable, \IteratorAggregate {
    * the directory name as a "prefix". This will return only objects
    * that begin with that prefix.
    *
+   * Prefixes
+   *
+   * Prefixes are basically substring patterns that are matched against
+   * files on the remote object storage.
+   *
+   * When a prefix is used, object storage will begin to return not just
+   * Object instsances, but also Subdir instances. A Subdir is simply a
+   * container for a "path name".
+   *
+   * Delimiters
+   *
+   * Object Storage (OpenStack Swift) does not have a native concept of
+   * files and directories when it comes to paths. Instead, it merely
+   * represents them and simulates their behavior under specific
+   * circumstances.
+   *
+   * The default behavior (when prefixes are used) is to treat the '/'
+   * character as a delimiter. Thus, when it encounters a name like
+   * this: `foo/bar/baz.txt` and the prefix is `foo/`, it will
+   * parse return a Subdir called `foo/bar`.
+   *
+   * Similarly, if you store a file called `foo:bar:baz.txt` and then
+   * set the delimiter to `:` and the prefix to `foo:`, it will return
+   * the Subdir `foo:bar`. However, merely setting the delimiter back to
+   * `/` will not allow you to query `foo/bar` and get the contents of
+   * `foo:bar`.
+   *
+   * Setting $delimiter will tell the Object Storage server which
+   * character to parse the filenames on. This means that if you use
+   * delimiters other than '/', you need to be very consistent with your
+   * usage or else you may get surprising results.
+   *
    * @param string $prefix
    *   The leading prefix.
    * @param string $delimiter
@@ -291,11 +323,11 @@ class Container implements \Countable, \IteratorAggregate {
    * @param int $limit
    *   An integer indicating the maximum number of items to return. This
    *   cannot be greater than the Swift maximum (10k).
-   * @param string $maker
+   * @param string $marker
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
    */
-  public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $offset = 0) {
+  public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $marker = NULL) {
     $params = array(
       'prefix' => $prefix,
       'delimiter' => $delimiter,
@@ -314,7 +346,7 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @deprecated Use objectsWithPrefix() instead.
    */
-  public function objectsByPath($path, $limit = NULL, $offset = 0) {
+  public function objectsByPath($path, $limit = NULL, $marker = NULL) {
     $params = array(
       'path' => $path,
     );
@@ -352,13 +384,22 @@ class Container implements \Countable, \IteratorAggregate {
       throw new \HPCloud\Exception('An unknown exception occurred while processing the request.');
     }
 
-    $json = json_decode($response->content(), TRUE);
+    $responseContent = $response->content();
+    $json = json_decode($responseContent, TRUE);
 
     // Turn the array into a list of RemoteObject instances.
     $list = array();
     foreach ($json as $item) {
-      $url = $this->url . '/' . urlencode($item['name']);
-      $list[] = RemoteObject::newFromJSON($item, $this->token, $url);
+      if (!empty($item['subdir'])) {
+        $list[] = new Subdir($item['subdir'], $params['delimiter']);
+      }
+      elseif (empty($item['name'])) {
+        throw new \HPCloud\Exception('Unexpected entity returned.');
+      }
+      else {
+        $url = $this->url . '/' . urlencode($item['name']);
+        $list[] = RemoteObject::newFromJSON($item, $this->token, $url);
+      }
     }
 
     return $list;
@@ -389,7 +430,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @endcode
    *
    * Note that there is no way to pass any constraints into an iterator.
-   * You cannot limit the number of items, set an offset, or add a
+   * You cannot limit the number of items, set an marker, or add a
    * prefix.
    */
   public function getIterator() {

@@ -78,7 +78,13 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $store = $this->swiftAuth();
     $cname = self::$settings['hpcloud.swift.container'];
 
-    $container = $store->container($cname);
+    try {
+      $container = $store->container($cname);
+    }
+    // The container was never created.
+    catch (\HPCloud\Transport\FileNotFoundException $e) {
+      return;
+    }
 
     foreach ($container as $object) {
       try {
@@ -119,19 +125,49 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
    */
   public function testObjects() {
     $container = $this->containerFixture();
-    $obj1 = new Object(self::FNAME . '-2', self::FCONTENT, self::FTYPE);
-    $obj2 = new Object(self::FNAME . '-3', self::FCONTENT, self::FTYPE);
+    $obj1 = new Object('a/' . self::FNAME, self::FCONTENT, self::FTYPE);
+    $obj2 = new Object('a/b/' . self::FNAME, self::FCONTENT, self::FTYPE);
 
     $container->save($obj1);
     $container->save($obj2);
 
+    // Now we have a container with three items.
+    $objects = $container->objects();
 
+    $this->assertEquals(3, count($objects));
+
+    $objects = $container->objects(1, 'a/' . self::FNAME);
+
+    $this->assertEquals(1, count($objects));
   }
 
   /**
    * @depends testObjects
    */
   public function testObjectsWithPrefix() {
+    $container = $this->containerFixture();
+
+    $objects = $container->objectsWithPrefix('a/');
+    $this->assertEquals(2, count($objects));
+
+    foreach ($objects as $o) {
+      if ($o instanceof Object) {
+        $this->assertEquals('a/' . self::FNAME, $o->name());
+      }
+      else {
+        $this->assertEquals('a/b/', $o->path());
+      }
+
+    }
+
+    // Since we set the delimiter to ':' we will get back
+    // all of the objects in a/.
+    $objects = $container->objectsWithPrefix('a/', ':');
+    $this->assertEquals(2, count($objects));
+
+    foreach ($objects as $o) {
+      $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\Object', $o);
+    }
 
   }
 
