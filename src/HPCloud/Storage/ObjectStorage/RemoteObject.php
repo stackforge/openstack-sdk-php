@@ -162,17 +162,56 @@ class RemoteObject extends Object {
       return $this->content;
     }
 
+    // Get the object, content included.
+    $response = $this->fetchObject(TRUE);
+
+    return $response->content();
+  }
+
+  /**
+   * Rebuild the local object from the remote.
+   *
+   * WARNING: This will destroy any unsaved local changes.
+   *
+   * @param boolean $fetchContent
+   *   If this is TRUE, the content will be downloaded as well.
+   */
+  public function refresh($fetchContent = FALSE) {
+
+    // Kill old content.
+    unset($this->content);
+
+    $response = $this->fetchObject($fetchContent);
+
+
+    if ($fetchContent) {
+      $this->setContent($response->content());
+    }
+  }
+
+  /**
+   * Helper function for fetching an object.
+   */
+  protected function fetchObject($fetchContent = FALSE) {
+    $method = $fetchContent ? 'GET' : 'HEAD';
+
     $client = \HPCloud\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
 
-    $response = $client->doRequest($this->url, 'GET', $headers);
+    $response = $client->doRequest($this->url, $method, $headers);
 
     if ($response->status() != 200) {
       throw new \HPCloud\Exception('An unknown exception occurred during transmission.');
     }
-    return $response->content();
+
+    // Reset the content length, last modified, and etag:
+    $this->setContentType($response->header('Content-Type', $this->contentType()));
+    $this->lastModified = strtotime($response->header('Last-Modified', 0));
+    $this->etag = $response->header('Etag', $this->etag);
+
+    return $response;
   }
 
   /*

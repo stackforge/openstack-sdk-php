@@ -257,6 +257,7 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function object($name) {
 
+    $url = $this->url . '/' . urlencode($name);
     $headers = array();
 
     // Auth token.
@@ -268,6 +269,11 @@ class Container implements \Countable, \IteratorAggregate {
     if ($response->status() != 200) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
     }
+
+    $remoteObject = RemoteObject::newFromHeaders($name, $response->headers(), $this->token, $url);
+    $remoteObject->setContent($response->content());
+
+    return $remoteObject;
   }
 
   /**
@@ -315,8 +321,7 @@ class Container implements \Countable, \IteratorAggregate {
 
     $headers = $response->headers();
 
-    $objectUrl = $this->url . '/' . urlencode($name);
-    return RemoteObject::newFromHeaders($name, $headers, $this->token, $objectUrl);
+    return RemoteObject::newFromHeaders($name, $headers, $this->token, $url);
   }
 
   /**

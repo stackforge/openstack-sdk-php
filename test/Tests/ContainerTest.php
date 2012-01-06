@@ -154,6 +154,55 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
+   * @depends testRemoteObject
+   */
+  public function testRefresh() {
+    $container = $this->containerFixture();
+    $object = $container->remoteObject(self::FNAME);
+
+    $content = $object->content();
+    $object->setContent('FOO');
+    $this->assertEquals('FOO', $object->content());
+
+    $object->refresh(TRUE);
+    $this->assertEquals($content, $object->content());
+
+    $object->refresh(FALSE);
+    $this->assertEquals($content, $object->content());
+
+  }
+
+  /**
+   * @depends testRemoteObject
+   */
+  public function testObject() {
+    $container = $this->containerFixture();
+    $object = $container->object(self::FNAME);
+
+    $this->assertEquals(self::FNAME, $object->name());
+    $this->assertEquals(self::FTYPE, $object->contentType());
+
+    $etag = md5(self::FCONTENT);
+    $this->assertEquals($etag, $object->eTag());
+
+    $md = $object->metadata();
+    $this->assertEquals(1, count($md));
+
+    // Note that headers are normalized remotely to have initial
+    // caps. Since we have no way of knowing what the original
+    // metadata casing is, we leave it with initial caps.
+    $this->assertEquals('1234', $md['Foo']);
+
+    $content = $object->content();
+
+    $this->assertEquals(self::FCONTENT, $content);
+
+    // Overwrite the copy:
+    $object->setContent('HI');
+    $this->assertEquals('HI', $object->content());
+  }
+
+  /**
    * @depends testSave
    */
   public function testObjects() {
