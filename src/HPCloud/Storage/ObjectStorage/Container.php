@@ -244,6 +244,82 @@ class Container implements \Countable, \IteratorAggregate {
   }
 
   /**
+   * Get the object with the given name.
+   *
+   * This fetches a single object with the given name.
+   *
+   * This does not yet support the following features of Swift:
+   *
+   * - Byte range queries.
+   * - If-Modified-Since/If-Unmodified-Since
+   * - If-Match/If-None-Match
+   *
+   */
+  public function object($name) {
+
+    $headers = array();
+
+    // Auth token.
+    $headers['X-Auth-Token'] = $this->token;
+
+    $client = \HPCloud\Transport::instance();
+    $response = $client->doRequest($url, 'GET', $headers);
+
+    if ($response->status() != 200) {
+      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+    }
+  }
+
+  /**
+   * Fetch an object, but delay fetching its contents.
+   *
+   * This retrieves all of the information about an object except for
+   * its contents. Size, hash, metadata, and modification date
+   * information are all retrieved and wrapped.
+   *
+   * The data comes back as a RemoteObject, which can be used to
+   * transparently fetch the object's content, too.
+   *
+   * Why Use This?
+   *
+   * The regular object() call will fetch an entire object, including
+   * its content. This may not be desireable for cases where the object
+   * is large.
+   *
+   * This method can featch the relevant metadata, but delay fetching
+   * the content until it is actually needed.
+   *
+   * Since RemoteObject extends Object, all of the calls that can be
+   * made to an Object can also be made to a RemoteObject. Be aware,
+   * though, that calling RemoteObject::content() will initiate another
+   * network operation.
+   *
+   * @param string $name
+   *   The name of the object to fetch.
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   A remote object ready for use.
+   */
+  public function remoteObject($name) {
+    $url = $this->url . '/' . urlencode($name);
+    $headers = array(
+      'X-Auth-Token' => $this->token,
+    );
+
+
+    $client = \HPCloud\Transport::instance();
+    $response = $client->doRequest($url, 'HEAD', $headers);
+
+    if ($response->status() != 200) {
+      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+    }
+
+    $headers = $response->headers();
+
+    $objectUrl = $this->url . '/' . urlencode($name);
+    return RemoteObject::newFromHeaders($name, $headers, $this->token, $objectUrl);
+  }
+
+  /**
    * Get a list of objects in this container.
    *
    * This will return a list of objects in the container. With no
@@ -284,7 +360,7 @@ class Container implements \Countable, \IteratorAggregate {
    * the directory name as a "prefix". This will return only objects
    * that begin with that prefix.
    *
-   * (Directory-like behavior is also supported by using "directory 
+   * (Directory-like behavior is also supported by using "directory
    * markers". See objectsWithPath().)
    *
    * Prefixes
@@ -341,12 +417,12 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Specify a path (subdirectory) to traverse.
    *
-   * OpenStack Swift provides two basic ways to handle directory-like 
-   * structures. The first is using a prefix (see objectsByPrefix()). 
+   * OpenStack Swift provides two basic ways to handle directory-like
+   * structures. The first is using a prefix (see objectsByPrefix()).
    * The second is to create directory markers and use a path.
    *
-   * A directory marker is just a file with a name that is 
-   * directory-like. You create it exactly as you create any other file. 
+   * A directory marker is just a file with a name that is
+   * directory-like. You create it exactly as you create any other file.
    * Typically, it is 0 bytes long.
    *
    * @code

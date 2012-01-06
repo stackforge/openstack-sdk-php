@@ -93,13 +93,21 @@ class Object {
    * OpenStack allows you to specify metadata for a file. Metadata items
    * must follow these conventions:
    *
-   * - names must contain only letters, numbers, and short dashes.
+   * - names must contain only letters, numbers, and short dashes. Since
+   *   OpenStack normalizes the name to begin with uppercase, it is
+   *   suggested that you follow this convetion: Foo, not foo. Or you
+   *   can do your own normalizing (such as converting all to lowercase.
    * - values must be encoded if they contain newlines or binary data.
    *   While the exact encoding is up to you, Base-64 encoding is probably
    *   your best bet.
    *
    * This library does only minimal processing of metadata, and does no
    * error checking, escaping, etc. This is up to the implementor.
+   *
+   * IMPORTANT: Current versions of OpenStack Swift see the names FOO,
+   * Foo, foo, and fOo as the same. This is not to say that it is case
+   * insensitive; only that it normalizes strings according to its own
+   * rules.
    *
    * @param array $array
    *   An associative array of metadata names to values.
