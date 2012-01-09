@@ -145,11 +145,17 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals('1234', $md['Foo']);
 
     $content = $object->content();
-
     $this->assertEquals(self::FCONTENT, $content);
+
+    // Make sure I can do this twice (regression).
+    // Note that this SHOULD perform another request.
+    $this->assertEquals(self::FCONTENT, $object->content());
 
     // Overwrite the copy:
     $object->setContent('HI');
+    $this->assertEquals('HI', $object->content());
+
+    // Make sure I can do this twice (regression check).
     $this->assertEquals('HI', $object->content());
   }
 

@@ -13,6 +13,8 @@ class RemoteObject extends Object {
   protected $etag = '';
   protected $lastModified = 0;
 
+  protected $contentVerification = TRUE;
+
   /**
    * Create a new RemoteObject from JSON data.
    *
@@ -140,9 +142,18 @@ class RemoteObject extends Object {
   /**
    * Get the content of this object.
    *
-   * Since this is a proxy object, calling content() will cause the 
-   * object to be fetched from the remote data storage. The result will 
+   * Since this is a proxy object, calling content() will cause the
+   * object to be fetched from the remote data storage. The result will
    * be delivered as one large string.
+   *
+   * The file size, content type, etag, and modification date of the
+   * object are all updated during this command, too. This accounts for
+   * the possibility that the content was modified externally between
+   * the time this object was constructed and the time this method was
+   * executed.
+   *
+   * The RemoteObject does NOT cache content. Each call to content()
+   * will initiate a new network request.
    *
    * Be wary of using this method with large files.
    *
@@ -165,7 +176,56 @@ class RemoteObject extends Object {
     // Get the object, content included.
     $response = $this->fetchObject(TRUE);
 
-    return $response->content();
+    $content = $response->content();
+
+    $check = md5($content);
+    if ($check != $this->etag()) {
+      throw new ContentVerificationException("Checksum $check does not match Etag " . $this->etag());
+    }
+
+    return $content;
+  }
+
+  /**
+   * Enable or disable content verification (checksum/md5).
+   *
+   * The default behavior of a RemoteObject is to verify that the MD5
+   * provided by the server matches the locally generated MD5 of the
+   * file contents.
+   *
+   * If content verification is enabled, then whenever the content is
+   * fetched from the remote server, its checksum is calculated and
+   * tested against the ETag value. This provides a layer of assurance
+   * that the payload of the HTTP request was not altered during
+   * transmission.
+   *
+   * This featured can be turned off, which is sometimes necessary on
+   * systems that do not correctly produce MD5s. Turning this off might
+   * also provide a small performance improvement on large files, but at
+   * the expense of security.
+   *
+   * @param boolean $enabled
+   *   If this is TRUE, content verification is performed. The content
+   *   is hashed and checked against a server-supplied MD5 hashcode. If
+   *   this is FALSE, no checking is done.
+   */
+  public function setContentVerification($enabled) {
+    $this->contentVerification = $enabled;
+  }
+
+  /**
+   * Indicate whether this object verifies content (checksum).
+   *
+   * When content verification is on, RemoteObject attemts to perform a
+   * checksum on the object, calculating the MD5 hash of the content
+   * returned by the remote server, and comparing that to the server's
+   * supplied ETag hash.
+   *
+   * @return boolean
+   *   TRUE if this is verifying, FALSE otherwise.
+   */
+  public function isVerifyingContent() {
+    return $this->contentVerification;
   }
 
   /**
@@ -213,17 +273,4 @@ class RemoteObject extends Object {
 
     return $response;
   }
-
-  /*
-  public function setContent($content, $type = NULL) {
-    throw new ReadOnlyObjectException(__CLASS__ . ' is read-only.');
-  }
-  public function setContentType($type) {
-    throw new ReadOnlyObjectException(__CLASS__ . ' is read-only.');
-  }
-  public function setMetadata(array $array) {
-    throw new ReadOnlyObjectException(__CLASS__ . ' is read-only.');
-  }
-  */
-
 }
