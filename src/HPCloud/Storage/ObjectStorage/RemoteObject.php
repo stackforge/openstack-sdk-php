@@ -7,6 +7,25 @@
 
 namespace HPCloud\Storage\ObjectStorage;
 
+/**
+ * A representation of an object stored in remote Object Storage.
+ *
+ * A remote object is one whose canonical copy is stored in a remote
+ * object storage. It represents a local (and possibly partial) copy of
+ * an object.
+ *
+ * Depending on how the object was constructed, it may or may not have a
+ * local copy of the entire contents of the file. It may only have the
+ * object's "metadata" (information such as name, type, modification
+ * date, and length of the object). Or it may have all of that in
+ * addition to the entire content of the file.
+ *
+ * Remote objects can be modified locally. Simply modifying an object
+ * will not result in those modifications being stored on the remote
+ * server. The object must be saved (see Container::save()). When an
+ * object is modified so that its local contents differ from the remote
+ * stored copy, it is marked dirty (see isDirty()).
+ */
 class RemoteObject extends Object {
 
   protected $contentLength = 0;
@@ -14,6 +33,7 @@ class RemoteObject extends Object {
   protected $lastModified = 0;
 
   protected $contentVerification = TRUE;
+  protected $caching = FALSE;
 
   /**
    * Create a new RemoteObject from JSON data.
@@ -152,9 +172,6 @@ class RemoteObject extends Object {
    * the time this object was constructed and the time this method was
    * executed.
    *
-   * The RemoteObject does NOT cache content. Each call to content()
-   * will initiate a new network request.
-   *
    * Be wary of using this method with large files.
    *
    * @return string
@@ -178,12 +195,119 @@ class RemoteObject extends Object {
 
     $content = $response->content();
 
+    // Checksum the content.
+    // XXX: Right now the md5 is done even if checking is turned off.
+    // Should fix that.
     $check = md5($content);
-    if ($check != $this->etag()) {
+    if ($this->isVerifyingContent() && $check != $this->etag()) {
       throw new ContentVerificationException("Checksum $check does not match Etag " . $this->etag());
     }
 
+    // If we are caching, set the content locally when we retrieve
+    // remotely.
+    if ($this->isCaching()) {
+      $this->setContent($content);
+    }
+
     return $content;
+  }
+
+  /**
+   * Get the content of this object as a file stream.
+   *
+   * This is useful for large objects. Such objects should not be read
+   * into memory all at once (as content() does), but should instead be
+   * made available as an input stream.
+   *
+   * PHP offers low-level stream support in the form of PHP stream
+   * wrappers, and this mechanism is used internally whenever available.
+   *
+   * If there is a local copy of the content, the stream will be read
+   * out of the content as if it were a temp-file backed in-memory
+   * resource. To ignore the local version, pass in TRUE for the
+   * $refresh parameter.
+   *
+   * If the content is coming from a remote copy, the stream will be
+   * read directly from the underlying IO stream.
+   *
+   * Each time stream() is called, a new stream is created. In most
+   * cases, this results in a new HTTP transaction (unless $refresh is
+   * FALSE and the content is already stored locally).
+   *
+   * The stream is read-only.
+   *
+   * @param boolean $refresh
+   *   If this is set to TRUE, any existing local modifications will be ignored
+   *   and the content will be refreshed from the server. Any
+   *   local changes to the object will be discarded.
+   * @return resource
+   *   A handle to the stream, which is already opened and positioned at
+   *   the beginning of the stream.
+   */
+  public function stream($refresh = FALSE) {
+
+    // If we're working on local content, return that content wrapped in
+    // a fake IO stream.
+    if (!$refresh && isset($this->content)) {
+      return $this->localFileStream();
+    }
+
+    // Otherwise, we fetch a fresh version from the remote server and
+    // return its stream handle.
+    $response = $this->fetchObject(TRUE);
+
+    return $response->file();
+  }
+
+  /**
+   * Transform a local copy of content into a file stream.
+   *
+   * This buffers the content into a stream resource and then returns
+   * the stream resource. The resource is not used internally, and its
+   * data is never written back to the remote object storage.
+   */
+  protected function localFileStream() {
+
+    $tmp = fopen('php://temp', 'rw');
+    fwrite($tmp, $this->content(), $this->contentLength());
+    rewind($tmp);
+
+    return $tmp;
+  }
+
+  /**
+   * Enable or disable content caching.
+   *
+   * If a RemoteObject is set to cache then the first time content() is
+   * called, its results will be cached locally. This is very useful for
+   * small files whose content is accessed repeatedly, but can be a
+   * cause of memory consumption for larger files.
+   *
+   * If caching settings are changed after content is retrieved, the
+   * already retrieved content will not be affected, though any
+   * subsequent requests will use the new caching settings. That is,
+   * existing cached content will not be removed if caching is turned
+   * off.
+   *
+   * @param boolean $enabled
+   *   If this is TRUE, caching will be enabled. If this is FALSE,
+   *   caching will be disabled.
+   */
+  public function setCaching($enabled) {
+    $this->caching = $enabled;
+  }
+
+  /**
+   * Indicates whether this object caches content.
+   *
+   * Importantly, this indicates whether the object <i>will</i> cache
+   * its contents, not whether anything is actually cached.
+   *
+   * @return boolean
+   *   TRUE if caching is enabled, FALSE otherwise.
+   */
+  public function isCaching() {
+    return $this->caching;
   }
 
   /**
@@ -229,9 +353,52 @@ class RemoteObject extends Object {
   }
 
   /**
+   * Check whether there are unsaved changes.
+   *
+   * An object is marked "dirty" if it has been altered
+   * locally in such a way that it no longer matches the
+   * remote version.
+   *
+   * The practical definition of dirtiness, for us, is this: An object
+   * is dirty if and only if (a) it has locally buffered content AND (b)
+   * the checksum of the local content does not match the checksom of
+   * the remote content.
+   *
+   * Not that minor differences, such as altered character encoding, may
+   * change the checksum value, and thus (correctly) mark the object as
+   * dirty.
+   *
+   * The RemoteObject implementation does not internally check dirty
+   * markers. It is left to implementors to ensure that dirty content is
+   * written to the remote server when desired.
+   *
+   * To replace dirty content with a clean copy, see refresh().
+   */
+  public function isDirty() {
+
+    // If there is no content, the object can't be dirty.
+    if (!isset($this->content)) {
+      return FALSE;
+    }
+
+    // Content is dirty iff content is set, and it is
+    // different from the original content. Note that
+    // we are using the etag from the original headers.
+    if ($this->etag != md5($this->content)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
    * Rebuild the local object from the remote.
    *
-   * WARNING: This will destroy any unsaved local changes.
+   * This refetches the object from the object store and then
+   * reconstructs the present object based on the refreshed data.
+   *
+   * WARNING: This will destroy any unsaved local changes. You can use
+   * isDirty() to determine whether or not a local change has been made.
    *
    * @param boolean $fetchContent
    *   If this is TRUE, the content will be downloaded as well.
@@ -251,6 +418,15 @@ class RemoteObject extends Object {
 
   /**
    * Helper function for fetching an object.
+   *
+   * @param boolean $fetchContent
+   *   If this is set to TRUE, a GET request will be issued, which will
+   *   cause the remote host to return the object in the response body.
+   *   The response body is not handled, though. If this is set to
+   *   FALSE, a HEAD request is sent, and no body is returned.
+   * @return \HPCloud\Transport\Response
+   *   containing the object metadata and (depending on the
+   *   $fetchContent flag) optionally the data.
    */
   protected function fetchObject($fetchContent = FALSE) {
     $method = $fetchContent ? 'GET' : 'HEAD';
@@ -270,6 +446,10 @@ class RemoteObject extends Object {
     $this->setContentType($response->header('Content-Type', $this->contentType()));
     $this->lastModified = strtotime($response->header('Last-Modified', 0));
     $this->etag = $response->header('Etag', $this->etag);
+    $this->contentLength = (int) $response->header('Content-Length', 0);
+
+    // Reset the metadata, too:
+    $this->setMetadata(self::extractHeaderAttributes($response->headers()));
 
     return $response;
   }

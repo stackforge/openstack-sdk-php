@@ -246,7 +246,15 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Get the object with the given name.
    *
-   * This fetches a single object with the given name.
+   * This fetches a single object with the given name. It downloads the
+   * entire object at once. This is useful if the object is small (under
+   * a few megabytes) and the content of the object will be used. For
+   * example, this is the right operation for accessing a text file 
+   * whose contents will be processed.
+   *
+   * For larger files or files whose content may never be accessed, use 
+   * remoteObject(), which delays loading the content until one of its 
+   * content methods (e.g. RemoteObject::content()) is called.
    *
    * This does not yet support the following features of Swift:
    *
@@ -254,6 +262,10 @@ class Container implements \Countable, \IteratorAggregate {
    * - If-Modified-Since/If-Unmodified-Since
    * - If-Match/If-None-Match
    *
+   * @param string $name
+   *   The name of the object to load.
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   A remote object with the content already stored locally.
    */
   public function object($name) {
 
