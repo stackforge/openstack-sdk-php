@@ -41,60 +41,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
   }
 
-  protected $containerFixture = NULL;
 
-  /**
-   * Get a container from the server.
-   */
-  protected function containerFixture() {
-
-    if (empty($this->containerFixture)) {
-      $store = $this->swiftAuth();
-      $cname = self::$settings['hpcloud.swift.container'];
-
-      try {
-        $store->createContainer($cname);
-        $this->containerFixture = $store->container($cname);
-
-      }
-      // This is why PHP needs 'finally'.
-      catch (\Exception $e) {
-        // Delete the container.
-        $store->deleteContainer($cname);
-        throw $e;
-      }
-
-    }
-
-    return $this->containerFixture;
-  }
-
-  /**
-   * Destroy a container fixture.
-   *
-   * This should be called in any method that uses containerFixture().
-   */
-  protected function destroyContainerFixture() {
-    $store = $this->swiftAuth();
-    $cname = self::$settings['hpcloud.swift.container'];
-
-    try {
-      $container = $store->container($cname);
-    }
-    // The container was never created.
-    catch (\HPCloud\Transport\FileNotFoundException $e) {
-      return;
-    }
-
-    foreach ($container as $object) {
-      try {
-        $container->delete($object->name());
-      }
-      catch (\Exception $e) {}
-    }
-
-    $store->deleteContainer($cname);
-  }
 
   const FNAME = 'testSave';
   const FCONTENT = 'This is a test.';
