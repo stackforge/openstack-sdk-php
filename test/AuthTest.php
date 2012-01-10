@@ -12,7 +12,7 @@ use \HPCloud\Storage\ObjectStorage;
 
 \HPCloud\Bootstrap::useAutoloader();
 
-$usage = "php $0 ID KEY URL";
+$usage = "php {$argv[0]} ID KEY URL";
 
 if ($argc < 4) {
   print 'ID, Key, and URL are all required.' . PHP_EOL;
@@ -26,7 +26,7 @@ $uri = $argv[3];
 
 $store = ObjectStorage::newFromSwiftAuth($user, $key, $uri);
 
-$token = $store->getAuthToken();
+$token = $store->token();
 
 if (empty($token)) {
   print "Authentication seemed to succeed, but no token was return." . PHP_EOL;
