@@ -225,7 +225,7 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
-   * @depends isDirty
+   * @depends testIsDirty
    */
   public function testRefresh() {
     $container = $this->containerFixture();
