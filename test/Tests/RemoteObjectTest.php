@@ -221,7 +221,7 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     // Change content and retest.
     $obj->setContent('foo');
 
-    $this->assertTrue(obj->isDirty());
+    $this->assertTrue($obj->isDirty());
   }
 
   /**
