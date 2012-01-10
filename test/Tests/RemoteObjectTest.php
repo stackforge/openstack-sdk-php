@@ -245,6 +245,8 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     $this->assertFalse($obj->isDirty());
     $this->assertEquals(self::FCONTENT, $obj->content());
 
+    $this->destroyContainerFixture();
+
   }
 
 }
