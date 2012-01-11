@@ -10,6 +10,9 @@ namespace HPCloud\Storage\ObjectStorage;
 /**
  * Access control list for object storage.
  *
+ * EXPERIMENTAL: This is bassed on a feature of Swift that is likely to
+ * change.
+ *
  * Swift access control rules are broken into two permissions: READ and
  * WRITE. Read permissions grant the user the ability to access the file
  * (using verbs like GET and HEAD), while WRITE permissions allow any
@@ -30,6 +33,57 @@ namespace HPCloud\Storage\ObjectStorage;
  * X-Container-Write for WRITE rules. Each header may have a chain of
  * rules.
  *
+ * Examples
+ *
+ * For most casual cases, only the static constructor functions are
+ * used. For example, an ACL that does not grant any public access can
+ * be created with a single call:
+ *
+ * @code
+ * <?php
+ * ACL::nonPublic();
+ * ?>
+ * @endcode
+ *
+ * Public read access is granted like this:
+ *
+ * @code
+ * <?php
+ * ACL::publicRead();
+ * ?>
+ * @endcode
+ *
+ * Sometimes you will need more sophisticated access control rules. The
+ * following grants READ access to anyone coming from an `example.com`
+ * domain, but grants WRITE access only to the account `admins`:
+ *
+ * @code
+ * <?php
+ * $acl = new ACL();
+ *
+ * // Grant READ to example.com users.
+ * $acl->addReferrer(ACL::READ, '*.example.com');
+ *
+ * // Allow only people in the account 'admins' access to
+ * // write.
+ * $acl->addAccount(ACL::WRITE, 'admins');
+ *
+ * // Allow example.com users to view the container
+ * // listings:
+ * $acl->allowListings();
+ *
+ * ?>
+ * @endcode
+ *
+ *
+ * Notes
+ *
+ * - The current implementation does not do any validation of rules.
+ *   This will likely change in the future.
+ * - There is discussion in OpenStack about providing a different or
+ *   drastically improved ACL mechanism. This class would then be
+ *   replaced by a new mechanism.
+ *
  * For a detailed description of the rules for ACL creation,
  * see http://swift.openstack.org/misc.html#acls
  */
@@ -47,7 +101,9 @@ class ACL {
    * This is for an ACL of the WRITE type.
    */
   const WRITE = 2;
-
+  /**
+   * Flag for READ and WRITE.
+   */
   const READ_WRITE = 3; // self::READ | self::WRITE;
 
   /**
@@ -59,9 +115,87 @@ class ACL {
    */
   const HEADER_WRITE = 'X-Container-Write';
 
-  protected $readRules = array();
-  protected $writeRules = array();
   protected $rules = array();
+
+  // This is not yet implemented in Swift, and may not be.
+  /* *
+   * Declare this object public.
+   *
+   * This allows anybody to read or write the object. This, of course,
+   * has security implications.
+   *
+   * This grants the following:
+   *
+   * - READ to any host, with container listings.
+   * - WRITE to any account.
+   *
+   * @return \HPCloud\Storage\ObjectStorage\ACL
+   *   an ACL object with the appopriate permissions set.
+   *//*
+  public static function publicReadWrite() {
+    $acl = new ACL();
+    $acl->addAccount(self::WRITE, '*');
+    $acl->addReferrer(self::READ, '*');
+    $acl->allowListings();
+
+    return $acl;
+  }
+    */
+
+  /**
+   * Allow READ access to the public.
+   *
+   * This grants the following:
+   *
+   * - READ to any host, with container listings.
+   *
+   * @return \HPCloud\Storage\ObjectStorage\ACL
+   *   an ACL object with the appopriate permissions set.
+   */
+  public static function publicRead() {
+    $acl = new ACL();
+    $acl->addReferrer(self::READ, '*');
+    $acl->allowListings();
+
+    return $acl;
+  }
+
+  // This is not implemented in Swift, and may not be.
+  /* *
+   * Allow WRITE access to the public.
+   *
+   * This grants the following:
+   *
+   * - Write access to any account.
+   *
+   * @return \HPCloud\Storage\ObjectStorage\ACL
+   *   an ACL object with the appopriate permissions set.
+   */
+  /*
+  public static function publicWrite() {
+    $acl = new ACL();
+    $acl->addAccount(self::WRITE, '*');
+
+    return $acl;
+  }
+  */
+
+  /**
+   * Disallow all public access.
+   *
+   * Non-public is the same as private. Private, however, is a reserved
+   * word in PHP.
+   *
+   * This does not grant any permissions. OpenStack interprets an object
+   * with no permissions as a private object.
+   *
+   * @return \HPCloud\Storage\ObjectStorage\ACL
+   *   an ACL object with the appopriate permissions set.
+   */
+  public static function nonPublic() {
+    // Default ACL is private.
+    return new ACL();
+  }
 
   public static function newFromHeaders($headers) {
 
@@ -71,9 +205,16 @@ class ACL {
 
   }
 
-  public function __construct() {
-
-  }
+  /**
+   * Create a new ACL.
+   *
+   * This creates an empty ACL with no permissions granted. When no
+   * permissions are granted, the file is effectively private
+   * (nonPublic()).
+   *
+   * Use add* methods to add permissions.
+   */
+  public function __construct() {}
 
   /**
    * Allow an account access.
@@ -94,8 +235,11 @@ class ACL {
    * array, an entry of the form 'account:user' will be generated in the
    * final ACL.
    *
+   * At this time there does not seem to be a way to grant global write
+   * access to an object.
+   *
    * @param int $perm
-   *   ACL::READ, ACL::WRITE or ACL::READ_WRITE (which is the same as 
+   *   ACL::READ, ACL::WRITE or ACL::READ_WRITE (which is the same as
    *   ACL::READ|ACL::WRITE).
    * @param string $account
    *   The name of the account.
@@ -115,6 +259,9 @@ class ACL {
 
   /**
    * Allow (or deny) a hostname or host pattern.
+   *
+   * In current Swift implementations, only READ rules can have host
+   * patterns. WRITE permissions cannot be granted to hostnames.
    *
    * Formats:
    * - Allow any host: '*'
@@ -142,14 +289,6 @@ class ACL {
    *   A rule array.
    */
   protected function addRule($perm, $rule) {
-    /*
-    if (self::READ & $perm) {
-      $this->readRules[] = $rule;
-    }
-    if (self::WRITE & $perm) {
-      $this->writeRules[] = $rule;
-    }
-     */
     $rule['mask'] = $perm;
 
     $this->rules[] = $rule;
@@ -160,15 +299,28 @@ class ACL {
    *
    * By default, granting READ permission on a container does not grant
    * permission to list the contents of a container. Setting the
-   * allowListing() permission will allow matching hosts to also list
+   * allowListings() permission will allow matching hosts to also list
    * the contents of a container.
    *
    * In the current Swift implementation, there is no mechanism for
    * allowing some hosts to get listings, while denying others.
    */
-  protected function allowListings() {
-    //$this->readRules[] = array('rlistings' => TRUE);
-    $this->rules[] = array('rlistings' => TRUE);
+  public function allowListings() {
+
+    $this->rules[] = array(
+      'mask' => self::READ,
+      'rlistings' => TRUE,
+    );
+  }
+
+  /**
+   * Get the rules array for this ACL.
+   *
+   * @return array
+   *   An array of associative arrays of rules.
+   */
+  public function rules() {
+    return $this->rules;
   }
 
   /**
@@ -184,15 +336,21 @@ class ACL {
 
     // Create the rule strings. We need two copies, one for READ and
     // one for WRITE.
-    foreach ($rules as $rule) {
+    foreach ($this->rules as $rule) {
       // We generate read and write rules separately so that the
       // generation logic has a chance to respond to the differences
       // allowances for READ and WRITE ACLs.
       if (self::READ & $rule['mask']) {
-        $readers[] = $this->ruleToString(self::READ, $rule);
+        $ruleStr = $this->ruleToString(self::READ, $rule);
+        if (!empty($ruleStr)) {
+          $readers[] = $ruleStr;
+        }
       }
       if (self::WRITE & $rule['mask']) {
-        $writers[] = $this->ruleToString(self::WRITE, $rule);
+        $ruleStr = $this->ruleToString(self::WRITE, $rule);
+        if (!empty($ruleStr)) {
+          $writers[] = $ruleStr;
+        }
       }
     }
 
@@ -254,6 +412,17 @@ class ACL {
         return $rule['account'] . ':' . $rule['user'];
       }
     }
+  }
+
+  public function __toString() {
+    $headers = $this->headers();
+
+    $buffer = array();
+    foreach ($headers as $k => $v) {
+      $buffer[] = $k . ': ' . $v;
+    }
+
+    return implode("\t", $buffer);
   }
 
 }
