@@ -125,4 +125,40 @@ class ACLTest extends \HPCloud\Tests\TestCase {
     $this->assertEmpty($acl);
   }
 
+  public function testNewFromHeaders() {
+    $headers = array(
+      ACL::HEADER_READ => '.r:.example.com,.rlistings,.r:-*.evil.net',
+      ACL::HEADER_WRITE => 'testact2, testact3:earnie, .rlistings  ',
+    );
+
+    $acl = ACL::newFromHeaders($headers);
+
+    $rules = $acl->rules();
+
+    $this->assertEquals(6, count($rules));
+
+    // Yay, now we get to test each one.
+
+    $this->assertEquals(ACL::READ, $rules[0]['mask']);
+    $this->assertEquals('.example.com', $rules[0]['host']);
+    $this->assertTrue($rules[1]['rlistings']);
+    $this->assertEquals('-*.evil.net', $rules[2]['host']);
+
+    $this->assertEquals(ACL::WRITE, $rules[3]['mask']);
+    $this->assertEquals('testact2', $rules[3]['account']);
+    $this->assertEquals('testact3', $rules[4]['account']);
+    $this->assertEquals('earnie', $rules[4]['user']);
+    $this->assertTrue($rules[5]['rlistings']);
+
+    // Final canary:
+    $headers = $acl->headers();
+    $read = $headers[ACL::HEADER_READ];
+    $write = $headers[ACL::HEADER_WRITE];
+
+    $this->assertEquals('.r:.example.com,.rlistings,.r:-*.evil.net', $read);
+    // Note that the spurious .rlistings was removed.
+    $this->assertEquals('testact2,testact3:earnie', $write);
+
+  }
+
 }

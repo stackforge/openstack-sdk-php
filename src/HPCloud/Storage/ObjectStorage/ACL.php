@@ -11,7 +11,9 @@ namespace HPCloud\Storage\ObjectStorage;
  * Access control list for object storage.
  *
  * EXPERIMENTAL: This is bassed on a feature of Swift that is likely to
- * change.
+ * change. Most of this is based on undocmented features of the API
+ * discovered both in the Python docs and in discussions by various
+ * members of the OpenStack community.
  *
  * Swift access control rules are broken into two permissions: READ and
  * WRITE. Read permissions grant the user the ability to access the file
@@ -198,11 +200,84 @@ class ACL {
   }
 
   public static function newFromHeaders($headers) {
+    $acl = new ACL();
 
+    // READ rules.
+    $rules = array();
+    if (!empty($headers[self::HEADER_READ])) {
+      $read = $headers[self::HEADER_READ];
+      $rules = explode(',', $read);
+      foreach ($rules as $rule) {
+        $ruleArray = self::parseRule(self::READ, $rule);
+        if (!empty($ruleArray)) {
+          $acl->rules[] = $ruleArray;
+        }
+      }
+    }
+
+    // WRITE rules.
+    $rules = array();
+    if (!empty($headers[self::HEADER_WRITE])) {
+      $write = $headers[self::HEADER_WRITE];
+      $rules = explode(',', $write);
+      foreach ($rules as $rule) {
+        $ruleArray = self::parseRule(self::WRITE, $rule);
+        if (!empty($ruleArray)) {
+          $acl->rules[] = $ruleArray;
+        }
+      }
+    }
+
+    //throw new \Exception(print_r($acl->rules(), TRUE));
+
+    return $acl;
   }
 
-  public static function parseRule($rule) {
+  /**
+   * Parse a rule.
+   *
+   * This attempts to parse an ACL rule. It is not particularly
+   * fault-tolerant.
+   *
+   * @param int $perm
+   *   The permission (ACL::READ, ACL::WRITE).
+   * @param string $rule
+   *   The string rule to parse.
+   * @return array
+   *   The rule as an array.
+   */
+  public static function parseRule($perm, $rule) {
+    // This regular expression generates the following:
+    //
+    // array(
+    //   0 => ENTIRE RULE
+    //   1 => WHOLE EXPRESSION, no whitespace
+    //   2 => domain compontent
+    //   3 => 'rlistings', set if .rincludes is the directive
+    //   4 => account name
+    //   5 => :username
+    //   6 => username
+    // );
+    $exp = '/^\s*(.r:([a-zA-Z0-9\*\-\.]+)|\.(rlistings)|([a-zA-Z0-9]+)(\:([a-zA-Z0-9]+))?)\s*$/';
 
+    $matches = array();
+    preg_match($exp, $rule, $matches);
+
+    $entry = array('mask' => $perm);
+    if (!empty($matches[2])) {
+      $entry['host'] = $matches[2];
+    }
+    elseif (!empty($matches[3])) {
+      $entry['rlistings'] = TRUE;
+    }
+    elseif (!empty($matches[4])) {
+      $entry['account'] = $matches[4];
+      if (!empty($matches[6])) {
+        $entry['user'] = $matches[6];
+      }
+    }
+
+    return $entry;
   }
 
   /**
