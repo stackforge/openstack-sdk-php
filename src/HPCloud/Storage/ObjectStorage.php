@@ -13,6 +13,7 @@
 namespace HPCloud\Storage;
 
 use HPCloud\Storage\ObjectStorage\Container;
+use HPCloud\Storage\ObjectStorage\ACL;
 
 /**
  * Access to ObjectStorage (Swift).
@@ -270,13 +271,29 @@ class ObjectStorage {
    *
    * @param string $name
    *   The name of the container.
+   * @param \HPCloud\Storage\ObjectStorage\ACL $acl
+   *   An access control list object. By default, a container is
+   *   non-public (private). To change this behavior, you can add a
+   *   custom ACL. To make the container publically readable, you can
+   *   use this: `ACL::publicRead()`.
    * @return boolean
    *   TRUE if the container was created, FALSE if the container was not
    *   created because it already exists.
    */
-  public function createContainer($name) {
+  public function createContainer($name, ACL $acl = NULL) {
     $url = $this->url() . '/' . urlencode($name);
-    $data = $this->req($url, 'PUT', FALSE);
+    $headers = array(
+      'X-Auth-Token' => $this->token(),
+    );
+
+    $client = \HPCloud\Transport::instance();
+    // Add ACLs to header.
+    if (!empty($acl)) {
+      $headers += $acl->headers();
+    }
+
+    $data = $client->doRequest($url, 'PUT', $headers);
+    syslog(LOG_WARNING, print_r($data, TRUE));
 
     $status = $data->status();
 

@@ -481,6 +481,19 @@ class Container implements \Countable, \IteratorAggregate {
   }
 
   /**
+   * Get the URL to this container.
+   *
+   * Any container that has been created will have a valid URL. If the
+   * Container was set to be public (See 
+   * ObjectStorage::createContainer()) will be accessible by this URL.
+   *
+   * @return
+   */
+  public function url() {
+    return $this->url;
+  }
+
+  /**
    * Perform the HTTP query for a list of objects and de-serialize the
    * results.
    */
