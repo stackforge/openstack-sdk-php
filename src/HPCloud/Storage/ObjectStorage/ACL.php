@@ -489,6 +489,47 @@ class ACL {
     }
   }
 
+  /**
+   * Check if the ACL marks this private.
+   *
+   * This returns TRUE only if this ACL does not grant any permissions
+   * at all.
+   *
+   * @return boolean
+   *   TRUE if this is private (non-public), FALSE if
+   *   any permissions are granted via this ACL.
+   */
+  public function isNonPublic() {
+    return empty($this->rules);
+  }
+
+  /**
+   * Check whether this object allows public reading.
+   *
+   * This will return TRUE the ACL allows (a) any host to access
+   * the item, and (b) it allows container listings.
+   *
+   * This checks whether the object allows public reading,
+   * not whether it is ONLY allowing public reads.
+   *
+   * See ACL::publicRead().
+   */
+  public function isPublicRead() {
+    $allowsAllHosts = FALSE;
+    $allowsRListings = FALSE;
+    foreach ($this->rules as $rule) {
+      if (self::READ & $rule['mask']) {
+        if (!empty($rule['rlistings'])) {
+          $allowsRListings = TRUE;
+        }
+        elseif(!empty($rule['host']) && trim($rule['host']) == '*') {
+          $allowsAllHosts = TRUE;
+        }
+      }
+    }
+    return $allowsAllHosts && $allowsRListings;
+  }
+
   public function __toString() {
     $headers = $this->headers();
 

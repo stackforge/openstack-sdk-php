@@ -161,4 +161,32 @@ class ACLTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  public function testIsNonPublic() {
+    $acl = new ACL();
+
+    $this->assertTrue($acl->isNonPublic());
+
+    $acl->addReferrer(ACL::READ, '*.evil.net');
+    $this->assertFalse($acl->isNonPublic());
+
+    $acl = ACL::nonPublic();
+    $this->assertTrue($acl->isNonPublic());
+  }
+
+  public function testIsPublicRead() {
+    $acl = new ACL();
+
+    $this->assertFalse($acl->isPublicRead());
+    $acl->allowListings();
+    $acl->addReferrer(ACL::READ, '*');
+
+    $this->assertTrue($acl->isPublicRead());
+
+    $acl->addAccount(ACL::WRITE, 'foo', 'bar');
+    $this->assertTrue($acl->isPublicRead());
+
+    $acl = ACL::publicRead();
+    $this->assertTrue($acl->isPublicRead());
+  }
+
 }
