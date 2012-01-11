@@ -97,17 +97,25 @@ class Object {
    *   OpenStack normalizes the name to begin with uppercase, it is
    *   suggested that you follow this convetion: Foo, not foo. Or you
    *   can do your own normalizing (such as converting all to lowercase.
+   *   OpenStack limits the name length to 126 unicode chars.
    * - values must be encoded if they contain newlines or binary data.
    *   While the exact encoding is up to you, Base-64 encoding is probably
-   *   your best bet.
+   *   your best bet. OpenStack limits the value to 256 unicode chars.
+   *
+   * (The docs are ambiguous -- they say chars, but they may mean
+   * bytes.)
    *
    * This library does only minimal processing of metadata, and does no
-   * error checking, escaping, etc. This is up to the implementor.
+   * error checking, escaping, etc. This is up to the implementor. The
+   * OpenStack Swift implementation does not dictate what encoding is
+   * used, though it suggests url encoding of both name and values.
    *
-   * IMPORTANT: Current versions of OpenStack Swift see the names FOO,
-   * Foo, foo, and fOo as the same. This is not to say that it is case
-   * insensitive; only that it normalizes strings according to its own
-   * rules.
+   * Currently, no length checking is performed in the library, nor is
+   * any encoding of the data performed.
+   *
+   * IMPORTANT: Current versions of OpenStack Swift normalize metadata
+   * names so that the name is always given an initial capital leter.
+   * That is, `foo` becomes `Foo`.
    *
    * @param array $array
    *   An associative array of metadata names to values.

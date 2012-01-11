@@ -47,6 +47,8 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * Once you have a Container, you manipulate objects inside of the
  * container.
+ *
+ * @todo Add support for container metadata.
  */
 class Container implements \Countable, \IteratorAggregate {
   /**
