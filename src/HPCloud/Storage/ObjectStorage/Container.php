@@ -209,7 +209,7 @@ class Container implements \Countable, \IteratorAggregate {
       throw new \HPCloud\Exception('Container does not have a URL to send data.');
     }
 
-    $url = $this->url . '/' . $obj->name();
+    $url = $this->url . '/' . urlencode($obj->name());
 
     // See if we have any metadata.
     $headers = array();
@@ -243,6 +243,49 @@ class Container implements \Countable, \IteratorAggregate {
     $response = $client->doRequest($url, 'PUT', $headers, $obj->content());
 
     if ($response->status() != 201) {
+      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+    }
+    return TRUE;
+  }
+
+  /**
+   * Update an object's metadata.
+   *
+   * This updates the metadata on an object without modifying anything
+   * else. This is a convenient way to set additional metadata without
+   * having to re-upload a potentially large object.
+   *
+   * @param \HPCloud\Storage\ObjectStorage\Object $obj
+   *   The object to update.
+   *
+   * @return boolean
+   *   TRUE if the metadata was updated.
+   *
+   * @throws \HPCloud\Transport\FileNotFoundException
+   *   if the object does not already exist on the object storage.
+   */
+  public function updateMetadata(Object $obj) {
+    $url = $this->url . '/' . urlencode($obj->name());
+    $headers = array();
+
+    // See if we have any metadata. We post this even if there
+    // is no metadata.
+    $md = $obj->metadata();
+    if (!empty($md)) {
+      $headers = $this->generateMetadataHeaders($md);
+    }
+    $headers['X-Auth-Token'] = $this->token;
+
+    // In spite of the documentation's claim to the contrary,
+    // content type IS reset during this operation.
+    $headers['Content-Type'] = $obj->contentType();
+
+    $client = \HPCloud\Transport::instance();
+
+    // The POST verb is for updating headers.
+    $response = $client->doRequest($url, 'POST', $headers, $obj->content());
+
+    if ($response->status() != 202) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
     }
     return TRUE;

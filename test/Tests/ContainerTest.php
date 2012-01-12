@@ -107,6 +107,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals('HI', $object->content());
   }
 
+
   /**
    * @depends testRemoteObject
    */
@@ -279,6 +280,36 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     //   }
     // }
   }
+
+  /**
+   * @depends testRemoteObject
+   */
+  public function testUpdateMetadata() {
+    $container = $this->containerFixture();
+    $object = $container->remoteObject(self::FNAME);
+
+    $md = $object->metadata();
+
+    $this->assertEquals('1234', $md['Foo']);
+
+    $md['Foo'] = 456;
+    $md['Bar'] = 'bert';
+    $object->setMetadata($md);
+
+    $container->updateMetadata($object);
+
+    $copy = $container->remoteObject(self::FNAME);
+
+    $this->assertEquals('456', $md['Foo']);
+    $this->assertEquals('bert', $md['Bar']);
+
+    // Now we need to canary test:
+    $this->assertEquals($object->contentType(), $copy->contentType());
+    $this->assertEquals($object->contentLength(), $copy->contentLength());
+
+
+  }
+
 
   /**
    * @depends testSave
