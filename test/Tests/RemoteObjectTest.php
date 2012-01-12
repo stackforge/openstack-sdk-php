@@ -93,6 +93,15 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     $this->assertArrayHasKey(self::FMETA_NAME, $md);
     $this->assertEquals(self::FMETA_VALUE, $md[self::FMETA_NAME]);
   }
+
+  /**
+   * @depends testNewFromHeaders
+   */
+  public function testUrl($obj) {
+    $url = $obj->url();
+
+    $this->assertTrue(strpos($obj->url(), $obj->name())> 0);
+  }
   /**
    * @depends testNewFromHeaders
    */
