@@ -358,8 +358,26 @@ class Container implements \Countable, \IteratorAggregate {
       $headers['Content-Length'] = $obj->contentLength();
     }
 
+    // Add content encoding, if necessary.
+    $encoding = $obj->encoding();
+    if (!empty($encoding)) {
+      $headers['Content-Encoding'] = urlencode($encoding);
+    }
+
+    // Add content disposition, if necessary.
+    $disposition = $obj->disposition();
+    if (!empty($disposition)) {
+      $headers['Content-Disposition'] = $disposition;
+    }
+
     // Auth token.
     $headers['X-Auth-Token'] = $this->token;
+
+    // Add any custom headers:
+    $moreHeaders = $obj->additionalHeaders();
+    if (!empty($moreHeaders)) {
+      $headers += $moreHeaders;
+    }
 
     $client = \HPCloud\Transport::instance();
 
@@ -377,6 +395,10 @@ class Container implements \Countable, \IteratorAggregate {
    * This updates the metadata on an object without modifying anything
    * else. This is a convenient way to set additional metadata without
    * having to re-upload a potentially large object.
+   *
+   * Swift's behavior during this operation is sometimes unpredictable,
+   * particularly in cases where custom headers have been set.
+   * Use with caution.
    *
    * @param \HPCloud\Storage\ObjectStorage\Object $obj
    *   The object to update.

@@ -20,12 +20,22 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
   const FCONTENT = 'Rah rah ah ah ah. Roma roma ma. Gaga oh la la.';
   const FMETA_NAME = 'Foo';
   const FMETA_VALUE = 'Bar';
+  const FDISPOSITION = 'attachment; roma.gaga';
+  const FENCODING = 'gzip';
+  const FCORS_NAME = 'Access-Control-Max-Age';
+  const FCORS_VALUE = '2000';
 
   protected function createAnObject() {
     $container = $this->containerFixture();
 
     $object = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
     $object->setMetadata(array(self::FMETA_NAME => self::FMETA_VALUE));
+    $object->setDisposition(self::FDISPOSITION);
+    $object->setEncoding(self::FENCODING);
+
+    // Need some headers that Swift actually stores and returns. This
+    // one does not seem to be returned ever.
+    //$object->setAdditionalHeaders(array(self::FCORS_NAME => self::FCORS_VALUE));
 
     $container->save($object);
   }
@@ -92,6 +102,31 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
 
     $this->assertArrayHasKey(self::FMETA_NAME, $md);
     $this->assertEquals(self::FMETA_VALUE, $md[self::FMETA_NAME]);
+  }
+
+  /**
+   * @depends testNewFromHeaders
+   */
+  public function testDisposition($obj) {
+    $this->assertEquals(self::FDISPOSITION, $obj->disposition());
+  }
+
+  /**
+   * @depends testNewFromHeaders
+   */
+  public function testEncoding($obj) {
+    $this->assertEquals(self::FENCODING, $obj->encoding());
+  }
+
+  /**
+   * @depends testNewFromHeaders
+   */
+  public function testHeaders($obj) {
+    $headers = $obj->headers();
+    $this->assertTrue(count($headers) > 1);
+
+    // Swift doesn't return CORS headers even though it is supposed to.
+    //$this->assertEquals(self::FCORS_VALUE, $headers[self::FCORS_NAME]);
   }
 
   /**

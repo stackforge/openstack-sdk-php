@@ -36,6 +36,17 @@ class RemoteObject extends Object {
   protected $caching = FALSE;
 
   /**
+   * All headers received from a remote are stored in this array.
+   * Implementing subclasses can access this array for complete access
+   * to the HTTP headers.
+   *
+   * This will be empty if the object was constructed from JSON, and may
+   * serve as a good indicator that the object does not have all
+   * attributes set.
+   */
+  protected $allHeaders;
+
+  /**
    * Create a new RemoteObject from JSON data.
    *
    * @param array $data
@@ -56,6 +67,9 @@ class RemoteObject extends Object {
 
     $object->token = $token;
     $object->url = $url;
+
+    // FIXME: What do we do about HTTP header data that doesn't come
+    // back in JSON?
 
     return $object;
   }
@@ -80,6 +94,8 @@ class RemoteObject extends Object {
   public static function newFromHeaders($name, $headers, $token, $url) {
     $object = new RemoteObject($name);
 
+    $object->allHeaders = $headers;
+
     //throw new \Exception(print_r($headers, TRUE));
 
     $object->setContentType($headers['Content-Type']);
@@ -89,6 +105,17 @@ class RemoteObject extends Object {
 
     // Set the metadata, too.
     $object->setMetadata(Container::extractHeaderAttributes($headers));
+
+
+    // If content encoding and disposition exist, set them on the
+    // object.
+    if (!empty($headers['Content-Disposition'])) {
+      $object->setDisposition($headers['Content-Disposition']);
+
+    }
+    if (!empty($headers['Content-Encoding'])) {
+      $object->setEncoding($headers['Content-Encoding']);
+    }
 
     $object->token = $token;
     $object->url = $url;
@@ -136,6 +163,21 @@ class RemoteObject extends Object {
   public function metadata() {
     // How do we get this?
     return $this->metadata;
+  }
+
+  /**
+   * Get the HTTP headers sent by the server.
+   *
+   * EXPERT.
+   *
+   * This returns the array of minimally processed HTTP headers that
+   * were sent from the server.
+   *
+   * @return array
+   *   An associative array of header names and values.
+   */
+  public function headers() {
+    return $this->allHeaders;
   }
 
   /**
@@ -421,15 +463,27 @@ class RemoteObject extends Object {
       throw new \HPCloud\Exception('An unknown exception occurred during transmission.');
     }
 
-    // Reset the content length, last modified, and etag:
+    $this->extractFromHeaders($response);
+
+    return $response;
+  }
+
+  /**
+   * Extract information from HTTP headers.
+   *
+   * This is used internally to set object properties from headers.
+   */
+  protected function extractFromHeaders($response) {
     $this->setContentType($response->header('Content-Type', $this->contentType()));
     $this->lastModified = strtotime($response->header('Last-Modified', 0));
     $this->etag = $response->header('Etag', $this->etag);
     $this->contentLength = (int) $response->header('Content-Length', 0);
 
+    $this->setDisposition($response->header('Content-Disposition', NULL));
+    $this->setEncoding($response->header('Content-Encoding', NULL));
+
     // Reset the metadata, too:
     $this->setMetadata(Container::extractHeaderAttributes($response->headers()));
 
-    return $response;
   }
 }

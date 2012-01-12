@@ -63,6 +63,14 @@ class Object {
    */
   protected $metadata = array();
 
+  protected $contentEncoding;
+  protected $contentDisposition;
+
+  /**
+   * Extension mechanism for new headers.
+   */
+  protected $additionalHeaders = array();
+
 
   /**
    * Construct a new object for storage.
@@ -300,6 +308,126 @@ class Object {
    */
   public function eTag() {
     return md5($this->content);
+  }
+
+  /**
+   * Set the encoding for a file.
+   *
+   * You can use content encoding on compressed content to indicate to
+   * the receiving agent that a file is encoded using a specific
+   * compression type.
+   *
+   * Typical compression types are 'gzip', 'zip', and 'compress', though
+   * many others exist.
+   *
+   * This allows you, for example, to save a zipped file, yet preserve
+   * its underlying content type. For example, for a gzipped text/plain
+   * file, you can set the content type to "text/plain" and the encoding
+   * to "gzip". This allows many user agents to receive the compressed
+   * data and automatically decompress them and display them correctly.
+   *
+   * @param string $encoding
+   *   A valid encoding type.
+   */
+  public function setEncoding($encoding) {
+    $this->contentEncoding = $encoding;
+  }
+
+  /**
+   * Get the encoding (if any) for this object.
+   *
+   * Encoding is used to indicate how a file was encoded or compressed.
+   * See setEncoding() for more information.
+   *
+   * @return string
+   *   The encoding type.
+   */
+  public function encoding() {
+    return $this->contentEncoding;
+  }
+
+  /**
+   * Set the content disposition.
+   *
+   * This makes it possible to have the file act like a download (in a
+   * browser or similar agent), even if the MIME type normally triggers
+   * a display.
+   *
+   * The typical value for this is:
+   * @code
+   * <?php
+   * $object->setDisposition('attachment; filename=foo.png');
+   * ?>
+   * @endcode
+   *
+   * A disposition string should not include any newline characters or
+   * binary data.
+   *
+   * @param string $disposition
+   *   A valid disposition declaration. These are defined in various
+   *   HTTP specifications.
+   */
+  public function setDisposition($disposition) {
+    $this->contentDisposition = $disposition;
+  }
+
+  /**
+   * Get the current disposition string, if any.
+   *
+   * See setDisposition() for discussion.
+   *
+   * @return string
+   *   The disposition string, or NULL if none is set.
+   */
+  public function disposition() {
+    return $this->contentDisposition;
+  }
+
+  /**
+   * Set additional headers for storage.
+   *
+   * EXPERT.
+   *
+   * Headers set here will be added to the HTTP request during save
+   * operations. They are not merged into existing headers until
+   * save-time.
+   *
+   * This provides a mechanism for adding extension headers. CORS
+   * headers and possibly others are stored by Swift, but have no
+   * semantic value to Swift or to popular user agents.
+   *
+   * There are a few things to note about this mechanism:
+   *
+   * - Existing headers cannot be overwritten. Only new headers can be
+   *   added.
+   * - Headers are not merged. They are simply sent to the remote
+   *   server. A new object must be retrieved from the server before
+   *   these headers will be accessible.
+   * - Swift only stores certain headers. If you supply an unrecognized
+   *   header to Swift, it may simply ignore it.
+   * - The RemoteObject::headers() method provides access to all of the
+   *   headers returned from Swift.
+   * - Headers are merged in as they are, with no cleaning, encoding, or
+   *   checking. You must ensure that the headers are in the proper
+   *   format.
+   *
+   * @param array $headers
+   *   An associative array where each name is an HTTP header name, and
+   *   each value is the HTTP header value. No encoding or escaping is
+   *   done.
+   */
+  public function setAdditionalHeaders($headers) {
+    $this->additionalHeaders = $headers;
+  }
+
+  /**
+   * Return additional headers.
+   *
+   * Headers here have likely not been stored remotely until
+   * Container::save() is called on the object.
+   */
+  public function additionalHeaders() {
+    return $this->additionalHeaders;
   }
 
   /**
