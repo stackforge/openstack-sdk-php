@@ -168,6 +168,9 @@ class ObjectStorage {
    * the last container) as a paging parameter, rather than an offset
    * number.
    *
+   * @todo For some reason, ACL information does not seem to be returned
+   *   in the JSON data. Need to determine how to get that.
+   *
    * @param int $limit
    *   The maximum number to return at a time. The default is -- brace
    *   yourself -- 10,000 (as determined by OpenStack. Implementations
@@ -275,7 +278,7 @@ class ObjectStorage {
    *   An access control list object. By default, a container is
    *   non-public (private). To change this behavior, you can add a
    *   custom ACL. To make the container publically readable, you can
-   *   use this: `ACL::publicRead()`.
+   *   use this: `ACL::makePublic()`.
    * @return boolean
    *   TRUE if the container was created, FALSE if the container was not
    *   created because it already exists.
@@ -293,7 +296,7 @@ class ObjectStorage {
     }
 
     $data = $client->doRequest($url, 'PUT', $headers);
-    syslog(LOG_WARNING, print_r($data, TRUE));
+    //syslog(LOG_WARNING, print_r($data, TRUE));
 
     $status = $data->status();
 
@@ -306,6 +309,29 @@ class ObjectStorage {
     else {
       throw new \HPCloud\Exception('Server returned unexpected code: ' . $status);
     }
+  }
+
+  /**
+   * Change the container's ACL.
+   *
+   * This will attempt to change the ACL on a container. If the
+   * container does not already exist, it will be created first, and
+   * then the ACL will be set. (This is a relic of the OpenStack Swift
+   * implementation, which uses the same HTTP verb to create a container
+   * and to set the ACL.)
+   *
+   * @param string $name
+   *   The name of the container.
+   * @param \HPCloud\Storage\ObjectStorage\ACL $acl
+   *   An ACL. To make the container publically readable, use
+   *   ACL::makePublic().
+   * @return boolean
+   *   TRUE if the cointainer was created, FALSE otherwise.
+   */
+  public function changeContainerACL($name, ACL $acl) {
+    // Oddly, the way to change an ACL is to issue the
+    // same request as is used to create a container.
+    return $this->createContainer($name, $acl);
   }
 
   /**

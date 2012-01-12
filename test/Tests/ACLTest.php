@@ -113,14 +113,14 @@ class ACLTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals('X-Container-Read: .r:.example.com', $str);
   }
 
-  public function testPublicRead() {
-    $acl = (string) ACL::publicRead();
+  public function testMakePublic() {
+    $acl = (string) ACL::makePublic();
 
     $this->assertEquals('X-Container-Read: .r:*,.rlistings', $acl);
   }
 
-  public function testNonPublic() {
-    $acl = (string) ACL::nonPublic();
+  public function testMakeNonPublic() {
+    $acl = (string) ACL::makeNonPublic();
 
     $this->assertEmpty($acl);
   }
@@ -169,24 +169,24 @@ class ACLTest extends \HPCloud\Tests\TestCase {
     $acl->addReferrer(ACL::READ, '*.evil.net');
     $this->assertFalse($acl->isNonPublic());
 
-    $acl = ACL::nonPublic();
+    $acl = ACL::makeNonPublic();
     $this->assertTrue($acl->isNonPublic());
   }
 
-  public function testIsPublicRead() {
+  public function testIsPublic() {
     $acl = new ACL();
 
-    $this->assertFalse($acl->isPublicRead());
+    $this->assertFalse($acl->isPublic());
     $acl->allowListings();
     $acl->addReferrer(ACL::READ, '*');
 
-    $this->assertTrue($acl->isPublicRead());
+    $this->assertTrue($acl->isPublic());
 
     $acl->addAccount(ACL::WRITE, 'foo', 'bar');
-    $this->assertTrue($acl->isPublicRead());
+    $this->assertTrue($acl->isPublic());
 
-    $acl = ACL::publicRead();
-    $this->assertTrue($acl->isPublicRead());
+    $acl = ACL::makePublic();
+    $this->assertTrue($acl->isPublic());
   }
 
 }

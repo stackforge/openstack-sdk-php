@@ -97,6 +97,16 @@ class RemoteObject extends Object {
   }
 
   /**
+   * Get the URL to this object.
+   *
+   * If this object has been stored remotely, it will have
+   * a valid URL.
+   */
+  public function url() {
+    return $this->url;
+  }
+
+  /**
    * Extract object attributes from HTTP headers.
    *
    * When OpenStack sends object attributes, it sometimes embeds them in

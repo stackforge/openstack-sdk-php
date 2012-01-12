@@ -43,7 +43,7 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * @code
  * <?php
- * ACL::nonPublic();
+ * ACL::makeNonPublic();
  * ?>
  * @endcode
  *
@@ -51,7 +51,7 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * @code
  * <?php
- * ACL::publicRead();
+ * ACL::makePublic();
  * ?>
  * @endcode
  *
@@ -119,31 +119,6 @@ class ACL {
 
   protected $rules = array();
 
-  // This is not yet implemented in Swift, and may not be.
-  /* *
-   * Declare this object public.
-   *
-   * This allows anybody to read or write the object. This, of course,
-   * has security implications.
-   *
-   * This grants the following:
-   *
-   * - READ to any host, with container listings.
-   * - WRITE to any account.
-   *
-   * @return \HPCloud\Storage\ObjectStorage\ACL
-   *   an ACL object with the appopriate permissions set.
-   *//*
-  public static function publicReadWrite() {
-    $acl = new ACL();
-    $acl->addAccount(self::WRITE, '*');
-    $acl->addReferrer(self::READ, '*');
-    $acl->allowListings();
-
-    return $acl;
-  }
-    */
-
   /**
    * Allow READ access to the public.
    *
@@ -154,33 +129,13 @@ class ACL {
    * @return \HPCloud\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
-  public static function publicRead() {
+  public static function makePublic() {
     $acl = new ACL();
     $acl->addReferrer(self::READ, '*');
     $acl->allowListings();
 
     return $acl;
   }
-
-  // This is not implemented in Swift, and may not be.
-  /* *
-   * Allow WRITE access to the public.
-   *
-   * This grants the following:
-   *
-   * - Write access to any account.
-   *
-   * @return \HPCloud\Storage\ObjectStorage\ACL
-   *   an ACL object with the appopriate permissions set.
-   */
-  /*
-  public static function publicWrite() {
-    $acl = new ACL();
-    $acl->addAccount(self::WRITE, '*');
-
-    return $acl;
-  }
-  */
 
   /**
    * Disallow all public access.
@@ -194,9 +149,16 @@ class ACL {
    * @return \HPCloud\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
-  public static function nonPublic() {
+  public static function makeNonPublic() {
     // Default ACL is private.
     return new ACL();
+  }
+
+  /**
+   * Alias of makeNonPublic().
+   */
+  public static function makePrivate() {
+    return self::makeNonPublic();
   }
 
   public static function newFromHeaders($headers) {
@@ -504,6 +466,13 @@ class ACL {
   }
 
   /**
+   * Alias of isNonPublic().
+   */
+  public function isPrivate() {
+    return $this->isNonPublic();
+  }
+
+  /**
    * Check whether this object allows public reading.
    *
    * This will return TRUE the ACL allows (a) any host to access
@@ -512,9 +481,9 @@ class ACL {
    * This checks whether the object allows public reading,
    * not whether it is ONLY allowing public reads.
    *
-   * See ACL::publicRead().
+   * See ACL::makePublic().
    */
-  public function isPublicRead() {
+  public function isPublic() {
     $allowsAllHosts = FALSE;
     $allowsRListings = FALSE;
     foreach ($this->rules as $rule) {

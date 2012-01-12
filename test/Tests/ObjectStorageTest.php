@@ -164,16 +164,43 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
     }
-    $ret = $store->createContainer($testCollection, \HPCloud\Storage\ObjectStorage\ACL::publicRead());
+    $ret = $store->createContainer($testCollection, \HPCloud\Storage\ObjectStorage\ACL::makePublic());
+    $container = $store->container($testCollection);
 
     // Now test that we can get the container contents. Since there is
     // no content in the container, we use the format=xml to make sure
     // we get some data back.
+    $url = $container->url() . '?format=xml';
+    $data = file_get_contents($url);
+    $this->assertNotEmpty($data, $url);
+
+    $containers = $store->containers();
+    //throw new \Exception(print_r($containers, TRUE));
+
+    $store->deleteContainer($testCollection);
+  }
+
+  /**
+   * @depends testCreateContainerPublic
+   */
+  public function testChangeContainerACL() {
+    $testCollection = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
+    $store = $this->swiftAuth();
+    if ($store->hasContainer($testCollection)) {
+      $store->deleteContainer($testCollection);
+    }
+    $ret = $store->createContainer($testCollection);
+
+
+    $acl = \HPCloud\Storage\ObjectStorage\ACL::makePublic();
+    $ret = $store->changeContainerACL($testCollection, $acl);
+
+    $this->assertFalse($ret);
+
     $container = $store->container($testCollection);
     $url = $container->url() . '?format=xml';
     $data = file_get_contents($url);
     $this->assertNotEmpty($data, $url);
 
-    $store->deleteContainer($testCollection);
   }
 }

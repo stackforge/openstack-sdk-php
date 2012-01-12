@@ -11,6 +11,7 @@ require_once 'test/TestCase.php';
 
 use \HPCloud\Storage\ObjectStorage\Container;
 use \HPCloud\Storage\ObjectStorage\Object;
+use \HPCloud\Storage\ObjectStorage\ACL;
 
 class ContainerTest extends \HPCloud\Tests\TestCase {
 
@@ -279,7 +280,6 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     // }
   }
 
-
   /**
    * @depends testSave
    */
@@ -295,6 +295,30 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $this->assertFalse($fail);
 
   }
+
+  public function testAcl() {
+    $store = $this->swiftAuth();
+    $cname = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
+
+    if ($store->hasContainer($cname)) {
+      $store->deleteContainer($cname);
+    }
+
+    $store->createContainer($cname, ACL::makePublic());
+
+
+    $store->containers();
+    $container = $store->container($cname);
+
+    $acl = $container->acl();
+
+    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\ACL', $acl);
+    $this->assertTrue($acl->isPublic());
+
+    $store->deleteContainer($cname);
+
+  }
+
 
 
 }

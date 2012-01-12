@@ -65,6 +65,7 @@ class Container implements \Countable, \IteratorAggregate {
 
   protected $token;
   protected $url;
+  protected $acl;
 
   /**
    * Create a new Container from JSON data.
@@ -125,6 +126,8 @@ class Container implements \Countable, \IteratorAggregate {
     $container->count = $response->header('X-Container-Object-Count', 0);
     $container->url = $url . '/' . urlencode($name);
     $container->token = $token;
+
+    $container->acl = ACL::newFromHeaders($response->headers());
 
     return $container;
   }
@@ -491,6 +494,38 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function url() {
     return $this->url;
+  }
+
+  /**
+   * Get the ACL.
+   *
+   * Currently, if the ACL wasn't added during object construction,
+   * calling acl() will trigger a request to the remote server to fetch
+   * the ACL. Since only some Swift calls return ACL data, this is an
+   * unavoidable artifact.
+   *
+   * Calling this on a Container that has not been stored on the remote
+   * ObjectStorage will produce an error. However, this should not be an
+   * issue, since containers should always come from one of the
+   * ObjectStorage methods.
+   *
+   * @todo Determine how to get the ACL from JSON data.
+   * @return \HPCloud\Storage\ObjectStorage\ACL
+   *   An ACL, or NULL if the ACL could not be retrieved.
+   */
+  public function acl() {
+    if (!isset($this->acl)) {
+      // Do a GET on $url to fetch headers.
+      $client = \HPCloud\Transport::instance();
+      $headers = array(
+        'X-Auth-Token' => $this->token,
+      );
+      $response = $client->doRequest($this->url, 'GET', $headers);
+
+      $this->acl = ACL::newFromHeaders($response->headers());
+
+    }
+    return $this->acl;
   }
 
   /**
