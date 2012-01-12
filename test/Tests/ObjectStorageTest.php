@@ -76,6 +76,9 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals(0, $testContainer->bytes());
     $this->assertEquals(0, $testContainer->count());
 
+    // Make sure we get back an ACL:
+    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\ACL', $testContainer->acl());
+
   }
 
   /**

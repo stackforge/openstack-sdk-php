@@ -169,7 +169,10 @@ class ObjectStorage {
    * number.
    *
    * @todo For some reason, ACL information does not seem to be returned
-   *   in the JSON data. Need to determine how to get that.
+   *   in the JSON data. Need to determine how to get that. As a
+   *   stop-gap, when a container object returned from here has its ACL
+   *   requested, it makes an additional round-trip to the server to
+   *   fetch that data.
    *
    * @param int $limit
    *   The maximum number to return at a time. The default is -- brace
@@ -271,6 +274,39 @@ class ObjectStorage {
    *
    * Any actual error will cause an exception to be thrown. These will
    * be the HTTP-level exceptions.
+   *
+   * ACLs
+   *
+   * Swift supports an ACL stream that allows for specifying (with
+   * certain caveats) various levels of read and write access. However, 
+   * there are two standard settings that cover the vast majority of 
+   * cases.
+   *
+   * - Make the resource private: This grants read and write access to
+   *   ONLY the creating account. This is the default; it can also be
+   *   specified with ACL::makeNonPublic().
+   * - Make the resource public: This grants READ permission to any
+   *   requesting host, yet only allows the creator to WRITE to the
+   *   object. This level can be granted by ACL::makePublic().
+   *
+   * Note that ACLs operate at a container level. Thus, marking a
+   * container public will allow access to ALL objects inside of the
+   * container.
+   *
+   * To find out whether an existing container is public, you can 
+   * write something like this:
+   *
+   * @code
+   * <?php
+   * // Get the container.
+   * $container = $objectStorage->container('my_container');
+   *
+   * //Check the permission on the ACL:
+   * $boolean = $container->acl()->isPublic();
+   * ?>
+   * @endcode
+   *
+   * For details on ACLs, see \HPCloud\Storage\ObjectStorage\ACL.
    *
    * @param string $name
    *   The name of the container.
