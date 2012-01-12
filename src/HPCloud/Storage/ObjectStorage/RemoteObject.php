@@ -88,7 +88,7 @@ class RemoteObject extends Object {
     $object->lastModified = strtotime($headers['Last-Modified']);
 
     // Set the metadata, too.
-    $object->setMetadata(self::extractHeaderAttributes($headers));
+    $object->setMetadata(Container::extractHeaderAttributes($headers));
 
     $object->token = $token;
     $object->url = $url;
@@ -106,37 +106,6 @@ class RemoteObject extends Object {
     return $this->url;
   }
 
-  /**
-   * Extract object attributes from HTTP headers.
-   *
-   * When OpenStack sends object attributes, it sometimes embeds them in
-   * HTTP headers with a prefix. This function parses the headers and
-   * returns the attributes as name/value pairs.
-   *
-   * Note that no decoding (other than the minimum amount necessary) is
-   * done to the attribute names or values. The Open Stack Swift
-   * documentation does not prescribe encoding standards for name or
-   * value data, so it is left up to implementors to choose their own
-   * strategy.
-   *
-   * @param array $headers
-   *   An associative array of HTTP headers.
-   * @return array
-   *   An associative array of name/value attribute pairs.
-   */
-  public static function extractHeaderAttributes($headers) {
-    $attributes = array();
-    $offset = strlen(Container::METADATA_HEADER_PREFIX);
-    foreach ($headers as $header => $value) {
-
-      $index = strpos($header, Container::METADATA_HEADER_PREFIX);
-      if ($index === 0) {
-        $key = substr($header, $offset);
-        $attributes[$key] = $value;
-      }
-    }
-    return $attributes;
-  }
 
   public function contentLength() {
     if (!empty($this->content)) {
@@ -459,7 +428,7 @@ class RemoteObject extends Object {
     $this->contentLength = (int) $response->header('Content-Length', 0);
 
     // Reset the metadata, too:
-    $this->setMetadata(self::extractHeaderAttributes($response->headers()));
+    $this->setMetadata(Container::extractHeaderAttributes($response->headers()));
 
     return $response;
   }

@@ -319,11 +319,16 @@ class ObjectStorage {
    *   TRUE if the container was created, FALSE if the container was not
    *   created because it already exists.
    */
-  public function createContainer($name, ACL $acl = NULL) {
+  public function createContainer($name, ACL $acl = NULL, $metadata = array()) {
     $url = $this->url() . '/' . urlencode($name);
     $headers = array(
       'X-Auth-Token' => $this->token(),
     );
+
+    if (!empty($metadata)) {
+      $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
+      $headers += Container::generateMetadataHeaders($metadata, $prefix);
+    }
 
     $client = \HPCloud\Transport::instance();
     // Add ACLs to header.

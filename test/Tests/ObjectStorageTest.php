@@ -10,6 +10,7 @@ require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
 use \HPCloud\Storage\ObjectStorage\Object;
+use \HPCloud\Storage\ObjectStorage\ACL;
 
 
 class ObjectStorageTest extends \HPCloud\Tests\TestCase {
@@ -42,7 +43,10 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
     }
-    $ret = $store->createContainer($testCollection);
+
+    $md = array('Foo' => 1234);
+
+    $ret = $store->createContainer($testCollection, NULL, $md);
     $this->assertTrue($ret, "Create container");
 
   }
@@ -93,6 +97,10 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals(0, $container->bytes());
     $this->assertEquals(0, $container->count());
     $this->assertEquals($testCollection, $container->name());
+
+    $md = $container->metadata();
+    $this->assertEquals(1, count($md));
+    $this->assertEquals('1234', $md['Foo']);
   }
 
   /**
@@ -167,7 +175,8 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
     }
-    $ret = $store->createContainer($testCollection, \HPCloud\Storage\ObjectStorage\ACL::makePublic());
+
+    $ret = $store->createContainer($testCollection, ACL::makePublic());
     $container = $store->container($testCollection);
 
     // Now test that we can get the container contents. Since there is

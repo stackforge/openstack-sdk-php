@@ -55,9 +55,10 @@ class Container implements \Countable, \IteratorAggregate {
    * The prefix for any piece of metadata passed in HTTP headers.
    */
   const METADATA_HEADER_PREFIX = 'X-Object-Meta-';
+  const CONTAINER_METADATA_HEADER_PREFIX = 'X-Container-Meta-';
 
 
-  protected $properties = array();
+  //protected $properties = array();
   protected $name = NULL;
 
   protected $count = 0;
@@ -66,6 +67,72 @@ class Container implements \Countable, \IteratorAggregate {
   protected $token;
   protected $url;
   protected $acl;
+  protected $metadata;
+
+  /**
+   * Transform a metadata array into headers.
+   *
+   * This is used when storing an object in a container.
+   *
+   * @param array $metadata
+   *   An associative array of metadata. Metadata is not escaped in any
+   *   way (there is no codified spec by which to escape), so make sure
+   *   that keys are alphanumeric (dashes allowed) and values are
+   *   ASCII-armored with no newlines.
+   * @param string $prefix
+   *   A prefix for the metadata headers.
+   * @return array
+   *   An array of headers.
+   * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e635
+   * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e700
+   */
+  public static function generateMetadataHeaders(array $metadata, $prefix = NULL) {
+    if (empty($prefix)) {
+      $prefix = Container::METADATA_HEADER_PREFIX;
+    }
+    $headers = array();
+    foreach ($metadata as $key => $val) {
+      $headers[$prefix . $key] = $val;
+    }
+    return $headers;
+  }
+
+  /**
+   * Extract object attributes from HTTP headers.
+   *
+   * When OpenStack sends object attributes, it sometimes embeds them in
+   * HTTP headers with a prefix. This function parses the headers and
+   * returns the attributes as name/value pairs.
+   *
+   * Note that no decoding (other than the minimum amount necessary) is
+   * done to the attribute names or values. The Open Stack Swift
+   * documentation does not prescribe encoding standards for name or
+   * value data, so it is left up to implementors to choose their own
+   * strategy.
+   *
+   * @param array $headers
+   *   An associative array of HTTP headers.
+   * @param string $prefix
+   *   The prefix on metadata headers.
+   * @return array
+   *   An associative array of name/value attribute pairs.
+   */
+  public static function extractHeaderAttributes($headers, $prefix = NULL) {
+    if (empty($prefix)) {
+      $prefix = Container::METADATA_HEADER_PREFIX;
+    }
+    $attributes = array();
+    $offset = strlen($prefix);
+    foreach ($headers as $header => $value) {
+
+      $index = strpos($header, $prefix);
+      if ($index === 0) {
+        $key = substr($header, $offset);
+        $attributes[$key] = $value;
+      }
+    }
+    return $attributes;
+  }
 
   /**
    * Create a new Container from JSON data.
@@ -98,6 +165,8 @@ class Container implements \Countable, \IteratorAggregate {
       $container->bytes = $jsonArray['bytes'];
     }
 
+    //syslog(LOG_WARNING, print_r($jsonArray, TRUE));
+
     return $container;
   }
 
@@ -129,6 +198,10 @@ class Container implements \Countable, \IteratorAggregate {
 
     $container->acl = ACL::newFromHeaders($response->headers());
 
+    $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
+    $metadata = Container::extractHeaderAttributes($response->headers(), $prefix);
+    $container->setMetadata($metadata);
+
     return $container;
   }
 
@@ -157,6 +230,56 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function bytes() {
     return $this->bytes;
+  }
+
+  /**
+   * Get the container metadata.
+   *
+   * Metadata (also called tags) are name/value pairs that can be 
+   * attached to a container.
+   *
+   * Names can be no longer than 128 characters, and values can be no
+   * more than 256. UTF-8 or ASCII characters are allowed, though ASCII
+   * seems to be preferred.
+   *
+   * If the container was loaded from a container listing, the metadata
+   * will be fetched in a new HTTP request. This is because container
+   * listings do not supply the metadata, while loading a container
+   * directly does.
+   *
+   * @return array
+   *   An array of metadata name/value pairs.
+   */
+  public function metadata() {
+
+    // If created from JSON, metadata does not get fetched.
+    if (!isset($this->metadata)) {
+      $this->loadExtraData();
+    }
+    return $this->metadata;
+  }
+
+
+  /**
+   * Set the tags on the container.
+   *
+   * Container metadata (sometimes called "tags") provides a way of
+   * storing arbitrary name/value pairs on a container.
+   *
+   * Since saving a container is a function of the ObjectStorage
+   * itself, if you change the metadta, you will need to call
+   * ObjectStorage::updateContainer() to save the new container metadata
+   * on the remote object storage.
+   *
+   * (Similarly, when it comes to objects, an object's metdata is saved
+   * by the container.)
+   *
+   * Names can be no longer than 128 characters, and values can be no
+   * more than 256. UTF-8 or ASCII characters are allowed, though ASCII
+   * seems to be preferred.
+   */
+  public function setMetadata($metadata) {
+    $this->metadata = $metadata;
   }
 
   /**
@@ -215,7 +338,7 @@ class Container implements \Countable, \IteratorAggregate {
     $headers = array();
     $md = $obj->metadata();
     if (!empty($md)) {
-      $headers = $this->generateMetadataHeaders($md);
+      $headers = self::generateMetadataHeaders($md, Container::METADATA_HEADER_PREFIX);
     }
 
     // Now build up the rest of the headers:
@@ -272,7 +395,7 @@ class Container implements \Countable, \IteratorAggregate {
     // is no metadata.
     $md = $obj->metadata();
     if (!empty($md)) {
-      $headers = $this->generateMetadataHeaders($md);
+      $headers = self::generateMetadataHeaders($md, Container::METADATA_HEADER_PREFIX);
     }
     $headers['X-Auth-Token'] = $this->token;
 
@@ -558,6 +681,12 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function acl() {
     if (!isset($this->acl)) {
+      $this->loadExtraData();
+    }
+    return $this->acl;
+  }
+
+  protected function loadExtraData() {
       // Do a GET on $url to fetch headers.
       $client = \HPCloud\Transport::instance();
       $headers = array(
@@ -565,10 +694,13 @@ class Container implements \Countable, \IteratorAggregate {
       );
       $response = $client->doRequest($this->url, 'GET', $headers);
 
+      // Get ACL.
       $this->acl = ACL::newFromHeaders($response->headers());
 
-    }
-    return $this->acl;
+      // Get metadata.
+      $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
+      $this->setMetadata(Container::extractHeaderAttributes($response->headers(), $prefix));
+
   }
 
   /**
@@ -683,29 +815,6 @@ class Container implements \Countable, \IteratorAggregate {
     }
 
     return TRUE;
-  }
-
-  /**
-   * Transform a metadata array into headers.
-   *
-   * This is used when storing an object in a container.
-   *
-   * @param array $metadata
-   *   An associative array of metadata. Metadata is not escaped in any
-   *   way (there is no codified spec by which to escape), so make sure
-   *   that keys are alphanumeric (dashes allowed) and values are
-   *   ASCII-armored with no newlines.
-   * @return array
-   *   An array of headers.
-   * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e635
-   * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e700
-   */
-  protected function generateMetadataHeaders(array $metadata) {
-    $headers = array();
-    foreach ($metadata as $key => $val) {
-      $headers[self::METADATA_HEADER_PREFIX . $key] = $val;
-    }
-    return $headers;
   }
 
 }
