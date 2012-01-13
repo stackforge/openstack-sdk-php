@@ -66,6 +66,7 @@ class Container implements \Countable, \IteratorAggregate {
 
   protected $token;
   protected $url;
+  protected $baseUrl;
   protected $acl;
   protected $metadata;
 
@@ -151,6 +152,8 @@ class Container implements \Countable, \IteratorAggregate {
   public static function newFromJSON($jsonArray, $token, $url) {
     $container = new Container($jsonArray['name']);
 
+    $container->baseUrl = $url;
+
     $container->url = $url . '/' . urlencode($jsonArray['name']);
     $container->token = $token;
 
@@ -193,6 +196,7 @@ class Container implements \Countable, \IteratorAggregate {
     $container = new Container($name);
     $container->bytes = $response->header('X-Container-Bytes-Used', 0);
     $container->count = $response->header('X-Container-Object-Count', 0);
+    $container->baseUrl = $url;
     $container->url = $url . '/' . urlencode($name);
     $container->token = $token;
 
@@ -432,6 +436,61 @@ class Container implements \Countable, \IteratorAggregate {
 
     if ($response->status() != 202) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+    }
+    return TRUE;
+  }
+
+  /**
+   * Copy an object to another place in object storage.
+   *
+   * An object can be copied within a container. Essentially, this will
+   * give you duplicates of the file, each with a new name.
+   *
+   * An object can be copied to another container if the name of the
+   * other container is specified, and if that container already exists.
+   *
+   * Note that there is no MOVE operation. You must copy and then DELETE
+   * in order to achieve that.
+   *
+   * @param \HPCloud\Storage\ObjectStorage\Object $obj
+   *   The object to copy. This object MUST already be saved on the
+   *   remote server. The body of the object is not sent. Instead, the
+   *   copy operation is performed on the remote server. You can, and
+   *   probably should, use a RemoteObject here.
+   * @param string $newName
+   *   The new name of this object. If you are copying across
+   *   containers, the name can be the same. If you are copying within
+   *   the same container, though, you will need to supply a new name.
+   * @param string $container
+   *   The name of the alternate container. If this is set, the object
+   *   will be saved into this container. If this is not sent, the copy
+   *   will be performed inside of the original container.
+   *
+   */
+  public function copy(Object $obj, $newName, $container = NULL) {
+    $sourceUrl = $obj->url();
+
+    if (empty($newName)) {
+      throw new \HPCloud\Expcetion("An object name is required to copy the object.");
+    }
+
+    // Figure out what container we store in.
+    if (empty($container)) {
+      $container = $this->name;
+    }
+    $container = urlencode($container);
+    $destUrl = '/' . $container . '/' . urlencode($newName);
+
+    $headers = array(
+      'X-Auth-Token' => $this->token,
+      'Destination' => $destUrl,
+    );
+
+    $client = \HPCloud\Transport::instance();
+    $response = $client->doRequest($sourceUrl, 'COPY', $headers);
+
+    if ($response->status() != 201) {
+      throw new \HPCloud\Exception("An unknown condition occurred during copy. " . $response->status());
     }
     return TRUE;
   }

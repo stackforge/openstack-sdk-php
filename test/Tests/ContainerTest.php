@@ -310,6 +310,55 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  /**
+   * @depends testRemoteObject
+   */
+  public function testCopy() {
+    $container = $this->containerFixture();
+    $object = $container->remoteObject(self::FNAME);
+
+    $container->copy($object, 'FOO-1.txt');
+
+    $copy = $container->remoteObject('FOO-1.txt');
+
+    $this->assertEquals($object->contentType(), $copy->contentType());
+    $this->assertEquals($object->etag(), $copy->etag());
+
+    $container->delete('foo-1.txt');
+
+  }
+
+  /**
+   * @depends testCopy
+   */
+  public function testCopyAcrossContainers() {
+
+    // Create a new container.
+    $store = $this->swiftAuth();
+    $cname = self::$settings['hpcloud.swift.container'] . 'COPY';
+    if ($store->hasContainer($cname)) {
+      $this->eradicateContainer($cname);
+    }
+
+    $store->createContainer($cname);
+    $newContainer = $store->container($cname);
+
+    // Get teh old container and its object.
+    $container = $this->containerFixture();
+    $object = $container->remoteObject(self::FNAME);
+
+    $ret = $container->copy($object, 'foo-1.txt', $cname);
+
+    $this->assertTrue($ret);
+
+    $copy = $newContainer->remoteObject('foo-1.txt');
+
+    $this->assertEquals($object->etag(), $copy->etag());
+
+    $this->eradicateContainer($cname);
+
+  }
+
 
   /**
    * @depends testSave
@@ -349,7 +398,5 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $store->deleteContainer($cname);
 
   }
-
-
 
 }

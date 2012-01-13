@@ -80,6 +80,38 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * Clear and destroy a container.
+   *
+   * Destroy all of the files in a container, then destroy the 
+   * container.
+   *
+   * If the container doesn't exist, this will silently return.
+   *
+   * @param string $cname
+   *   The name of the container.
+   */
+  protected function eradicateContainer($cname) {
+    $store = $this->swiftAuth();
+    try {
+      $container = $store->container($cname);
+    }
+    // The container was never created.
+    catch (\HPCloud\Transport\FileNotFoundException $e) {
+      return;
+    }
+
+    foreach ($container as $object) {
+      try {
+        $container->delete($object->name());
+      }
+      catch (\Exception $e) {}
+    }
+
+    $store->deleteContainer($cname);
+
+  }
+
+  /**
    * Destroy a container fixture.
    *
    * This should be called in any method that uses containerFixture().
