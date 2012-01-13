@@ -37,15 +37,64 @@ class Response {
   protected $headers;
 
   /**
+   * Handle error response.
+   *
+   * When a response is a failure, it should pass through this function,
+   * which generates the appropriate exception and then throws it.
+   *
+   * @param int $code
+   *   The HTTP status code, e.g. 404, 500.
+   * @param string $err
+   *   The error string, as bubbled up.
+   * @param string $uri
+   *   The URI.
+   * @param string $method
+   *   The HTTP method, e.g. 'HEAD', 'GET', 'DELETE'.
+   * @param string $extra
+   *   An extra string of debugging information. (NOT USED)
+   * @throws \HPCloud\Exception
+   *   A wide variety of \HPCloud\Transport exceptions.
+   */
+  public static function failure($code, $err = 'Unknown', $uri = '', $method = '', $extra = '') {
+    switch ($code) {
+
+      case '403':
+      case '401':
+        throw new \HPCloud\Transport\AuthorizationException($err);
+      case '404':
+        throw new \HPCloud\Transport\FileNotFoundException($err . " ($uri)");
+      case '405':
+        throw new \HPCloud\Transport\MethodNotAllowedException($err . " ($method $uri)");
+      case '409':
+        throw new \HPCloud\Transport\ConflictException($err);
+      case '412':
+        throw new \HPCloud\Transport\LengthRequiredException($err);
+      case '422':
+        throw new \HPCloud\Transport\UnprocessableEntityException($err);
+      case '500':
+        throw new \HPCloud\Transport\ServerException($err);
+      default:
+        throw new \HPCloud\Exception($err);
+
+    }
+
+  }
+
+  /**
    * Construct a new Response.
    *
    * The Transporter implementations use this to
    * construct a response.
    */
-  public function __construct($handle, $metadata) {
+  public function __construct($handle, $metadata, $headers = NULL) {
     $this->handle = $handle;
     $this->metadata = $metadata;
-    $this->headers = $this->parseHeaders($metadata['wrapper_data']);
+
+    if (!isset($headers) && isset($metadata['wrapper_data'])) {
+      $headers = $metadata['wrapper_data'];
+    }
+
+    $this->headers = $this->parseHeaders($headers);
   }
 
   /**

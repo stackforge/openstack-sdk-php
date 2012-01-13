@@ -30,6 +30,9 @@ namespace HPCloud\Transport;
  */
 class CURLTransport implements Transporter {
 
+
+  const HTTP_USER_AGENT_SUFFIX = ' (c93c0a) CURL/1.0';
+
   public function doRequest($uri, $method = 'GET', $headers = array(), $body = '') {
 
     $in = NULL;
@@ -58,9 +61,12 @@ class CURLTransport implements Transporter {
    */
   protected function handleDoRequest($uri, $method, $headers, $in = NULL) {
 
+    //$urlParts = parse_url($uri);
+
 
     // Write to in-mem handle backed by a temp file.
-    $out = fopen('php://temp', 'w');
+    $out = fopen('php://temp', 'wrb');
+    $headerFile = fopen('php://temp', 'wr');
 
     $curl = curl_init($uri);
 
@@ -73,20 +79,102 @@ class CURLTransport implements Transporter {
     // Set the upload
     if (!empty($in)) {
       curl_setopt($curl, CURLOPT_INFILE, $in);
+
+      // Tell CURL about the content length if we know it.
+      if (!empty($headers['Content-Length'])) {
+        curl_setopt($curl, CURLOPT_INFILESIZE, $headers['Content-Length']);
+      }
     }
 
     // Get the output.
     curl_setopt($curl, CURLOPT_FILE, $out);
 
-    curl_exec($curl);
+    // We need to capture the headers, too.
+    curl_setopt($curl, CURLOPT_WRITEHEADER, $headerFile);
 
+    // Show me the money!
+    // Results are now buffered into a tmpfile.
+    //curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+
+    $opts = array(
+      CURLOPT_USERAGENT => self::HTTP_USER_AGENT . self::HTTP_USER_AGENT_SUFFIX,
+      // CURLOPT_RETURNTRANSFER => TRUE, // Make curl_exec return the results.
+      // CURLOPT_BINARYTRANSFER => TRUE, // Raw output if RETURNTRANSFER is TRUE.
+
+      // Put the headers in the output.
+      CURLOPT_HEADER => TRUE,
+
+      // Get the final header string sent to the remote.
+      CURLINFO_HEADER_OUT => TRUE,
+
+      // Timeout if the remote has not connected in 30 sec.
+      CURLOPT_CONNECTTIMEOUT => 30,
+
+      // Max time to allow CURL to do the transaction.
+      // CURLOPT_TIMEOUT => 120,
+
+      // If this is set, CURL will auto-deflate any encoding it can.
+      // CURLOPT_ENCODING => '',
+
+      // Later, we may want to do this to support range-based
+      // fetching of large objects.
+      // CURLOPT_RANGE => 'X-Y',
+
+      // Limit curl to only these protos.
+      // CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+
+      // I don't really need this, do I?
+      // CURLOPT_HTTP200ALIASES => array(200, 201, 202, 203, 204),
+    );
+
+    $ret = curl_exec($curl);
+    $info = curl_getinfo($curl);
+    $status = $info['http_code'];
+
+    rewind($headerFile);
+    $responseHeaders = $this->fetchHeaders($headerFile);
+    fclose($headerFile);
+
+    if (!$ret || $status < 200 || $status > 299) {
+      $err = $responseHeaders[0];
+      Response::failure($status, $err, $info['url'], $method);
+    }
+
+
+    rewind($out);
     // Now we need to build a response.
-    // Option 1: Subclass response.
-    // Option 2: Build an adapter.
+    $resp = new Response($out, $info, $responseHeaders);
 
     curl_close($curl);
+    if (is_resource($in)) {
+      fclose($in);
+    }
 
-    fclose($in);
+    //throw new \Exception(print_r($resp, TRUE));
+
+    return $resp;
+  }
+
+  /**
+   * This function reads the header file into an array.
+   *
+   * This format mataches the format returned by the stream handlers, so
+   * we can re-use the header parsing logic in Response.
+   *
+   * @param resource $file
+   *   A file pointer to the file that has the headers.
+   * @return array
+   *   An array of headers, one header per line.
+   */
+  protected function fetchHeaders($file) {
+    $buffer = array();
+    while ($header = fgets($file)) {
+      $header = trim($header);
+      if (!empty($header)) {
+        $buffer[] = $header;
+      }
+    }
+    return $buffer;
   }
 
   /**
@@ -140,5 +228,4 @@ class CURLTransport implements Transporter {
 
     curl_setopt($curl, CURLOPT_HTTPHEADER, $buffer);
   }
-
 }

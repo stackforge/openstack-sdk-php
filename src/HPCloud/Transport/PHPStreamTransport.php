@@ -148,27 +148,7 @@ class PHPStreamTransport implements Transporter {
       throw new \HPCloud\Exception($err);
     }
 
-    switch ($matches[1]) {
-
-      case '403':
-      case '401':
-        throw new \HPCloud\Transport\AuthorizationException($matches[0]);
-      case '404':
-        throw new \HPCloud\Transport\FileNotFoundException($matches[0] . "($uri)");
-      case '405':
-        throw new \HPCloud\Transport\MethodNotAllowedException($matches[0] . " ($method $uri)");
-      case '409':
-        throw new \HPCloud\Transport\ConflictException($matches[0]);
-      case '412':
-        throw new \HPCloud\Transport\LengthRequiredException($matches[0]);
-      case '422':
-        throw new \HPCloud\Transport\UnprocessableEntityException($matches[0]);
-      case '500':
-        throw new \HPCloud\Transport\ServerException($matches[0]);
-      default:
-        throw new \HPCloud\Exception($matches[0]);
-
-    }
+    Response::failure($matches[1], $matches[0], $uri, $method);
   }
 
   /**
