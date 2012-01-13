@@ -74,6 +74,60 @@ class PHPStreamTransport implements Transporter {
   }
 
   /**
+   * Implements Transporter::doRequestWithResource().
+   *
+   * Unfortunately, PHP Stream Wrappers do not allow HTTP data to be read
+   * out of a file resource, so using this method will allow some
+   * performance improvement (because grabage collection can collect faster),
+   * but not a lot.
+   *
+   * While PHP's underlying architecture should still adequately buffer large
+   * strings, the effects of this buffering on really large data (5G or so)
+   * is unknown.
+   */
+  public function doRequestWithResource($uri, $method, $headers, $resource) {
+
+
+    // In a PHP stream there is no way to buffer content for sending.
+    // XXX: Could we create a class with a __tostring that read data in piecemeal?
+    // That wouldn't solve the problem, but it might minimize damage.
+    if (is_string($resource)) {
+      $in = fopen($resource, 'rb', FALSE);
+    }
+    else {
+      $in = $resource;
+    }
+    $body = '';
+    while (!feof($in)) {
+      $body .= fread($in, 8192);
+    }
+
+    $cxt = $this->buildStreamContext($method, $headers, $body);
+    $res = @fopen($uri, 'rb', FALSE, $cxt);
+
+    // If there is an error, we try to react
+    // intelligently.
+    if ($res === FALSE) {
+      $err = error_get_last();
+
+      if (empty($err['message'])) {
+        throw new \HPCloud\Exception("An unknown exception occurred while sending a request.");
+      }
+      $this->guessError($err['message'], $uri, $method);
+
+      // Should not get here.
+      return;
+    }
+
+    $metadata = stream_get_meta_data($res);
+
+    $response = new Response($res, $metadata);
+
+    return $response;
+
+  }
+
+  /**
    * Given an error, this tries to guess the cause and throw an exception.
    *
    * Stream wrappers do not deal with error conditions gracefully. (For starters,
