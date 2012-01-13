@@ -327,7 +327,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @throws \HPCloud\Exception when an unexpected (usually
    *   network-related) error condition arises.
    */
-  public function save(Object $obj) {
+  public function save(Object $obj, $file = NULL) {
 
     if (empty($this->token)) {
       throw new \HPCloud\Exception('Container does not have an auth token.');
@@ -351,16 +351,6 @@ class Container implements \Countable, \IteratorAggregate {
     // Set the content type.
     $headers['Content-Type'] = $obj->contentType();
 
-    // If chunked, we set transfer encoding; else
-    // we set the content length.
-    if ($obj->isChunked()) {
-      // How do we handle this? Does the underlying
-      // stream wrapper pay any attention to this?
-      $headers['Transfer-Encoding'] = 'chunked';
-    }
-    else {
-      $headers['Content-Length'] = $obj->contentLength();
-    }
 
     // Add content encoding, if necessary.
     $encoding = $obj->encoding();
@@ -385,7 +375,25 @@ class Container implements \Countable, \IteratorAggregate {
 
     $client = \HPCloud\Transport::instance();
 
-    $response = $client->doRequest($url, 'PUT', $headers, $obj->content());
+    if (empty($file)) {
+      // If chunked, we set transfer encoding; else
+      // we set the content length.
+      if ($obj->isChunked()) {
+        // How do we handle this? Does the underlying
+        // stream wrapper pay any attention to this?
+        $headers['Transfer-Encoding'] = 'chunked';
+      }
+      else {
+        $headers['Content-Length'] = $obj->contentLength();
+      }
+      $response = $client->doRequest($url, 'PUT', $headers, $obj->content());
+    }
+    else {
+      // XXX: What do we do about Content-Length header?
+      $headers['Transfer-Encoding'] = 'chunked';
+      $response = $client->doRequestWithResource($url, 'PUT', $headers, $file);
+
+    }
 
     if ($response->status() != 201) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
