@@ -91,7 +91,7 @@ class Bootstrap {
    *   An associative array of configuration directives.
    */
   public static function setConfiguration($array) {
-    self::$config += $array;
+    self::$config = $array + self::$config;
   }
 
   /**

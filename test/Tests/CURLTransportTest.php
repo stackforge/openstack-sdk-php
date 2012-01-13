@@ -9,6 +9,7 @@ namespace HPCloud\Tests\Transport;
 require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
+use \HPCloud\Transport;
 use \HPCloud\Transport\CURLTransport;
 
 class ObjectTest extends \HPCloud\Tests\TestCase {
@@ -16,8 +17,13 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
   public function testConstructor() {
     $curl = new CURLTransport();
 
+    $trans = '\HPCloud\Transport\CURLTransport';
+    \HPCloud\Bootstrap::setConfiguration(array(
+      'transport' => $trans,
+    ));
+
     // Need to test getting instance from Bootstrap.
-    $this->assertTrue(FALSE);
+    $this->assertInstanceOf($trans, Transport::instance());
   }
 
   public function testDoRequest() {
@@ -29,9 +35,12 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
     $response = $curl->doRequest($url, $method, $headers);
 
     $this->assertInstanceOf('\HPCloud\Transport\Response', $response);
+
     $this->assertEquals(200, $response->status());
+
     $md = $response->metadata();
     $this->assertEquals(200, $md['http_code']);
+
     $this->assertTrue(strlen($response->header('Date', '')) > 0);
 
     $file = $response->file();
@@ -53,7 +62,15 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
 
     $curl = new CURLTransport();
     $curl->doRequest($url, $method, $headers);
+  }
 
+  public function testSwiftAuth() {
+    // We know that the object works, so now we test whether it can
+    // communicate with Swift.
+    $storage = $this->swiftAuth();
 
+    $info = $storage->accountInfo();
+
+    $this->assertTrue(count($info) > 1);
   }
 }

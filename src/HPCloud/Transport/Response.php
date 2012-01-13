@@ -269,6 +269,8 @@ class Response {
 
     $buffer = array();
 
+    syslog(LOG_WARNING, print_r($headerArray, TRUE));
+
     for ($i = 0; $i < $count; ++$i) {
       list($name, $value) = explode(':', $headerArray[$i], 2);
       $name = filter_var($name, FILTER_SANITIZE_STRING);

@@ -29,6 +29,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
       throw new Exception('Could not access test/settings.ini');
     }
     \HPCloud\Bootstrap::useAutoloader();
+    \HPCloud\Bootstrap::setConfiguration(self::$settings);
 
     //parent::__construct($score, $locale, $adapter);
   }
@@ -132,7 +133,9 @@ class TestCase extends \PHPUnit_Framework_TestCase {
       try {
         $container->delete($object->name());
       }
-      catch (\Exception $e) {}
+      catch (\Exception $e) {
+        syslog(LOG_WARNING, $e);
+      }
     }
 
     $store->deleteContainer($cname);
