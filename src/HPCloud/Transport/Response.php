@@ -56,6 +56,8 @@ class Response {
    *   A wide variety of \HPCloud\Transport exceptions.
    */
   public static function failure($code, $err = 'Unknown', $uri = '', $method = '', $extra = '') {
+
+    // syslog(LOG_WARNING, print_r($extra, TRUE));
     switch ($code) {
 
       case '403':
@@ -267,9 +269,18 @@ class Response {
     $this->code = (int) $responseLine[1];
     $this->message = $responseLine[2];
 
-    $buffer = array();
+    // A CONTINUE response means that we will get
+    // a second HTTP status code. Since we have
+    // shifted it off, we recurse. Note that 
+    // only CURL returns the 100. PHP's stream
+    // wrapper eats the 100 for us.
+    if ($this->code == 100) {
+      return $this->parseHeaders($headerArray);
+    }
 
-    syslog(LOG_WARNING, print_r($headerArray, TRUE));
+    $buffer = array();
+    //syslog(LOG_WARNING, $ret);
+    //syslog(LOG_WARNING, print_r($headerArray, TRUE));
 
     for ($i = 0; $i < $count; ++$i) {
       list($name, $value) = explode(':', $headerArray[$i], 2);

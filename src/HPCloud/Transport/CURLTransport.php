@@ -137,7 +137,7 @@ class CURLTransport implements Transporter {
 
     if (!$ret || $status < 200 || $status > 299) {
       $err = $responseHeaders[0];
-      Response::failure($status, $err, $info['url'], $method);
+      Response::failure($status, $err, $info['url'], $method, $info);
     }
 
 
@@ -213,7 +213,7 @@ class CURLTransport implements Transporter {
       case 'DELETE':
       case 'COPY':
       default:
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, TRUE);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
     }
 
   }

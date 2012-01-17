@@ -147,7 +147,17 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
 
     $res_md = stream_get_meta_data($res);
 
-    $this->assertEquals('http', $res_md['wrapper_type']);
+    // This will be HTTP if we are using the PHP stream
+    // wrapper, but for CURL this will be PHP.
+
+    if (self::$settings['transport'] == '\HPCloud\Transport\PHPStreamTransport') {
+      $expect = 'http';
+    }
+    else {
+      $expect = 'PHP';
+    }
+
+    $this->assertEquals($expect, $res_md['wrapper_type']);
 
     $content = fread($res, $obj->contentLength());
 
@@ -176,7 +186,7 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
 
     $res3 = $obj->stream(TRUE);
     $res_md = stream_get_meta_data($res3);
-    $this->assertEquals('http', $res_md['wrapper_type']);
+    $this->assertEquals($expect, $res_md['wrapper_type']);
     fclose($res3);
 
     return $obj;
@@ -210,12 +220,22 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     // turned on, then we can get a local copy of the file instead of a
     // remote, and the best way to find this out is by grabbing a
     // stream. The local copy will be in a php://temp stream.
+    //
+    // The CURL, though, backs its up with a temp file wrapped in a PHP 
+    // stream. Other backends are likely to do the same. So this test
+    // is weakened for CURL backends.
+    if (self::$settings['transport'] == '\HPCloud\Transport\PHPStreamTransport') {
+      $expect = 'http';
+    }
+    else {
+      $expect = 'PHP';
+    }
 
     $content = $obj->content();
 
     $res1 = $obj->stream();
     $md = stream_get_meta_data($res1);
-    $this->assertEquals('http', $md['wrapper_type']);
+    $this->assertEquals($expect, $md['wrapper_type']);
 
     fclose($res1);
 
