@@ -45,6 +45,18 @@ namespace HPCloud\Storage\ObjectStorage;
  * and object name (path) if there is any possibility that it will contain
  * UTF-8 characters.
  *
+ * Locking
+ *
+ * This library does not support locking (e.g. flock()). This is because the
+ * OpenStack Object Storage implementation does not support locking. But there
+ * are a few related things you should keep in mind:
+ *
+ * - Working with a stream is essentially working with a COPY OF a remote file.
+ *   Local locking is not an issue.
+ * - If you open two streams for the same object, you will be working with
+ *   TWO COPIES of the object. This can, of course, lead to nasty race
+ *   conditions if each copy is modified.
+ *
  * Usage
  *
  * The principle purpose of this wrapper is to make it easy to access and
@@ -184,7 +196,19 @@ class StreamWrapper {
     unset($this->objStream);
   }
 
+  /**
+   * Check whether the stream has reached its end.
+   *
+   * This checks whether the stream has reached the
+   * end of the object's contents.
+   *
+   * See stream_seek().
+   *
+   * @return boolean
+   *   TRUE if it has reached the end, FALSE otherwise.
+   */
   public function stream_eof() {
+    return feof($this->objStream);
   }
 
   /**
@@ -203,6 +227,11 @@ class StreamWrapper {
     }
   }
 
+  /**
+   * Write data to the remote object storage.
+   *
+   * Internally, this is used by flush and close.
+   */
   protected function writeRemote() {
     if ($this->isNeverDirty) {
       return;
@@ -213,9 +242,15 @@ class StreamWrapper {
     $this->isDirty = FALSE;
   }
 
+  /*
+   * Locking is currently unsupported.
+   *
+   * There is no remote support for locking a 
+   * file.
   public function stream_lock($operation) {
 
   }
+   */
 
   public function stream_metadata($path, $option, $var) {
 
@@ -238,7 +273,12 @@ class StreamWrapper {
    *   The URL to the resource. See the class description for details, but
    *   typically this expects URLs in the form `swift://CONTAINER/OBJECT`.
    * @param string $mode
-   *   Any of the documented mode strings. See fopen().
+   *   Any of the documented mode strings. See fopen(). For any file that is
+   *   in a writing mode, the file will be saved remotely on flush or close.
+   *   Note that there is an extra mode: 'nope'. It acts like 'c+' except
+   *   that it is never written remotely. This is useful for debugging the
+   *   stream locally without sending that data to object storage. (Note that
+   *   data is still fetched -- just never written.)
    * @param int $options
    *   An OR'd list of options. Only STREAM_REPORT_ERRORS has any meaning
    *   to this wrapper, as it is not working with local files.
@@ -384,12 +424,36 @@ class StreamWrapper {
     return TRUE;
   }
 
+  /**
+   * Read N bytes from the stream.
+   *
+   * This will read up to the requested number of bytes. Or, upon
+   * hitting the end of the file, it will return NULL.
+   *
+   * See fread(), fgets(), and so on for examples.
+   *
+   * @param int $count
+   *   The number of bytes to read (usually 8192).
+   * @return string
+   *   The data read.
+   */
   public function stream_read($count) {
-
+    return fread($this->objStream, $count);
   }
 
+  /**
+   * Perform a seek.
+   *
+   * IMPORTANT: Unlike the PHP core, this library
+   * allows you to fseek() inside of a file opened
+   * in append mode ('a' or 'a+').
+   */
   public function stream_seek($offset, $whence) {
+    $ret = fseek($this->objStream, $offset, $whence);
 
+    // fseek returns 0 for success, -1 for failure.
+    // We need to return TRUE for success, FALSE for failure.
+    return $ret === 0;
   }
 
   public function stream_set_option($option, $arg1, $arg2) {
@@ -398,14 +462,77 @@ class StreamWrapper {
 
   public function stream_stat() {
 
+    // FIXME: Need to calculate the length of the $objStream.
+    //$contentLength = $this->obj->contentLength();
+    $contentLength = 0;
+    if ($this->obj instanceof \HPCloud\Storage\ObjectStorage\RemoteObject) {
+      $mtime = $this->obj->lastModified();
+    }
+    else {
+      $mtime = 0;
+    }
+    return array(
+      0 => NULL,
+      1 => NULL,
+      2 => NULL,
+      3 => NULL,
+      4 => 0,
+      5 => 0,
+      6 => -1,
+      7 => $contentLength,
+      8 => $mtime,
+      9 => $mtime,
+      10 => $mtime,
+      11 => -1,
+      12 => -1,
+      'dev' => NULL,
+      'ino' => NULL,
+      'mode' => NULL,
+      'nlink' => NULL,
+      'uid' => 0,
+      'gid' => 0,
+      'rdev' => -1,
+      // FIXME!!!
+      'size' => $contentLength,
+
+      // All we have is modification time.
+      'atime' => $mtime,
+      'mtime' => $mtime,
+      'ctime' => $mtime,
+
+      'blksize' => -1,
+      'blocks' => -1,
+    );
+
   }
 
+  /**
+   * Get the current position in the stream.
+   *
+   * See ftell() and fseek().
+   *
+   * @return int
+   *   The current position in the stream.
+   */
   public function stream_tell() {
+    return ftell($this->objStream);
   }
 
+  /**
+   * Write data to stream.
+   *
+   * This writes data to the local stream buffer. Data
+   * is not pushed remotely until stream_close() or 
+   * stream_flush() is called.
+   *
+   * @param string $data
+   *   Data to write to the stream.
+   * @return int
+   *   The number of bytes written. 0 indicates and error.
+   */
   public function stream_write($data) {
     $this->isDirty = TRUE;
-
+    return fwrite($this->objStream, $data);
   }
 
   public static function unlink($path) {

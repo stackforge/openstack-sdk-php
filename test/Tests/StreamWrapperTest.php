@@ -127,7 +127,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     // Simple write test.
     $oUrl = $this->newUrl('foo→/test.csv');
 
-    $res = fopen($oUrl, 'c', FALSE, $this->authSwiftContext());
+    $res = fopen($oUrl, 'nope', FALSE, $this->authSwiftContext());
 
     $this->assertTrue(is_resource($res));
 
@@ -135,7 +135,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     // Now we test the same, but re-using the auth token:
     $cxt = $this->basicSwiftContext();
-    $res = fopen($oUrl, 'c', FALSE, $cxt);
+    $res = fopen($oUrl, 'nope', FALSE, $cxt);
 
     $this->assertTrue(is_resource($res));
 
@@ -150,6 +150,43 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     $this->assertFalse($res);
 
+  }
+
+  /**
+   * @depends testOpen
+   */
+  public function testOpenCreateMode() {
+    $url = $this->newUrl(self::FNAME);
+    $res = fopen($url, 'c', FALSE, $this->basicSwiftContext());
+    $this->assertTrue(is_resource($res));
+
+    return $res;
+  }
+
+  /**
+   * @depends testOpenCreateMode
+   */
+  public function testWrite($res) {
+
+  }
+
+  /**
+   * @depends testOpenCreateMode
+   */
+  public function testClose($res) {
+    fclose($res);
+
+    $url = $this->newUrl(self::FNAME);
+    $res2 = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+    $this->assertTrue(is_resource($res2));
+  }
+
+  public function testOpenFailureWithWrite() {
+    // Make sure that a file opened as write only does not allow READ ops.
+    $url = $this->newUrl(__FUNCTION__);
+    //$res = @fopen($url, 'w', FALSE, $this->basicSwiftContext());
+
+    $this->markTestIncomplete();
   }
 
 
