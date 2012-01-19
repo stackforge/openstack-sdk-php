@@ -153,9 +153,12 @@ class CURLTransport implements Transporter {
     $resp = new Response($out, $info, $responseHeaders);
 
     curl_close($curl);
+
+    /* Don't close this!
     if (is_resource($in)) {
       fclose($in);
     }
+     */
 
     //throw new \Exception(print_r($resp, TRUE));
 
