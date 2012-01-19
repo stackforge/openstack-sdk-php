@@ -67,26 +67,38 @@ class CURLTransport implements Transporter {
 
 
     // Write to in-mem handle backed by a temp file.
-    $out = fopen('php://temp', 'wrb');
-    $headerFile = fopen('php://temp', 'wr');
+    $out = fopen('php://temp', 'wb+');
+    $headerFile = fopen('php://temp', 'w+');
 
     $curl = curl_init($uri);
 
     // Set method
     $this->determineMethod($curl, $method);
 
-    // Set headers
-    $this->setHeaders($curl, $headers);
-
     // Set the upload
+    $copy = NULL;
     if (!empty($in)) {
-      curl_setopt($curl, CURLOPT_INFILE, $in);
+
+      // FIXME: Is there a better way?
+      // There is a bug(?) in CURL which prevents it
+      // from writing the same stream twice. But we
+      // need to be able to flush a file multiple times.
+      // So we have to create a new temp buffer for each
+      // write operation.
+      $copy = fopen('php://temp', 'rb+'); //tmpfile();
+      stream_copy_to_stream($in, $copy);
+      rewind($copy);
+      curl_setopt($curl, CURLOPT_INFILE, $copy);
 
       // Tell CURL about the content length if we know it.
       if (!empty($headers['Content-Length'])) {
         curl_setopt($curl, CURLOPT_INFILESIZE, $headers['Content-Length']);
+        unset($headers['Content-Length']);
       }
     }
+
+    // Set headers
+    $this->setHeaders($curl, $headers);
 
     // Get the output.
     curl_setopt($curl, CURLOPT_FILE, $out);
@@ -94,23 +106,13 @@ class CURLTransport implements Transporter {
     // We need to capture the headers, too.
     curl_setopt($curl, CURLOPT_WRITEHEADER, $headerFile);
 
-    // Show me the money!
-    // Results are now buffered into a tmpfile.
-    //curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-
     $opts = array(
       CURLOPT_USERAGENT => self::HTTP_USER_AGENT . self::HTTP_USER_AGENT_SUFFIX,
       // CURLOPT_RETURNTRANSFER => TRUE, // Make curl_exec return the results.
       // CURLOPT_BINARYTRANSFER => TRUE, // Raw output if RETURNTRANSFER is TRUE.
 
-      // Put the headers in the output.
-      CURLOPT_HEADER => TRUE,
-
-      // Get the final header string sent to the remote.
-      CURLINFO_HEADER_OUT => TRUE,
-
       // Timeout if the remote has not connected in 30 sec.
-      CURLOPT_CONNECTTIMEOUT => 30,
+      //CURLOPT_CONNECTTIMEOUT => 30,
 
       // Max time to allow CURL to do the transaction.
       // CURLOPT_TIMEOUT => 120,
@@ -125,9 +127,10 @@ class CURLTransport implements Transporter {
       // Limit curl to only these protos.
       // CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
 
-      // I don't really need this, do I?
-      // CURLOPT_HTTP200ALIASES => array(200, 201, 202, 203, 204),
+      // If you are desparate and need to debug, uncomment this.
+      //CURLOPT_VERBOSE => 1,
     );
+    curl_setopt_array($curl, $opts);
 
     $ret = curl_exec($curl);
     $info = curl_getinfo($curl);
@@ -153,14 +156,9 @@ class CURLTransport implements Transporter {
     $resp = new Response($out, $info, $responseHeaders);
 
     curl_close($curl);
-
-    /* Don't close this!
-    if (is_resource($in)) {
-      fclose($in);
+    if (is_resource($copy)) {
+      fclose($copy);
     }
-     */
-
-    //throw new \Exception(print_r($resp, TRUE));
 
     return $resp;
   }
@@ -180,6 +178,10 @@ class CURLTransport implements Transporter {
     $buffer = array();
     while ($header = fgets($file)) {
       $header = trim($header);
+      if ($header == 'HTTP/1.1 100 Continue') {
+        // Obey the command.
+        continue;
+      }
       if (!empty($header)) {
         $buffer[] = $header;
       }
