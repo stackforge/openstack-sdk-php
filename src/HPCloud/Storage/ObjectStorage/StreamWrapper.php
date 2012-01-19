@@ -183,17 +183,18 @@ class StreamWrapper {
    * any changes have been made locally.
    */
   public function stream_close() {
+
     try {
       $this->writeRemote();
     }
     catch (\HPCloud\Exception $e) {
-      trigger_error($e->getMessage());
+      trigger_error('Error while closing: ' . $e->getMessage());
       return FALSE;
     }
 
     // Force-clear the memory hogs.
     unset($this->obj);
-    unset($this->objStream);
+    fclose($this->objStream);
   }
 
   /**
@@ -222,7 +223,8 @@ class StreamWrapper {
       $this->writeRemote();
     }
     catch (\HPCloud\Exception $e) {
-      trigger_error($e->getMessage());
+      syslog(LOG_WARNING, $e);
+      trigger_error('Error while flushing: ' . $e->getMessage());
       return FALSE;
     }
   }
@@ -234,10 +236,22 @@ class StreamWrapper {
    */
   protected function writeRemote() {
     if ($this->isNeverDirty) {
+      syslog(LOG_WARNING, "Never dirty. Skipping write.");
       return;
     }
     if ($this->isDirty) {
+      syslog(LOG_WARNING, "Marked dirty. Writing object.");
+
+      $position = ftell($this->objStream);
+
+      rewind($this->objStream);
       $this->container->save($this->obj, $this->objStream);
+
+      fseek($this->objStream, SEEK_SET, $position);
+
+    }
+    else {
+      syslog(LOG_WARNING, "Not dirty. Skipping write.");
     }
     $this->isDirty = FALSE;
   }
@@ -338,7 +352,7 @@ class StreamWrapper {
       $this->initializeObjectStorage();
     }
     catch (\HPCloud\Exception $e) {
-      trigger_error($e->getMessage());
+      trigger_error('Failed to init object storage: ' . $e->getMessage());
       return FALSE;
     }
 
@@ -412,7 +426,7 @@ class StreamWrapper {
     // All other exceptions are fatal.
     catch (\HPCloud\Exception $e) {
       //if ($this->triggerErrors) {
-        trigger_error($e->getMessage());
+        trigger_error('Failed to fetch object: ' . $e->getMessage());
       //}
       return FALSE;
     }
@@ -461,10 +475,11 @@ class StreamWrapper {
   }
 
   public function stream_stat() {
+    $stat = fstat($this->objStream);
 
     // FIXME: Need to calculate the length of the $objStream.
     //$contentLength = $this->obj->contentLength();
-    $contentLength = 0;
+    $contentLength = $stat['size'];
     if ($this->obj instanceof \HPCloud\Storage\ObjectStorage\RemoteObject) {
       $mtime = $this->obj->lastModified();
     }
@@ -607,12 +622,14 @@ class StreamWrapper {
         $this->isReading = TRUE;
         $this->isWriting = TRUE;
         $this->isNeverDirty = TRUE;
+        break;
 
       // Default case is read/write
       // like c+.
       default:
         $this->isReading = TRUE;
         $this->isWriting = TRUE;
+        break;
 
     }
 
