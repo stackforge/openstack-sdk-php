@@ -90,6 +90,11 @@ class StreamWrapper {
   protected $noOverwrite = FALSE;
   protected $createIfNotFound = TRUE;
 
+  /**
+   * If this is TRUE, no data is ever sent to the remote server.
+   */
+  protected $isNeverDirty = FALSE;
+
   protected $triggerErrors = FALSE;
 
   /**
@@ -166,12 +171,13 @@ class StreamWrapper {
    * any changes have been made locally.
    */
   public function stream_close() {
-
-    // Use save($this->obj, $this->objStream);
-    if ($this->isDirty) {
-      $this->container->save($this->obj, $this->objStream);
+    try {
+      $this->writeRemote();
     }
-    $this->isDirty = FALSE;
+    catch (\HPCloud\Exception $e) {
+      trigger_error($e->getMessage());
+      return FALSE;
+    }
 
     // Force-clear the memory hogs.
     unset($this->obj);
@@ -188,7 +194,19 @@ class StreamWrapper {
    * it is written remotely.
    */
   public function stream_flush() {
-    // TODO: Should we handle exceptions here?
+    try {
+      $this->writeRemote();
+    }
+    catch (\HPCloud\Exception $e) {
+      trigger_error($e->getMessage());
+      return FALSE;
+    }
+  }
+
+  protected function writeRemote() {
+    if ($this->isNeverDirty) {
+      return;
+    }
     if ($this->isDirty) {
       $this->container->save($this->obj, $this->objStream);
     }
@@ -276,7 +294,13 @@ class StreamWrapper {
 
     // XXX: We reserve the query string for passing additional params.
 
-    $this->initializeObjectStorage();
+    try {
+      $this->initializeObjectStorage();
+    }
+    catch (\HPCloud\Exception $e) {
+      trigger_error($e->getMessage());
+      return FALSE;
+    }
 
     //syslog(LOG_WARNING, "Container: " . $containerName);
 
@@ -292,10 +316,10 @@ class StreamWrapper {
     try {
       $this->obj = $this->container->object($objectName);
       $stream = $this->obj->stream();
-      $streamMeta = strean_get_meta_data($stream);
+      $streamMeta = stream_get_meta_data($stream);
 
       // Support 'x' and 'x+' modes.
-      if ($this->noOverwrites) {
+      if ($this->noOverwrite) {
         //if ($this->triggerErrors) {
           trigger_error('File exists and cannot be overwritten.');
         //}
@@ -448,6 +472,15 @@ class StreamWrapper {
         $this->isWriting = TRUE;
         break;
 
+      // nope mode: Mock read/write support,
+      // but never write to the remote server.
+      // (This is accomplished by never marking
+      // the stream as dirty.)
+      case 'nope':
+        $this->isReading = TRUE;
+        $this->isWriting = TRUE;
+        $this->isNeverDirty = TRUE;
+
       // Default case is read/write
       // like c+.
       default:
@@ -485,27 +518,37 @@ class StreamWrapper {
     return $default;
   }
 
+  /**
+   * Parse a URL.
+   *
+   * In order to provide full UTF-8 support, URLs must be
+   * urlencoded before they are passed into the stream wrapper.
+   *
+   * This parses the URL and urldecodes the container name and
+   * the object name.
+   *
+   * @param string $url
+   *   A Swift URL.
+   * @return array
+   *   An array as documented in parse_url().
+   */
   protected function parseUrl($url) {
     $res = parse_url($url);
 
-    // Hostname is not UTF-8, yet container names
-    // can be UTF-8, so we adjust here.
-    /*
-    $matches = array();
-    preg_match('|://([^/]+)|', $url, $matches);
-    if (isset($matches[1])) {
-      $res['host2'] = $matches[1];
-    }
-    $res += $matches;
-     */
     // These have to be decode because they will later
     // be encoded.
     foreach ($res as $key => $val) {
-      if ($key == 'host' || $key == 'path') {
+      if ($key == 'host') {
         $res[$key] = urldecode($val);
       }
-    }
+      elseif ($key == 'path') {
+        if (strpos($val, '/') === 0) {
+          $val = substr($val, 1);
+        }
+        $res[$key] = urldecode($val);
 
+      }
+    }
     return $res;
   }
 
@@ -531,8 +574,8 @@ class StreamWrapper {
       $key = $this->cxt('key');
       $baseURL = $this->cxt('endpoint');
 
-      if (empty($baseUrl)) {
-        trigger_error('account, endpoint, key are required stream parameters.');
+      if (empty($baseURL) || empty($account) || empty($key)) {
+        throw new \HPCloud\Exception('account, endpoint, key are required stream parameters.');
       }
       $this->store = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($account, $key, $baseURL);
     }

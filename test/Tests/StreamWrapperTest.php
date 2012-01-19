@@ -23,7 +23,13 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $scheme = StreamWrapper::DEFAULT_SCHEME;
     $cname   = self::$settings['hpcloud.swift.container'];
     $cname = urlencode($cname);
-    $objectName = urlencode($objectName);
+
+    $objectParts = explode('/', $objectName);
+    for ($i = 0; $i < count($objectParts); ++$i) {
+      $objectParts[$i] = urlencode($objectParts[$i]);
+    }
+    $objectName = implode('/', $objectParts);
+
     $url = $scheme . '://' . $cname . '/' . $objectName;
 
     return $url;
@@ -119,11 +125,13 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $this->containerFixture();
 
     // Simple write test.
-    $oUrl = $this->newUrl('test.csv');
+    $oUrl = $this->newUrl('foo→/test.csv');
 
     $res = fopen($oUrl, 'c', FALSE, $this->authSwiftContext());
 
     $this->assertTrue(is_resource($res));
+
+    fclose($res);
 
     // Now we test the same, but re-using the auth token:
     $cxt = $this->basicSwiftContext();
