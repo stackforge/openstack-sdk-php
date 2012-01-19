@@ -345,8 +345,6 @@ class Container implements \Countable, \IteratorAggregate {
       $headers = self::generateMetadataHeaders($md, Container::METADATA_HEADER_PREFIX);
     }
 
-    // Now build up the rest of the headers:
-    $headers['ETag'] = $obj->eTag();
 
     // Set the content type.
     $headers['Content-Type'] = $obj->contentType();
@@ -376,6 +374,9 @@ class Container implements \Countable, \IteratorAggregate {
     $client = \HPCloud\Transport::instance();
 
     if (empty($file)) {
+      // Now build up the rest of the headers:
+      $headers['ETag'] = $obj->eTag();
+
       // If chunked, we set transfer encoding; else
       // we set the content length.
       if ($obj->isChunked()) {
@@ -389,8 +390,25 @@ class Container implements \Countable, \IteratorAggregate {
       $response = $client->doRequest($url, 'PUT', $headers, $obj->content());
     }
     else {
+      // Rewind the file.
+      rewind($file);
+
+
       // XXX: What do we do about Content-Length header?
-      $headers['Transfer-Encoding'] = 'chunked';
+      //$headers['Transfer-Encoding'] = 'chunked';
+      $stat = fstat($file);
+      $headers['Content-Length'] = $stat['size'];
+
+      // Generate an eTag:
+      $hash = hash_init('md5');
+      hash_update_stream($hash, $file);
+      $etag = hash_final($hash);
+      $headers['ETag'] = $etag;
+      syslog(LOG_WARNING, 'ETag: ' . $etag);
+
+      // Not sure if this is necessary:
+      rewind($file);
+
       $response = $client->doRequestWithResource($url, 'PUT', $headers, $file);
 
     }
