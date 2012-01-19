@@ -24,7 +24,7 @@ class Transport {
   public static function instance() {
 
     if (empty(self::$inst)) {
-      $klass = Bootstrap::$config['transport'];
+      $klass = \HPCloud\Bootstrap::config('transport');
       self::$inst = new $klass();
     }
     return self::$inst;
