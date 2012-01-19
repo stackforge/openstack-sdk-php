@@ -265,14 +265,14 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    */
   public function testClose($res) {
     $this->assertTrue(is_resource($res));
-    fwrite($res, 'extra.');
+    fwrite($res, '~~~~');
     //throw new \Exception(stream_get_contents($res));
     fflush($res);
 
     // This is occasionally generating seemingly
     // spurious PHP errors about Bootstrap::$config.
     fclose($res);
-/*
+
     $url = $this->newUrl(self::FNAME);
     $res2 = fopen($url, 'r', FALSE, $this->basicSwiftContext());
     $this->assertTrue(is_resource($res2));
@@ -280,7 +280,6 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $contents = stream_get_contents($res2);
     fclose($res2);
     $this->assertRegExp('/~{4}$/', $contents);
-*/
 
   }
 

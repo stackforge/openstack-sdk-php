@@ -404,7 +404,6 @@ class Container implements \Countable, \IteratorAggregate {
       hash_update_stream($hash, $file);
       $etag = hash_final($hash);
       $headers['ETag'] = $etag;
-      syslog(LOG_WARNING, 'ETag: ' . $etag);
 
       // Not sure if this is necessary:
       rewind($file);
