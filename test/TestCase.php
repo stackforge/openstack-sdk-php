@@ -17,6 +17,9 @@ class TestCase extends \PHPUnit_Framework_TestCase {
 
   public static $settings = array();
 
+  public static $ostore = NULL;
+
+
   //public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
   public static function setUpBeforeClass() {
 
@@ -41,17 +44,16 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    */
   protected function swiftAuth() {
 
-    static $ostore = NULL;
-
-    if (empty($ostore)) {
+    if (empty(self::$ostore)) {
       $user = self::$settings['hpcloud.swift.account'];
       $key = self::$settings['hpcloud.swift.key'];
       $url = self::$settings['hpcloud.swift.url'];
 
-      $ostore = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
+      self::$ostore = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
+
     }
 
-    return $ostore;
+    return self::$ostore;
   }
 
   /**
