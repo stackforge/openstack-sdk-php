@@ -235,10 +235,14 @@ class StreamWrapper {
    * Internally, this is used by flush and close.
    */
   protected function writeRemote() {
+
+    // Skip debug streams.
     if ($this->isNeverDirty) {
       syslog(LOG_WARNING, "Never dirty. Skipping write.");
       return;
     }
+
+    // Stream is dirty and needs a write.
     if ($this->isDirty) {
       syslog(LOG_WARNING, "Marked dirty. Writing object.");
 
