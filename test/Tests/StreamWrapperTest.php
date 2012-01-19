@@ -157,8 +157,9 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    */
   public function testOpenCreateMode() {
     $url = $this->newUrl(self::FNAME);
-    $res = fopen($url, 'c', FALSE, $this->basicSwiftContext());
+    $res = fopen($url, 'c+', FALSE, $this->basicSwiftContext());
     $this->assertTrue(is_resource($res));
+    //fclose($res);
 
     return $res;
   }
@@ -166,19 +167,109 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
   /**
    * @depends testOpenCreateMode
    */
+  public function testTell($res) {
+    // Sould be at the beginning of the buffer.
+    $this->assertEquals(0, ftell($res));
+
+    return $res;
+  }
+
+  /**
+   * @depends testTell
+   */
   public function testWrite($res) {
+    $str = 'To be is to be the value of a bound variable. -- Quine';
+    fwrite($res, $str);
+    $this->assertGreaterThan(0, ftell($res));
+
+    return $res;
+  }
+
+  /**
+   * @depends testWrite
+   */
+  public function testStat($res) {
+    $stat = fstat($res);
+
+    $this->assertGreaterThan(0, $stat['size']);
+
+    return $res;
+  }
+
+  /**
+   * @depends testStat
+   */
+  public function testSeek($res) {
+    $then = ftell($res);
+    rewind($res);
+
+    $now = ftell($res);
+
+    // $now should be 0
+    $this->assertLessThan($then, $now);
+    $this->assertEquals(0, $now);
+
+    fseek($res, 0, SEEK_END);
+    $final = ftell($res);
+
+    $this->assertEquals($then, $final);
+
+    return $res;
 
   }
 
   /**
-   * @depends testOpenCreateMode
+   * @depends testSeek
+   */
+  public function testEof($res) {
+    rewind($res);
+
+    $this->assertEquals(0, ftell($res));
+
+    $this->assertFalse(feof($res));
+
+    fseek($res, 0, SEEK_END);
+    $this->assertGreaterThan(0, ftell($res));
+
+    $read = fread($res, 8192);
+
+    $this->assertEmpty($read);
+
+    $this->assertTrue(feof($res));
+
+    return $res;
+  }
+
+  /**
+   * @depends testEof
+   */
+  public function testFlush($res) {
+
+    $stat1 = fstat($res);
+
+    fflush($res);
+
+    // Grab a copy of the object.
+    $url = $this->newUrl(self::FNAME);
+    $newObj = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+
+    $stat2 = fstat($newObj);
+
+    $this->assertEquals($stat1['size'], $stat2['size']);
+
+    return $res;
+  }
+
+  /**
+   * @depends testFlush
    */
   public function testClose($res) {
+    $this->assertTrue(is_resource($res));
     fclose($res);
 
     $url = $this->newUrl(self::FNAME);
-    $res2 = fopen($url, 'r', FALSE, $this->basicSwiftContext());
-    $this->assertTrue(is_resource($res2));
+    //$res2 = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+    //$this->assertTrue(is_resource($res2));
   }
 
   public function testOpenFailureWithWrite() {
