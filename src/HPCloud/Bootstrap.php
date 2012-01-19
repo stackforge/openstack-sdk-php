@@ -139,4 +139,23 @@ class Bootstrap {
       return;
     }
   }
+
+  /**
+   * Get a configuration option.
+   *
+   * Get a configuration option by name, with an optional default.
+   *
+   * @param string $name
+   *   The name of the configuration option to get.
+   * @param mixed $default
+   *   The default value to return if the name is not found.
+   * @return mixed
+   *   The value, if found; or the default, if set; or NULL.
+   */
+  public static function config($name = NULL, $default = NULL) {
+    if (isset(self::$config[$name])) {
+      return self::$config[$name];
+    }
+    return $default;
+  }
 }
