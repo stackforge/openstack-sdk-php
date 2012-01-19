@@ -126,6 +126,9 @@ class ObjectStorage {
    * @param string $authToken
    *   A token that will be included in subsequent requests to validate
    *   that this client has authenticated correctly.
+   * @param string $url
+   *   The URL to the endpoint. This typically is returned after
+   *   authentication.
    */
   public function __construct($authToken, $url) {
     $this->token = $authToken;

@@ -61,6 +61,8 @@ class CURLTransport implements Transporter {
    */
   protected function handleDoRequest($uri, $method, $headers, $in = NULL) {
 
+    syslog(LOG_WARNING, "Real Operation: $method $uri");
+
     //$urlParts = parse_url($uri);
 
 
@@ -136,7 +138,12 @@ class CURLTransport implements Transporter {
     fclose($headerFile);
 
     if (!$ret || $status < 200 || $status > 299) {
-      $err = $responseHeaders[0];
+      if (empty($responseHeaders)) {
+        $err = 'Unknown (non-HTTP) error: ' . $status;
+      }
+      else {
+        $err = $responseHeaders[0];
+      }
       Response::failure($status, $err, $info['url'], $method, $info);
     }
 
