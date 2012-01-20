@@ -13,6 +13,11 @@ namespace HPCloud\Storage\ObjectStorage;
  * This provides a full stream wrapper to expose `swift://` URLs to the
  * PHP stream system.
  *
+ * Swift streams provide authenticated and priviledged access to the
+ * swift data store. These URLs are not generally used for granting
+ * unauthenticated access to files (which can be done using the HTTP
+ * stream wrapper -- no need for swift-specific logic).
+ *
  * URL Structure
  *
  * This takes URLs of the following form:
@@ -74,6 +79,84 @@ namespace HPCloud\Storage\ObjectStorage;
  * Nothing is written to the remote storage until the file is closed. This
  * keeps network traffic at a minimum, and respects the more-or-less stateless
  * nature of ObjectStorage.
+ *
+ * USING FILE/STREAM RESOURCES
+ *
+ * In general, you should access files like this:
+ *
+ * @code
+ * <?php
+ * // Set up the context.
+ * $context = stream_context_create(
+ *   array('swift' => array(
+ *     'account' => ACCOUNT_NUMBER,
+ *     'key' => SECRET_KEY,
+ *     'endpoint' => AUTH_ENDPOINT_URL,
+ *   )
+ *  )
+ * );
+ * // Open the file.
+ * $handle = fopen('swift://mycontainer/myobject.txt', 'r+', FALSE, $context);
+ *
+ * // You can get the entire file, or use fread() to loop through the file.
+ * $contents = stream_get_contents($handle);
+ *
+ * fclose($handle);
+ * ?>
+ * @endcode
+ *
+ * Notes:
+ *
+ * - file_get_contents() works fine.
+ * - You can write to a stream, too. Nothing is pushed to the server until
+ *   fflush() or fclose() is called.
+ * - Mode strings (w, r, w+, r+, c, c+, a, a+, x, x+) all work, though certain
+ *   constraints are slightly relaxed to accomodate efficient local buffering.
+ * - Files are buffered locally.
+ *
+ * USING FILE-LEVEL FUNCTIONS
+ *
+ * PHP provides a number of file-level functions that stream wrappers can
+ * optionally support. Here are a few such functions:
+ *
+ * - file_exists()
+ * - is_readable()
+ * - stat()
+ * - filesize()
+ * - fileperms()
+ *
+ * The HPCloud stream wrapper provides support for these file-level functions.
+ * But there are a few things you should know:
+ *
+ * - Each call to one of these functions generates at least one request. It may
+ *   be as many as three:
+ *   * An auth request
+ *   * A request for the container (to get container permissions)
+ *   * A request for the object
+ * - IMPORTANT: Unlike the fopen()/fclose()... functions NONE of these functions
+ *   retrieves the body of the file. If you are working with large files, using
+ *   these functions may be orders of magnitude faster than using fopen(), etc.
+ *   (The crucial detail: These kick off a HEAD request, will fopen() does a
+ *   GET request).
+ * - You must use Bootstrap::setConfiguration() to pass in all of the values you
+ *   would normally pass into a stream context:
+ *   * endpoint
+ *   * account
+ *   * key
+ * - Most of the information from this family of calls can also be obtained using
+ *   fstat(). If you were going to open a stream anyway, you might as well use
+ *   fopen()/fstat().
+ * - stat() and fstat() fake the permissions and ownership as follows:
+ *   * uid/gid are always sset to the current user. This basically assumes that if
+ *     the current user can access the object, the current user has ownership over
+ *     the file. As the OpenStack ACL system developers, this may change.
+ *   * Mode is faked. Swift uses ACLs, not UNIX mode strings. So we fake the string:
+ *     - 770: The ACL has the object marked as private.
+ *     - 775: The ACL has the object marked as public.
+ *     - ACLs are actually set on the container, so every file in a public container
+ *       will return 775.
+ * - stat/fstat provide only one timestamp. Swift only tracks mtime, so mtime, atime,
+ *   and ctime are all set to the last modified time.
  */
 class StreamWrapper {
 
@@ -511,6 +594,10 @@ class StreamWrapper {
     // FIXME: Need to calculate the length of the $objStream.
     //$contentLength = $this->obj->contentLength();
     $contentLength = $stat['size'];
+
+    return $this->generateStat($this->obj, $this->container, $contentLength);
+/*
+
     if ($this->obj instanceof \HPCloud\Storage\ObjectStorage\RemoteObject) {
       $mtime = $this->obj->lastModified();
     }
@@ -549,7 +636,7 @@ class StreamWrapper {
       'blksize' => -1,
       'blocks' => -1,
     );
-
+ */
   }
 
   /**
@@ -581,11 +668,144 @@ class StreamWrapper {
     return fwrite($this->objStream, $data);
   }
 
-  public static function unlink($path) {
+  /**
+   * Unlink a file.
+   *
+   * This removes the remote copy of the file. Like a normal unlink operation,
+   * it does not destroy the (local) file handle until the file is closed.
+   * Therefore you can continue accessing the object locally.
+   *
+   * Note that OpenStack Swift does not draw a distinction between file objects
+   * and "directory" objects (where the latter is a 0-byte object). This will
+   * delete either one. If you are using directory markers, not that deleting
+   * a marker will NOT delete the contents of the "directory".
+   *
+   * @param string $path
+   *   The URL.
+   * @return boolean
+   *   TRUE if the file was deleted, FALSE otherwise.
+   */
+  public function unlink($path) {
+    $url = $this->parseUrl($path);
+
+    // Host is required.
+    if (empty($url['host'])) {
+      trigger_error('Container name is required.');
+      return FALSE;
+    }
+
+    // I suppose we could allow deleting containers,
+    // but that isn't really the purpose of the
+    // stream wrapper.
+    if (empty($url['path'])) {
+      trigger_error('Path is required.');
+      return FALSE;
+    }
+
+    try {
+      $this->initializeObjectStorage();
+      $container = $this->store->container($url['host']);
+      return $container->delete($url['path']);
+    }
+    catch (\HPCLoud\Exception $e) {
+      trigger_error('Error during unlink: ' . $e->getMessage());
+      return FALSE;
+    }
 
   }
 
-  public static function url_stat($path, $flags) {
+  public function url_stat($path, $flags) {
+    $url = $this->parseUrl($path);
+
+    if (empty($url['host']) || empty($url['path'])) {
+      //trigger_error('Container name (host) and path are required.');
+      return E_WARNING;
+    }
+
+    try {
+      $this->initializeObjectStorage();
+      $container = $this->store->container($url['host']);
+      $obj = $container->remoteObject($url['path']);
+    }
+    catch(\HPCloud\Exception $e) {
+      trigger_error('Could not stat remote file: ' . $e->getMessage());
+    }
+
+    return $this->generateStat($obj, $container, $obj->contentLength());
+
+  }
+
+  /**
+   * Generate a reasonably accurate STAT array.
+   *
+   * Notes on mode:
+   * - All modes are of the (octal) form 100XXX, where
+   *   XXX is replaced by the permission string. Thus,
+   *   this always reports that the type is "file" (100).
+   * - Currently, only two permission sets are generated:
+   *   * 770: Represents the ACL::makePrivate() perm.
+   *   * 775: Represents the ACL::makePublic() perm.
+   *
+   * Notes on mtime/atime/ctime:
+   * - For whatever reason, Swift only stores one timestamp.
+   *   We use that for mtime, atime, and ctime.
+   *
+   * Notes on size:
+   * - Size must be calculated externally, as it will sometimes
+   *   be the remote's Content-Length, and it will sometimes be
+   *   the cached stat['size'] for the underlying buffer.
+   */
+  protected function generateStat($object, $container, $size) {
+
+
+    // This is not entirely accurate. Basically, if the 
+    // file is marked public, it gets 100775, and if
+    // it is private, it gets 100770.
+    //
+    // Mode is always set to file (100XXX) because there
+    // is no alternative that is more sensible. PHP docs
+    // do not recommend an alternative.
+    //
+    // octdec(100770) == 33272
+    // octdec(100775) == 33277
+    $mode = $container->acl()->isPublic() ? 33277 : 33272;
+
+    // We have to fake the UID value in order for is_readible()/is_writable()
+    // to work. Note that on Windows systems, stat does not look for a UID.
+    if (function_exists('posix_geteuid')) {
+      $uid = posix_geteuid();
+      $gid = posix_getegid();
+    }
+    else {
+      $uid = 0;
+      $gid = 0;
+    }
+
+    if ($object instanceof \HPCloud\Storage\ObjectStorage\RemoteObject) {
+      $modTime = $object->lastModified();
+    }
+    else {
+      $modTime = 0;
+    }
+    $values = array(
+      'dev' => 0,
+      'ino' => 0,
+      'mode' => $mode,
+      'nlink' => 0,
+      'uid' => $uid,
+      'gid' => $gid,
+      'rdev' => 0,
+      'size' => $size,
+      'atime' => $modTime,
+      'mtime' => $modTime,
+      'ctime' => $modTime,
+      'blksize' => -1,
+      'blocks' => -1,
+    );
+
+    $final = array_values($values) + $values;
+
+    return $final;
 
   }
 
@@ -672,7 +892,7 @@ class StreamWrapper {
   protected function cxt($name, $default = NULL) {
 
     // Lazilly populate the context array.
-    if (empty($this->contextArray)) {
+    if (is_resource($this->context) && empty($this->contextArray)) {
       $cxt = stream_context_get_options($this->context);
 
       // If a custom scheme name has been set, use that.
@@ -688,6 +908,13 @@ class StreamWrapper {
     // Should this be array_key_exists()?
     if (isset($this->contextArray[$name])) {
       return $this->contextArray[$name];
+    }
+
+    // Check to see if the value can be gotten from
+    // \HPCloud\Bootstrap.
+    $val = \HPCloud\Bootstrap::config($name, NULL);
+    if (isset($val)) {
+      return $val;
     }
 
     return $default;
@@ -709,6 +936,7 @@ class StreamWrapper {
    */
   protected function parseUrl($url) {
     $res = parse_url($url);
+
 
     // These have to be decode because they will later
     // be encoded.
@@ -755,7 +983,7 @@ class StreamWrapper {
       $this->store = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($account, $key, $baseURL);
     }
 
-    return !empty($this->ostore);
+    return !empty($this->store);
 
   }
 

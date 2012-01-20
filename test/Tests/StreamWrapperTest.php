@@ -78,6 +78,24 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  /**
+   * Add additional params to the config.
+   *
+   * This allows us to insert credentials into the
+   * bootstrap config, which in turn allows us to run
+   * high-level context-less functions like
+   * file_get_contents(), stat(), and is_file().
+   */
+  protected function addBootstrapConfig() {
+    $opts = array(
+      'account' => self::$settings['hpcloud.swift.account'],
+      'key'     => self::$settings['hpcloud.swift.key'],
+      'endpoint' => self::$settings['hpcloud.swift.url'],
+    );
+    \HPCloud\Bootstrap::setConfiguration($opts);
+
+  }
+
   // Canary. There are UTF-8 encoding issues in stream wrappers.
   public function testStreamContext() {
     $cxt = $this->authSwiftContext();
@@ -297,6 +315,59 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $this->assertGreaterThan(0, $num_changed);
   }
 
+  /**
+   * @depends testClose
+   */
+  public function testUrlStat(){
+    // Add context to the bootstrap config.
+    $this->addBootstrapConfig();
+
+    $url = $this->newUrl(self::FNAME);
+
+    $ret = stat($url);
+
+    // Check that the array looks right.
+    $this->assertEquals(26, count($ret));
+    $this->assertEquals(0, $ret[3]);
+    $this->assertEquals($ret[2], $ret['mode']);
+
+    $this->assertTrue(file_exists($url));
+    $this->assertTrue(is_readable($url));
+    $this->assertTrue(is_writeable($url));
+    $this->assertFalse(is_link($url));
+    $this->assertGreaterThan(0, filemtime($url));
+    $this->assertGreaterThan(5, filesize($url));
+
+    $perm = fileperms($url);
+
+    // Assert that this is a file. Objects are
+    // *always* marked as files.
+    $this->assertEquals(0x8000, $perm & 0x8000);
+
+    // Assert writeable by owner.
+    $this->assertEquals(0x0080, $perm & 0x0080);
+
+    // Assert not world writable.
+    $this->assertEquals(0, $perm & 0x0002);
+
+    $contents = file_get_contents($url);
+    $this->assertGreaterThan(5, strlen($contents));
+  }
+
+  /**
+   * @depends testFlush
+   */
+  public function testUnlink(){
+    $url = $this->newUrl(self::FNAME);
+    $cxt = $this->basicSwiftContext();
+
+    $ret = unlink($url, $cxt);
+    $this->assertTrue($ret);
+
+    $ret2 = unlink($url, $cxt);
+    $this->assertFalse($ret2);
+  }
+
   public function testSetOption() {
     $url = $this->newUrl('fake.foo');
     $fake = fopen($url, 'nope', FALSE, $this->basicSwiftContext());
@@ -319,6 +390,11 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     $this->markTestIncomplete();
   }
+
+  public function testReaddir(){}
+  public function testRewindDir(){}
+  public function testRMDir(){}
+  public function testRename(){}
 
 
 
