@@ -7,6 +7,8 @@
 
 namespace HPCloud\Storage\ObjectStorage;
 
+use \HPCloud\Bootstrap;
+
 /**
  * Provides stream wrapping for Swift.
  *
@@ -221,25 +223,49 @@ class StreamWrapper {
    */
   protected $objStream;
 
+  /**
+   * Directory listing.
+   *
+   * Used for directory methods.
+   */
+  protected $dirListing = array();
+  protected $dirIndex = 0;
+
 
   public function dir_closedir() {
+    $this->dirIndex = 0;
+    $this->dirListing = array();
   }
 
   public function dir_opendir($path, $options) {
-    $url = parse_url($path);
+    $url = $this->parseUrl();
 
-    $containerName = $url['host'];
-
-    if (isset($url['path'])) {
-      $path = '';
+    if (empty($url['host'])) {
+      trigger_error('Container name is required.' , E_USER_WARNING);
+      return FALSE;
     }
+
+    $this->initializeObjectStorage();
+    $container = $this->store->container($url['host']);
+
+    if (empty($url['path'])) {
+      $prefix = '';
+    }
+    else {
+      $prefix = $url['path'];
+    }
+
+    $sep = '/';
+
+    $this->dirListing = $container->objectsWithPrefix($prefix, $sep);
+
   }
 
   public function dir_readdir() {
   }
 
   public function dir_rewinddir() {
-
+    $this->dirIndex = 0;
   }
 
   public function mkdir($path, $mode, $options) {
@@ -250,8 +276,56 @@ class StreamWrapper {
 
   }
 
+  /**
+   * Rename a swift object.
+   *
+   * This works by copying the object (metadata) and
+   * then removing the original version.
+   *
+   * This DOES support cross-container renaming.
+   *
+   * See Container::copy().
+   *
+   * @param string $path_from
+   *   A swift URL that exists on the remote.
+   * @param string $path_to
+   *   A swift URL to another path.
+   * @return boolean
+   *   TRUE on success, FALSE otherwise.
+   */
   public function rename($path_from, $path_to) {
+    $this->initializeObjectStorage();
+    $src = $this->parseUrl($path_from);
+    $dest = $this->parseUrl($path_to);
 
+    if ($src['scheme'] != $dest['scheme']) {
+      trigger_error("I'm to stupid to copy across protocols.", E_USER_WARNING);
+    }
+
+    if ( empty($src['host'])  || empty($src['path'])
+      || empty($dest['host']) || empty($dest['path'])) {
+        trigger_error('Container and path are required for both source and destination URLs.', E_USER_WARNING);
+        return FALSE;
+    }
+
+    $container = $this->store->container($src['host']);
+
+    $object = $container->remoteObject($src['path']);
+
+    try {
+      $ret = $container->copy($object, $dest['path'], $dest['host']);
+      if ($ret) {
+        return $container->delete($src['path']);
+      }
+    }
+    catch (\HPCloud\Exception $e) {
+      trigger_error('Rename was not completed: ' . $e->getMessage(), E_USER_WARNING);
+      return FALSE;
+    }
+  }
+
+  public function copy($path_from, $path_to) {
+    throw new \Exception("UNDOCUMENTED.");
   }
 
   /**
@@ -281,7 +355,7 @@ class StreamWrapper {
       $this->writeRemote();
     }
     catch (\HPCloud\Exception $e) {
-      trigger_error('Error while closing: ' . $e->getMessage());
+      trigger_error('Error while closing: ' . $e->getMessage(), E_USER_NOTICE);
       return FALSE;
     }
 
@@ -317,7 +391,7 @@ class StreamWrapper {
     }
     catch (\HPCloud\Exception $e) {
       syslog(LOG_WARNING, $e);
-      trigger_error('Error while flushing: ' . $e->getMessage());
+      trigger_error('Error while flushing: ' . $e->getMessage(), E_USER_NOTICE);
       return FALSE;
     }
   }
@@ -412,7 +486,7 @@ class StreamWrapper {
     // Container name is required.
     if (empty($url['host'])) {
       //if ($this->triggerErrors) {
-        trigger_error('No container name was supplied in ' . $path);
+        trigger_error('No container name was supplied in ' . $path, E_USER_WARNING);
       //}
       return FALSE;
     }
@@ -420,7 +494,7 @@ class StreamWrapper {
     // A path to an object is required.
     if (empty($url['path'])) {
       //if ($this->triggerErrors) {
-        trigger_error('No object name was supplied in ' . $path);
+        trigger_error('No object name was supplied in ' . $path, E_USER_WARNING);
       //}
       return FALSE;
     }
@@ -445,7 +519,7 @@ class StreamWrapper {
       $this->initializeObjectStorage();
     }
     catch (\HPCloud\Exception $e) {
-      trigger_error('Failed to init object storage: ' . $e->getMessage());
+      trigger_error('Failed to init object storage: ' . $e->getMessage(), E_USER_WARNING);
       return FALSE;
     }
 
@@ -468,7 +542,7 @@ class StreamWrapper {
       // Support 'x' and 'x+' modes.
       if ($this->noOverwrite) {
         //if ($this->triggerErrors) {
-          trigger_error('File exists and cannot be overwritten.');
+          trigger_error('File exists and cannot be overwritten.', E_USER_WARNING);
         //}
         return FALSE;
       }
@@ -510,7 +584,7 @@ class StreamWrapper {
       }
       else {
         //if ($this->triggerErrors) {
-          trigger_error($nf->getMessage());
+          trigger_error($nf->getMessage(), E_USER_WARNING);
         //}
         return FALSE;
       }
@@ -519,7 +593,7 @@ class StreamWrapper {
     // All other exceptions are fatal.
     catch (\HPCloud\Exception $e) {
       //if ($this->triggerErrors) {
-        trigger_error('Failed to fetch object: ' . $e->getMessage());
+        trigger_error('Failed to fetch object: ' . $e->getMessage(), E_USER_WARNING);
       //}
       return FALSE;
     }
@@ -690,7 +764,7 @@ class StreamWrapper {
 
     // Host is required.
     if (empty($url['host'])) {
-      trigger_error('Container name is required.');
+      trigger_error('Container name is required.', E_USER_WARNING);
       return FALSE;
     }
 
@@ -698,7 +772,7 @@ class StreamWrapper {
     // but that isn't really the purpose of the
     // stream wrapper.
     if (empty($url['path'])) {
-      trigger_error('Path is required.');
+      trigger_error('Path is required.', E_USER_WARNING);
       return FALSE;
     }
 
@@ -708,7 +782,7 @@ class StreamWrapper {
       return $container->delete($url['path']);
     }
     catch (\HPCLoud\Exception $e) {
-      trigger_error('Error during unlink: ' . $e->getMessage());
+      trigger_error('Error during unlink: ' . $e->getMessage(), E_USER_WARNING);
       return FALSE;
     }
 
@@ -718,8 +792,8 @@ class StreamWrapper {
     $url = $this->parseUrl($path);
 
     if (empty($url['host']) || empty($url['path'])) {
-      //trigger_error('Container name (host) and path are required.');
-      return E_WARNING;
+      trigger_error('Container name (host) and path are required.', E_USER_WARNING);
+      return FALSE;
     }
 
     try {
@@ -728,7 +802,8 @@ class StreamWrapper {
       $obj = $container->remoteObject($url['path']);
     }
     catch(\HPCloud\Exception $e) {
-      trigger_error('Could not stat remote file: ' . $e->getMessage());
+      //trigger_error('Could not stat remote file: ' . $e->getMessage(), E_USER_WARNING);
+      return FALSE;
     }
 
     return $this->generateStat($obj, $container, $obj->contentLength());
@@ -913,6 +988,7 @@ class StreamWrapper {
     // Check to see if the value can be gotten from
     // \HPCloud\Bootstrap.
     $val = \HPCloud\Bootstrap::config($name, NULL);
+    syslog(LOG_WARNING, 'Checking Bootstrap::config for ' . $name);
     if (isset($val)) {
       return $val;
     }

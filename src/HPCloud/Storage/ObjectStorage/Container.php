@@ -640,6 +640,8 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $maker
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
+   * @return array
+   *   List of RemoteObject or Subdir instances.
    */
   public function objects($limit = NULL, $marker = NULL) {
     $params = array();
@@ -699,6 +701,8 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $marker
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
+   * @return array
+   *   List of RemoteObject or Subdir instances.
    */
   public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $marker = NULL) {
     $params = array(

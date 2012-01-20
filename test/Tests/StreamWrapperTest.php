@@ -91,6 +91,8 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
       'account' => self::$settings['hpcloud.swift.account'],
       'key'     => self::$settings['hpcloud.swift.key'],
       'endpoint' => self::$settings['hpcloud.swift.url'],
+      'token' => self::$ostore->token(),
+      'swift_endpoint' => self::$ostore->url(),
     );
     \HPCloud\Bootstrap::setConfiguration($opts);
 
@@ -388,6 +390,25 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     fclose($fake);
   }
 
+  /**
+   * @depends testUnlink
+   */
+  public function testRename(){
+    $url = $this->newUrl('rename.foo');
+    $fake = fopen($url, 'w+', FALSE, $this->basicSwiftContext());
+    fwrite($fake, 'test');
+    fclose($fake);
+
+    $this->assertTrue(file_exists($url));
+
+    $url2 = $this->newUrl('rename.txt');
+
+    rename($url, $url2, $this->basicSwiftContext());
+
+    $this->assertTrue(file_exists($url2));
+    $this->assertFalse(file_exists($url));
+  }
+
   public function testOpenFailureWithWrite() {
     // Make sure that a file opened as write only does not allow READ ops.
     $url = $this->newUrl(__FUNCTION__);
@@ -399,7 +420,6 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
   public function testReaddir(){}
   public function testRewindDir(){}
   public function testRMDir(){}
-  public function testRename(){}
 
 
 
