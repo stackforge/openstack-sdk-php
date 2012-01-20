@@ -283,6 +283,35 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  /**
+   * @depends testClose
+   */
+  public function testCast() {
+    $url = $this->newUrl(self::FNAME);
+    $res = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+
+    $read = array($res);
+    $write = array();
+    $except = array();
+    $num_changed = stream_select($read, $write, $except, 0);
+    $this->assertGreaterThan(0, $num_changed);
+  }
+
+  public function testSetOption() {
+    $url = $this->newUrl('fake.foo');
+    $fake = fopen($url, 'nope', FALSE, $this->basicSwiftContext());
+
+    $this->assertTrue(stream_set_blocking($fake, 1));
+
+    // Returns 0 on success.
+    $this->assertEquals(0, stream_set_write_buffer($fake, 8192));
+
+    // Cant set a timeout on a tmp storage:
+    $this->assertFalse(stream_set_timeout($fake, 10));
+
+    fclose($fake);
+  }
+
   public function testOpenFailureWithWrite() {
     // Make sure that a file opened as write only does not allow READ ops.
     $url = $this->newUrl(__FUNCTION__);
@@ -290,6 +319,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     $this->markTestIncomplete();
   }
+
 
 
 }

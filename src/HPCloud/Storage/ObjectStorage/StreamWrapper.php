@@ -171,8 +171,18 @@ class StreamWrapper {
 
   }
 
+  /**
+   * Cast stream into a lower-level stream.
+   *
+   * This is used for stream_select() and perhaps others.Because it exposes
+   * the lower-level buffer objects, this function can have unexpected
+   * side effects.
+   *
+   * @return resource
+   *   this returns the underlying stream.
+   */
   public function stream_cast($cast_as) {
-
+    return $this->objStream;
   }
 
   /**
@@ -269,10 +279,6 @@ class StreamWrapper {
 
   }
    */
-
-  public function stream_metadata($path, $option, $var) {
-
-  }
 
   /**
    * Open a stream resource.
@@ -474,7 +480,28 @@ class StreamWrapper {
     return $ret === 0;
   }
 
+  /**
+   * Set options on the underlying stream.
+   *
+   * The settings here do not trickle down to the network socket, which is
+   * left open for only a brief period of time. Instead, they impact the middle
+   * buffer stream, where the file is read and written to between flush/close
+   * operations. Thus, tuning these will not have any impact on network
+   * performance.
+   *
+   * See stream_set_blocking(), stream_set_timeout(), and stream_write_buffer().
+   */
   public function stream_set_option($option, $arg1, $arg2) {
+    switch ($option) {
+      case STREAM_OPTION_BLOCKING:
+        return stream_set_blocking($this->objStream, $arg1);
+      case STREAM_OPTION_READ_TIMEOUT:
+        // XXX: Should this have any effect on the lower-level
+        // socket, too? Or just the buffered tmp storage?
+        return stream_set_timeout($this->objStream, $arg1, $arg2);
+      case STREAM_OPTION_WRITE_BUFFER:
+        return stream_set_write_buffer($this->objStream, $arg2);
+    }
 
   }
 
