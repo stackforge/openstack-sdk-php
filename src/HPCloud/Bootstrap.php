@@ -153,9 +153,18 @@ class Bootstrap {
    *   The value, if found; or the default, if set; or NULL.
    */
   public static function config($name = NULL, $default = NULL) {
+
+    // If no name is specified, return the entire config array.
+    if (empty($name)) {
+      return self::$config;
+    }
+
+    // If the config value exists, return that.
     if (isset(self::$config[$name])) {
       return self::$config[$name];
     }
+
+    // Otherwise, just return the default value.
     return $default;
   }
 }
