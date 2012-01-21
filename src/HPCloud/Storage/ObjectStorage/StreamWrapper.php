@@ -159,6 +159,31 @@ use \HPCloud\Bootstrap;
  *       will return 775.
  * - stat/fstat provide only one timestamp. Swift only tracks mtime, so mtime, atime,
  *   and ctime are all set to the last modified time.
+ *
+ * DIRECTORIES
+ *
+ * OpenStack Swift does not really have directories. Rather, it allows
+ * characters such as '/' to be used to designate namespaces on object
+ * names. (For simplicity, this library uses only '/' as a separator).
+ *
+ * This allows for simulated directory listings. Requesting 
+ * `scandir('swift://foo/bar/')` is really a request to "find all of the items
+ * in the 'foo' container whose names start with 'bar/'".
+ *
+ * Because of this...
+ *
+ * - Directory reading functions like scandir(), opendir(), readdir()
+ *   and so forth are supported.
+ * - Functions to create or remove directories (mkdir() and rmdir()) are
+ *   meaningless, and thus not supported.
+ *
+ * Swift still has support for "directory markers" (special zero-byte files
+ * that act like directories). However, since there are no standards for how
+ * said markers ought to be created, they are not supported by the stream
+ * wrapper.
+ *
+ * As usual, the underlying \HPCloud\Storage\ObjectStorage\Container class
+ * supports the full range of Swift features.
  */
 class StreamWrapper {
 
@@ -230,44 +255,114 @@ class StreamWrapper {
    */
   protected $dirListing = array();
   protected $dirIndex = 0;
+  protected $dirPrefix = '';
 
-
+  /**
+   * Close a directory.
+   *
+   * This closes a directory handle, freeing up the resources.
+   *
+   * NB: Some versions of PHP 5.3 don't clear all buffers when
+   * closing, and the handle can occasionally remain accessible for
+   * some period of time.
+   */
   public function dir_closedir() {
     $this->dirIndex = 0;
     $this->dirListing = array();
+
+    //syslog(LOG_WARNING, "CLOSEDIR called.");
+
+    return TRUE;
   }
 
+  /**
+   * Open a directory for reading.
+   *
+   * See opendir() and scandir().
+   *
+   * @param string $path
+   *   The URL to open.
+   * @param int $options
+   *   Unused.
+   * @return boolean
+   *   TRUE if the directory is opened, FALSE otherwise.
+   */
   public function dir_opendir($path, $options) {
-    $url = $this->parseUrl();
+    $url = $this->parseUrl($path);
 
     if (empty($url['host'])) {
       trigger_error('Container name is required.' , E_USER_WARNING);
       return FALSE;
     }
 
-    $this->initializeObjectStorage();
-    $container = $this->store->container($url['host']);
+    try {
+      $this->initializeObjectStorage();
+      $container = $this->store->container($url['host']);
 
-    if (empty($url['path'])) {
-      $prefix = '';
+      if (empty($url['path'])) {
+        $this->dirPrefix = '';
+      }
+      else {
+        $this->dirPrefix = $url['path'];
+      }
+
+      $sep = '/';
+
+
+      $this->dirListing = $container->objectsWithPrefix($this->dirPrefix, $sep);
+    }
+    catch (\HPCloud\Exception $e) {
+      trigger_error('Directory could not be opened: ' . $e->getMessage(), E_USER_WARNING);
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
+  /**
+   * Read an entry from the directory.
+   *
+   * This gets a single line from the directory.
+   *
+   * @return string
+   *   The name of the resource or FALSE when the directory has no more
+   *   entries.
+   */
+  public function dir_readdir() {
+    // If we are at the end of the listing, return FALSE.
+    if (count($this->dirListing) <= $this->dirIndex) {
+      return FALSE;
+    }
+
+    $curr = $this->dirListing[$this->dirIndex];
+    $this->dirIndex++;
+
+    if ($curr instanceof \HPCloud\Storage\ObjectStorage\Subdir) {
+      $fullpath = $curr->path();
     }
     else {
-      $prefix = $url['path'];
+       $fullpath = $curr->name();
     }
 
-    $sep = '/';
+    if (!empty($this->dirPrefix)) {
+      $len = strlen($this->dirPrefix);
+      $fullpath = substr($fullpath, $len);
+    }
+    return $fullpath;
 
-    $this->dirListing = $container->objectsWithPrefix($prefix, $sep);
 
   }
 
-  public function dir_readdir() {
-  }
-
+  /**
+   * Rewind to the beginning of the listing.
+   *
+   * This repositions the read pointer at the first entry in the directory.
+   */
   public function dir_rewinddir() {
     $this->dirIndex = 0;
   }
 
+  /*
   public function mkdir($path, $mode, $options) {
 
   }
@@ -275,6 +370,7 @@ class StreamWrapper {
   public function rmdir($path, $options) {
 
   }
+   */
 
   /**
    * Rename a swift object.

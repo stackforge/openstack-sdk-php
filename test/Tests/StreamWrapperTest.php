@@ -407,20 +407,88 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     $this->assertTrue(file_exists($url2));
     $this->assertFalse(file_exists($url));
+
+    unlink($url2, $this->basicSwiftContext());
   }
 
-  public function testOpenFailureWithWrite() {
-    // Make sure that a file opened as write only does not allow READ ops.
-    $url = $this->newUrl(__FUNCTION__);
-    //$res = @fopen($url, 'w', FALSE, $this->basicSwiftContext());
+  /**
+   * @depends testUnlink
+   */
+  public function testOpenDir() {
+    $urls = array('test1.txt', 'foo/test2.txt', 'foo/test3.txt', 'bar/test4.txt');
+    foreach ($urls as $base) {
+      $url = $this->newUrl($base);
+      $f = fopen($url, 'c+', FALSE, $this->basicSwiftContext());
+      fwrite($f, 'Test.');
+      fclose($f);
+    }
 
-    $this->markTestIncomplete();
+    $dirUrl = $this->newUrl('');
+    $dir = opendir($dirUrl, $this->basicSwiftContext());
+
+    $this->assertTrue(is_resource($dir));
+
+    return $dir;
+
   }
 
-  public function testReaddir(){}
-  public function testRewindDir(){}
-  public function testRMDir(){}
+  /**
+   * @depends testOpenDir
+   */
+  public function testReaddir($dir){
+    // Order should be newest to oldest.
+    $expects = array('bar/', 'foo/', 'test1.txt');
 
+    $buffer = array();
+    while (($entry = readdir($dir)) !== FALSE) {
+      $should_be = array_shift($expects);
+      $this->assertEquals($should_be, $entry);
+    }
+    $this->assertFalse(readdir($dir));
 
+    return $dir;
+  }
+  /**
+   * @depends testReaddir
+   */
+  public function testRewindDir($dir){
+    $this->assertFalse(readdir($dir));
+    rewinddir($dir);
+    $this->assertEquals('bar/', readdir($dir));
+    return $dir;
+  }
 
+  /**
+   * @depends testRewindDir
+   */
+  public function testCloseDir($dir) {
+    $this->assertTrue(is_resource($dir));
+    closedir($dir);
+
+    // There is a bug in PHP where a
+    // resource buffer is not getting cleared.
+    // So this might return a value even though
+    // the underlying stream is cleared.
+    //$this->assertFalse(readdir($dir));
+  }
+
+  /**
+   * @depends testCloseDir
+   */
+  public function testOpenSubdir() {
+
+    // Opening foo we should find test2.txt and test3.txt.
+    $url = $this->newUrl('foo/');
+    $dir = opendir($url, $this->basicSwiftContext());
+
+    // I don't know why, but these are always returned in
+    // lexical order.
+    $this->assertEquals('test2.txt', readdir($dir));
+    $this->assertEquals('test3.txt', readdir($dir));
+
+    $array = scandir($url, -1, $this->basicSwiftContext());
+    $this->assertEquals(2, count($array));
+    $this->assertEquals('test3.txt', $array[0]);
+
+  }
 }
