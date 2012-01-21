@@ -172,6 +172,8 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  // DO we need to test other modes?
+
   /**
    * @depends testOpen
    */
