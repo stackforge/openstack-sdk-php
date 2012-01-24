@@ -37,6 +37,19 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     //parent::__construct($score, $locale, $adapter);
   }
 
+  /**
+   * Get a configuration value.
+   *
+   * Optionally, specify a default value to be used
+   * if none was found.
+   */
+  public static function conf($name, $default = NULL) {
+    if (isset(self::$settings[$name])) {
+      return self::$settings[$name];
+    }
+    return $default;
+  }
+
   protected $containerFixture = NULL;
 
   /**

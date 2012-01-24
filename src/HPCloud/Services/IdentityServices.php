@@ -52,14 +52,22 @@ class IdentityServices {
   /**
    * The details sent with the token.
    *
+   * The exact details of this array will differ depending on what type of
+   * authentication is used. For example, authenticating by username and
+   * password will set tenant information. Authenticating by account ID and
+   * secret, however, will leave the tenant section empty.
+   *
    * This is an associative array looking like this:
    *
    * @code
    * <?php
    * array(
    *   'id' => 'auth_123abc321defef99',
-   *   'tenant_id' => '123456',
-   *   'tenant_name' => 'matt.butcher@hp.com',
+   *   // Only non-empty for username/password auth.
+   *   'tenant' => array(
+   *     'id' => '123456',
+   *     'name' => 'matt.butcher@hp.com',
+   *   ),
    *   'expires' => '2012-01-24T12:46:01.682Z'
    * );
    * @endcode
@@ -96,6 +104,19 @@ class IdentityServices {
    */
   public function __construct($url) {
     $this->endpoint = rtrim($url, '/') . '/v' . self::API_VERSION;
+  }
+
+  /**
+   * Get the endpoint URL.
+   *
+   * This includes version number, so in that regard it is not an identical
+   * URL to the one passed into the constructor.
+   *
+   * @return string
+   *   The complete URL to the identity services endpoint.
+   */
+  public function url() {
+    return $this->endpoint;
   }
 
   /**
@@ -281,7 +302,7 @@ class IdentityServices {
    *     'endpoints' => array(
    *       'tenantId' => '123456',
    *       'adminURL' => 'https://example.hpcloud.net/1.0',
-   *       'publicUrl' => 'https://example.hpcloud.net/1.0/123456',
+   *       'publicURL' => 'https://example.hpcloud.net/1.0/123456',
    *       'region' => 'region-a.geo-1',
    *       'id' => '1.0',
    *     ),
@@ -290,7 +311,7 @@ class IdentityServices {
    *     'name' => 'Identity',
    *     'type' => 'identity'
    *     'endpoints' => array(
-   *       'publicUrl' => 'https://example.hpcloud.net/1.0/123456',
+   *       'publicURL' => 'https://example.hpcloud.net/1.0/123456',
    *       'region' => 'region-a.geo-1',
    *       'id' => '2.0',
    *       'list' => 'http://example.hpcloud.net/extension',
@@ -321,7 +342,7 @@ class IdentityServices {
    * @code
    * <?php
    * array(
-   *   'user' => 'matthew.butcher@hp.com',
+   *   'name' => 'matthew.butcher@hp.com',
    *   'id' => '1234567890'
    *   'roles' => array(
    *     array(
