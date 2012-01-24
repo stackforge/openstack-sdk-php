@@ -14,7 +14,7 @@ use \HPCloud\Services\ControlServices;
 $config = array(
   'transport' => '\HPCloud\Transport\CURLTransport',
   'transport.timeout' => 240,
-  'transport.debug' => 1,
+  //'transport.debug' => 1,
   'transport.ssl.verify' => 0,
 );
 

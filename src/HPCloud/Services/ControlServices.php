@@ -146,7 +146,7 @@ class ControlServices {
       'Content-Length' => strlen($body),
     );
 
-    print $body . PHP_EOL;
+    //print $body . PHP_EOL;
 
     $client = \HPCloud\Transport::instance();
 
@@ -353,6 +353,7 @@ class ControlServices {
    */
   protected function handleResponse($response) {
     $json = json_decode($response->content(), TRUE);
+    // print_r($json);
 
     $this->tokenDetails = $json['access']['token'];
     $this->userDetails = $json['access']['user'];
