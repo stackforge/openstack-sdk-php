@@ -87,6 +87,18 @@ class Bootstrap {
    * All of the HPCloud classes share the same configuration. This
    * ensures that a stable runtime environment is maintained.
    *
+   * Common configuration directives:
+   *
+   * - 'transport': The namespaced classname for the transport that
+   *   should be used. Example: `\HPCloud\Transport\CURLTransport`
+   * - 'transport.debug': The integer 1 for enabling debug, 0 for
+   *   disabling. Enabling will turn on verbose debugging output
+   *   for any transport that supports it.
+   * - 'transport.timeout': An integer value indicating how long
+   *   the transport layer should wait for an HTTP request. A
+   *   transport MAY ignore this parameter, but the ones included
+   *   with the library honor it.
+   *
    * @param array $array
    *   An associative array of configuration directives.
    */
@@ -166,5 +178,9 @@ class Bootstrap {
 
     // Otherwise, just return the default value.
     return $default;
+  }
+
+  public static function hasConfig($name) {
+    return isset(self::$config[$name]);
   }
 }

@@ -150,7 +150,8 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     // This will be HTTP if we are using the PHP stream
     // wrapper, but for CURL this will be PHP.
 
-    if (self::$settings['transport'] == '\HPCloud\Transport\PHPStreamTransport') {
+    $klass = \HPCloud\Bootstrap::config('transport', NULL);
+    if ($klass == '\HPCloud\Transport\PHPStreamTransport') {
       $expect = 'http';
     }
     else {
@@ -224,7 +225,8 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     // The CURL, though, backs its up with a temp file wrapped in a PHP 
     // stream. Other backends are likely to do the same. So this test
     // is weakened for CURL backends.
-    if (self::$settings['transport'] == '\HPCloud\Transport\PHPStreamTransport') {
+    $transport = \HPCloud\Bootstrap::config('transport');
+    if ($transport == '\HPCloud\Transport\PHPStreamTransport') {
       $expect = 'http';
     }
     else {

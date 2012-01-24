@@ -6,6 +6,8 @@
 
 namespace HPCloud\Transport;
 
+use \HPCloud\Bootstrap;
+
 /**
  * Provide HTTP transport with CURL.
  *
@@ -33,16 +35,25 @@ class CURLTransport implements Transporter {
 
   const HTTP_USER_AGENT_SUFFIX = ' (c93c0a) CURL/1.0';
 
-  public function doRequest($uri, $method = 'GET', $headers = array(), $body = '') {
+  public function doRequest($uri, $method = 'GET', $headers = array(), $body = NULL) {
 
     $in = NULL;
     if (!empty($body)) {
-      // First we turn our body into a temp-backed buffer.
-      $in = fopen('php://temp', 'wr', FALSE);
-      fwrite($in, $body, strlen($body));
-      rewind($in);
+      // For whatever reason, CURL seems to want POST request data to be
+      // a string, not a file handle. So we adjust. PUT, on the other hand,
+      // needs to be in a file handle.
+      if ($method == 'POST') {
+        $in = $body;
+      }
+      else {
+        // First we turn our body into a temp-backed buffer.
+        $in = fopen('php://temp', 'wr', FALSE);
+        fwrite($in, $body, strlen($body));
+        rewind($in);
+      }
     }
     return $this->handleDoRequest($uri, $method, $headers, $in);
+    //return $this->handleDoRequest($uri, $method, $headers, $body);
 
   }
 
@@ -51,9 +62,17 @@ class CURLTransport implements Transporter {
       $in = open($resource, 'rb', FALSE);
     }
     else {
-      $in = $resource;
+      // FIXME: Is there a better way?
+      // There is a bug(?) in CURL which prevents it
+      // from writing the same stream twice. But we
+      // need to be able to flush a file multiple times.
+      // So we have to create a new temp buffer for each
+      // write operation.
+      $in = fopen('php://temp', 'rb+'); //tmpfile();
+      stream_copy_to_stream($resource, $in);
+      rewind($in);
     }
-    return $this->handleDoRequest($uri, $method, $headers, $resource);
+    return $this->handleDoRequest($uri, $method, $headers, $in);
   }
 
   /**
@@ -77,18 +96,19 @@ class CURLTransport implements Transporter {
 
     // Set the upload
     $copy = NULL;
-    if (!empty($in)) {
 
-      // FIXME: Is there a better way?
-      // There is a bug(?) in CURL which prevents it
-      // from writing the same stream twice. But we
-      // need to be able to flush a file multiple times.
-      // So we have to create a new temp buffer for each
-      // write operation.
-      $copy = fopen('php://temp', 'rb+'); //tmpfile();
-      stream_copy_to_stream($in, $copy);
-      rewind($copy);
-      curl_setopt($curl, CURLOPT_INFILE, $copy);
+    // If we get a string, we send the string
+    // data.
+    if (is_string($in)) {
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $in);
+      if (!isset($headers['Content-Length'])) {
+        $headers['Content-Length'] = strlen($in);
+      }
+    }
+    // If we get a resource, we treat it like a stream
+    // and pass it into CURL as a file.
+    elseif (is_resource($in)) {
+      curl_setopt($curl, CURLOPT_INFILE, $in);
 
       // Tell CURL about the content length if we know it.
       if (!empty($headers['Content-Length'])) {
@@ -97,7 +117,7 @@ class CURLTransport implements Transporter {
       }
     }
 
-    // Set headers
+    // Set headers.
     $this->setHeaders($curl, $headers);
 
     // Get the output.
@@ -114,9 +134,6 @@ class CURLTransport implements Transporter {
       // Timeout if the remote has not connected in 30 sec.
       //CURLOPT_CONNECTTIMEOUT => 30,
 
-      // Max time to allow CURL to do the transaction.
-      // CURLOPT_TIMEOUT => 120,
-
       // If this is set, CURL will auto-deflate any encoding it can.
       // CURLOPT_ENCODING => '',
 
@@ -127,10 +144,23 @@ class CURLTransport implements Transporter {
       // Limit curl to only these protos.
       // CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
 
-      // If you are desparate and need to debug, uncomment this.
-      //CURLOPT_VERBOSE => 1,
     );
     curl_setopt_array($curl, $opts);
+
+    if (Bootstrap::hasConfig('transport.debug')) {
+      $debug = Bootstrap::config('transport.debug', NULL);
+      curl_setopt($curl, CURLOPT_VERBOSE, (int) $debug);
+    }
+
+    if (Bootstrap::hasConfig('transport.timeout')) {
+      curl_setopt($curl, CURLOPT_TIMEOUT, (int) Bootstrap::config('transport.timeout'));
+    }
+
+    if (Bootstrap::hasConfig('transport.ssl.verify')) {
+      $validate = (boolean) Bootstrap::config('transport.ssl.verify', TRUE);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $validate);
+    }
+
 
     $ret = curl_exec($curl);
     $info = curl_getinfo($curl);

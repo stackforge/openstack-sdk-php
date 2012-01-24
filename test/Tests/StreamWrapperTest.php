@@ -45,6 +45,10 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
       $scheme = StreamWrapper::DEFAULT_SCHEME;
     }
 
+    if (empty(self::$ostore)) {
+      throw new \Exception('OStore is gone.');
+    }
+
     $params = $add + array(
         'token' => self::$ostore->token(),
         'swift_endpoint' => self::$ostore->url(),
