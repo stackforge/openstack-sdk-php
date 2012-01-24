@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * This file contains the main ControlServices class.
+ * This file contains the main IdentityServices class.
  */
 namespace HPCloud\Services;
 
@@ -29,17 +29,17 @@ namespace HPCloud\Services;
  *
  * Other mechanisms may be supported in the future.
  */
-class ControlServices {
+class IdentityServices {
   /**
    * The version of the API currently supported.
    *
-   * This must match the ControlServices::ACCEPT_TYPE.
+   * This must match the IdentityServices::ACCEPT_TYPE.
    */
   const API_VERSION = '2.0';
   /**
    * The full OpenStack accept type.
    *
-   * This must match the ControlServices::API_VERSION.
+   * This must match the IdentityServices::API_VERSION.
    */
   const ACCEPT_TYPE = 'application/json';
   //const ACCEPT_TYPE = 'application/vnd.openstack.identity+json;version=2.0';
@@ -72,7 +72,7 @@ class ControlServices {
   protected $catalog = array();
 
   /**
-   * Build a new ControlServices object.
+   * Build a new IdentityServices object.
    *
    * Each object is bound to a particular identity services endpoint.
    *
@@ -83,7 +83,7 @@ class ControlServices {
    *
    * @code
    * <?php
-   * $cs = new \HPCloud\Services\ControlServices('http://example.com');
+   * $cs = new \HPCloud\Services\IdentityServices('http://example.com');
    * $token = $cs->authenticateAsAccount($accountId, $accessKey);
    * ?>
    * @endcode
@@ -109,7 +109,7 @@ class ControlServices {
    * the authenticate() method:
    * @code
    * <?php
-   * $cs = new \HPCloud\Services\ControlServices($url);
+   * $cs = new \HPCloud\Services\IdentityServices($url);
    * $ops = array(
    *   'passwordCredentials' => array(
    *     'username' => $username,

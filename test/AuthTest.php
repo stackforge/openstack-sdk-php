@@ -9,7 +9,7 @@
 require_once 'src/HPCloud/Bootstrap.php';
 
 use \HPCloud\Storage\ObjectStorage;
-use \HPCloud\Services\ControlServices;
+use \HPCloud\Services\IdentityServices;
 
 $config = array(
   'transport' => '\HPCloud\Transport\CURLTransport',
@@ -65,7 +65,7 @@ $store = ObjectStorage::newFromSwiftAuth($user, $key, $uri);
 
 $token = $store->token();
  */
-$cs = new ControlServices($uri);
+$cs = new IdentityServices($uri);
 
 if ($asUser) {
   $token = $cs->authenticateAsUser($user, $key, $tenantId);
@@ -79,7 +79,7 @@ if (empty($token)) {
   exit(1);
 }
 
-$t = "You logged in as %s with token %s (good until %s)." . PHP_EOL;
+$t = "You are logged in as %s with token %s (good until %s)." . PHP_EOL;
 $tokenDetails = $cs->tokenDetails();
 $user = $cs->user();
 
