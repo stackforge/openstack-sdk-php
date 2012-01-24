@@ -150,7 +150,8 @@ class Response {
     }
 
     // Should we close or rewind?
-    fclose($this->handle);
+    //fclose($this->handle);
+    rewind($this->handle);
 
     return $out;
   }
