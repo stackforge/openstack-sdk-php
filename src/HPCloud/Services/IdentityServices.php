@@ -153,7 +153,7 @@ class IdentityServices {
    *   retrievable with token().
    */
   public function authenticate(array $ops) {
-    $url = $this->endpoint .= '/tokens';
+    $url = $this->url() . '/tokens';
     $envelope = array(
       'auth' => $ops,
     );
@@ -361,6 +361,59 @@ class IdentityServices {
    */
   public function user() {
     return $this->userDetails;
+  }
+
+  /**
+   * Get a list of all tenants associated with this account.
+   *
+   * If a valid token is passed into this object, the method can be invoked
+   * before authentication. However, if no token is supplied, this attempts
+   * to use the one returned by an authentication call.
+   *
+   * Returned data will follow this format:
+   *
+   * @code
+   * <?php
+   * array(
+   *   array(
+   *     "id" =>  "395I95655514446",
+   *     "name" => "Banking Tenant Services",
+   *     "description" => "Banking Tenant Services for TimeWarner",
+   *     "enabled" => TRUE,
+   *     "created" => "2011-11-29T16:59:52.635Z",
+   *     "updated" => "2011-11-29T16:59:52.635Z",
+   *   ),
+   * );
+   * ?>
+   * @endcode
+   *
+   * Note that this method invokes a new request against the remote server.
+   *
+   * @return array
+   *   An indexed array of tenant info. Each entry will be an associative
+   *   array containing tenant details.
+   */
+  public function tenants($token = NULL) {
+    $url = $this->url() . '/tenants';
+
+    if (empty($token)) {
+      $token = $this->token();
+    }
+
+    $headers = array(
+      'X-Auth-Token' => $token,
+      'Accept' => 'application/json',
+      //'Content-Type' => 'application/json',
+    );
+
+    $client = \HPCloud\Transport::instance();
+    $response = $client->doRequest($url, 'GET', $headers);
+
+    $raw = $response->content();
+    $json = json_decode($raw, TRUE);
+
+    return $json['tenants'];
+
   }
 
   /**

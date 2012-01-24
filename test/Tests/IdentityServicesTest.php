@@ -187,4 +187,37 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($user['roles']);
   }
 
+  /**
+   * @group tenant
+   */
+  public function testTenants() {
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service2 = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $user = self::conf('hpcloud.identity.username');
+    $pass = self::conf('hpcloud.identity.password');
+    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $service->authenticateAsUser($user, $pass, $tenantId);
+
+
+    $tenants = $service2->tenants($service->token());
+
+    $this->assertGreaterThan(0, count($tenants));
+    $this->assertNotEmpty($tenants[0]['name']);
+    $this->assertNotEmpty($tenants[0]['id']);
+
+    $tenants = $service->tenants();
+    $this->assertGreaterThan(0, count($tenants));
+    $this->assertNotEmpty($tenants[0]['name']);
+    $this->assertNotEmpty($tenants[0]['id']);
+
+  }
+
+  /**
+   * @group tenant
+   * @depends testTenants
+   */
+  function testRescope() {
+    $this->markTestIncomplete();
+  }
+
 }

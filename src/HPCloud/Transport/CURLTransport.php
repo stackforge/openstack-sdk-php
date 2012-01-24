@@ -177,6 +177,8 @@ class CURLTransport implements Transporter {
       else {
         $err = $responseHeaders[0];
       }
+      //rewind($out);
+      //fwrite(STDERR, stream_get_contents($out));
       Response::failure($status, $err, $info['url'], $method, $info);
     }
 
