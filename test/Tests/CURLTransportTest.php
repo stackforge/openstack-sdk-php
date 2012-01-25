@@ -67,7 +67,7 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
   public function testSwiftAuth() {
     // We know that the object works, so now we test whether it can
     // communicate with Swift.
-    $storage = $this->swiftAuth();
+    $storage = $this->objectStore();
 
     $info = $storage->accountInfo();
 

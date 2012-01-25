@@ -24,8 +24,9 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
   /**
    * Test Swift-based authentication.
-   * */
-  public function testAuthentication() {
+   * @group deprecated
+   */
+  public function testSwiftAuthentication() {
 
     $ostore = $this->swiftAuth();
 
@@ -33,12 +34,27 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
+  /**
+   * @group auth
+   */
+  public function testConstructor() {
+    $ostore = $this->objectStore();
+
+    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $this->assertTrue(strlen($ostore->token()) > 0);
+
+  }
+
+  /**
+   * @group auth
+   * @group acl
+   */
   public function testCreateContainer() {
     $testCollection = self::$settings['hpcloud.swift.container'];
 
     $this->assertNotEmpty($testCollection, "Canary: container name must be in settings file.");
 
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();//swiftAuth();
 
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
@@ -52,29 +68,31 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
+   * @group auth
    * @depends testCreateContainer
    */
   public function testAccountInfo () {
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
 
     $info = $store->accountInfo();
 
-    $this->assertTrue($info['count'] > 0);
-    $this->assertTrue($info['bytes'] > 0);
+    $this->assertGreaterThan(0, $info['containers']);
+    $this->assertGreaterThanOrEqual(0, $info['bytes']);
+    $this->assertGreaterThanOrEqual(0, $info['objects']);
   }
 
   /**
    * @depends testCreateContainer
    */
   public function testContainers() {
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     $containers = $store->containers();
 
     $this->assertNotEmpty($containers);
 
     //$first = array_shift($containers);
 
-    $testCollection = self::$settings['hpcloud.swift.container'];
+    $testCollection = self::conf('hpcloud.swift.container');
     $testContainer = $containers[$testCollection];
     $this->assertEquals($testCollection, $testContainer->name());
     $this->assertEquals(0, $testContainer->bytes());
@@ -90,7 +108,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    */
   public function testContainer() {
     $testCollection = self::$settings['hpcloud.swift.container'];
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
 
     $container = $store->container($testCollection);
 
@@ -108,7 +126,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    */
   public function testHasContainer() {
     $testCollection = self::$settings['hpcloud.swift.container'];
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
 
     $this->assertTrue($store->hasContainer($testCollection));
     $this->assertFalse($store->hasContainer('nihil'));
@@ -120,7 +138,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
   public function testDeleteContainer() {
     $testCollection = self::$settings['hpcloud.swift.container'];
 
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     //$ret = $store->createContainer($testCollection);
     //$this->assertTrue($store->hasContainer($testCollection));
 
@@ -142,7 +160,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
     $this->assertNotEmpty($testCollection);
 
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     $store->createContainer($testCollection);
 
     $container = $store->container($testCollection);
@@ -168,10 +186,11 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
   /**
    * @depends testCreateContainer
+   * @group acl
    */
   public function testCreateContainerPublic() {
     $testCollection = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
     }
@@ -197,7 +216,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    */
   public function testChangeContainerACL() {
     $testCollection = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
     }

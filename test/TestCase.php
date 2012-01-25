@@ -19,6 +19,11 @@ class TestCase extends \PHPUnit_Framework_TestCase {
 
   public static $ostore = NULL;
 
+  /**
+   * The IdentityServices instance.
+   */
+  public static $ident;
+
 
   //public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
   public static function setUpBeforeClass() {
@@ -53,16 +58,66 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   protected $containerFixture = NULL;
 
   /**
-   * Authenticate to a Swift account.
+   * @deprecated
    */
   protected function swiftAuth() {
 
-    if (empty(self::$ostore)) {
-      $user = self::$settings['hpcloud.swift.account'];
-      $key = self::$settings['hpcloud.swift.key'];
-      $url = self::$settings['hpcloud.swift.url'];
+    $user = self::$settings['hpcloud.swift.account'];
+    $key = self::$settings['hpcloud.swift.key'];
+    $url = self::$settings['hpcloud.swift.url'];
 
-      self::$ostore = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
+    return \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
+
+  }
+
+  /**
+   * Get a handle to an IdentityServices object.
+   *
+   * Authentication is performed, and the returned
+   * service has its tenant ID set already.
+   *
+   * @code
+   * <?php
+   * // Get the current token.
+   * $this->identity()->token();
+   * ?>
+   * @endcode
+   */
+  protected function identity($reset = FALSE) {
+
+    if ($reset || empty(self::$ident)) {
+      $user = self::conf('hpcloud.identity.username');
+      $pass = self::conf('hpcloud.identity.password');
+      $tenantId = self::conf('hpcloud.identity.tenantId');
+      $url = self::conf('hpcloud.identity.url');
+
+      $is = new \HPCloud\Services\IdentityServices($url);
+
+      $token = $is->authenticateAsUser($user, $pass, $tenantId);
+
+      self::$ident = $is;
+
+    }
+    return self::$ident;
+  }
+
+  protected function objectStore($reset = FALSE) {
+
+    if ($reset || empty(self::$ostore)) {
+      $ident = $this->identity($reset);
+
+      $services = $ident->serviceCatalog(\HPCloud\Storage\ObjectStorage::SERVICE_TYPE);
+
+      if (empty($services)) {
+        throw new \Exception('No object-store service found.');
+      }
+
+      //$serviceURL = $services[0]['endpoints'][0]['adminURL'];
+      $serviceURL = $services[0]['endpoints'][0]['publicURL'];
+
+      $objStore = new \HPCloud\Storage\ObjectStorage($ident->token(), $serviceURL);
+
+      self::$ostore = $objStore;
 
     }
 
@@ -75,7 +130,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   protected function containerFixture() {
 
     if (empty($this->containerFixture)) {
-      $store = $this->swiftAuth();
+      $store = $this->objectStore();
       $cname = self::$settings['hpcloud.swift.container'];
 
       try {
@@ -107,7 +162,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    *   The name of the container.
    */
   protected function eradicateContainer($cname) {
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     try {
       $container = $store->container($cname);
     }
@@ -133,7 +188,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    * This should be called in any method that uses containerFixture().
    */
   protected function destroyContainerFixture() {
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     $cname = self::$settings['hpcloud.swift.container'];
 
     try {

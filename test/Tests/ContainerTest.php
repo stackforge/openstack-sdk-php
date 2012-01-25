@@ -46,7 +46,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
   const FNAME = 'testSave';
   const FCONTENT = 'This is a test.';
-  const FTYPE = 'text/plain';
+  const FTYPE = 'application/x-monkey-file';
 
   public function testSave() {
 
@@ -334,7 +334,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   public function testCopyAcrossContainers() {
 
     // Create a new container.
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     $cname = self::$settings['hpcloud.swift.container'] . 'COPY';
     if ($store->hasContainer($cname)) {
       $this->eradicateContainer($cname);
@@ -377,7 +377,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   }
 
   public function testAcl() {
-    $store = $this->swiftAuth();
+    $store = $this->objectStore();
     $cname = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
 
     if ($store->hasContainer($cname)) {

@@ -16,7 +16,8 @@ use \HPCloud\Storage\ObjectStorage\Container;
 class RemoteObjectTest extends \HPCloud\Tests\TestCase {
 
   const FNAME = 'RemoteObjectTest';
-  const FTYPE = 'text/plain';
+  //const FTYPE = 'text/plain; charset=UTF-8';
+  const FTYPE = 'application/octet-stream; charset=UTF-8';
   const FCONTENT = 'Rah rah ah ah ah. Roma roma ma. Gaga oh la la.';
   const FMETA_NAME = 'Foo';
   const FMETA_VALUE = 'Bar';

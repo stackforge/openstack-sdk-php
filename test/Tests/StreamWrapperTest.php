@@ -50,9 +50,9 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     }
 
     $params = $add + array(
-        'token' => self::$ostore->token(),
-        'swift_endpoint' => self::$ostore->url(),
-      );
+      'token' => $this->objectStore()->token(),
+      'swift_endpoint' => $this->objectStore()->url(),
+    );
     $cxt = array($scheme => $params);
 
     return stream_context_create($cxt);
@@ -60,27 +60,33 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   /**
    * This performs authentication via context.
+   *
+   * UPDATE: This now users IdentityServices instead of deprecated
+   * swauth.
    */
   protected function authSwiftContext($add = array(), $scheme = NULL) {
     $cname   = self::$settings['hpcloud.swift.container'];
-    $account = self::$settings['hpcloud.swift.account'];
-    $key     = self::$settings['hpcloud.swift.key'];
-    $baseURL = self::$settings['hpcloud.swift.url'];
+    $account = self::$settings['hpcloud.identity.account'];
+    $key     = self::$settings['hpcloud.identity.secret'];
+    $tenant  = self::$settings['hpcloud.identity.tenantId'];
+    $baseURL = self::$settings['hpcloud.identity.url'];
 
     if (empty($scheme)) {
       $scheme = StreamWrapper::DEFAULT_SCHEME;
     }
 
     $params = $add + array(
-        'account' => $account,
-        'key' => $key,
-        'endpoint' => $baseURL,
-      );
+      'account' => $account,
+      'key' => $key,
+      'endpoint' => $baseURL,
+      'tenantid' => $tenant,
+    );
     $cxt = array($scheme => $params);
 
     return stream_context_create($cxt);
 
   }
+
 
   /**
    * Add additional params to the config.
@@ -92,11 +98,12 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    */
   protected function addBootstrapConfig() {
     $opts = array(
-      'account' => self::$settings['hpcloud.swift.account'],
-      'key'     => self::$settings['hpcloud.swift.key'],
-      'endpoint' => self::$settings['hpcloud.swift.url'],
-      'token' => self::$ostore->token(),
-      'swift_endpoint' => self::$ostore->url(),
+      'account' => self::$settings['hpcloud.identity.account'],
+      'key'     => self::$settings['hpcloud.identity.secret'],
+      'endpoint' => self::$settings['hpcloud.identity.url'],
+      'tenantit' => self::$settings['hpcloud.identity.tenantId'],
+      'token' => $this->objectStore()->token(),
+      'swift_endpoint' => $this->objectStore()->url(),
     );
     \HPCloud\Bootstrap::setConfiguration($opts);
 
@@ -108,7 +115,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $array = stream_context_get_options($cxt);
 
     $opts = $array['swift'];
-    $endpoint = self::$settings['hpcloud.swift.url'];
+    $endpoint = self::conf('hpcloud.identity.url');
 
     $this->assertEquals($endpoint, $opts['endpoint'], 'A UTF-8 encoding issue.');
   }
