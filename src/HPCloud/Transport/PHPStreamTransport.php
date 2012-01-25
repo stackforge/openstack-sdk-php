@@ -34,14 +34,6 @@ class PHPStreamTransport implements Transporter {
   public $httpVersion = '1.1';
 
   /**
-   * The length of time, in seconds, to wait for a response.
-   *
-   * If this is an empty value (NULL, 0, FALSE), the socket system's
-   * timeout is used.
-   */
-  public $requestTimeout = NULL;
-
-  /**
    * The event watcher callback.
    *
    */
@@ -215,8 +207,8 @@ class PHPStreamTransport implements Transporter {
       $config['http']['content'] = $body;
     }
 
-    if (!empty($this->requestTimeout)) {
-      $config['http']['timeout'] = (float) $this->requestTimeout;
+    if (\HPCloud\Bootstrap::hasConfig('transport.timeout')) {
+      $config['http']['timeout'] = (float) \HPCloud\Bootstrap::config('transport.timeout');
     }
 
     // Set the params. (Currently there is only one.)
