@@ -150,8 +150,9 @@ class Response {
     }
 
     // Should we close or rewind?
-    //fclose($this->handle);
-    rewind($this->handle);
+    // Cannot rewind HTTP streams.
+    fclose($this->handle);
+    //rewind($this->handle);
 
     return $out;
   }
