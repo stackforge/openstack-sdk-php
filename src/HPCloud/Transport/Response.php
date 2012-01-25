@@ -132,6 +132,11 @@ class Response {
    * This returns the body of the response (no HTTP headers)
    * as a single string.
    *
+   * IMPORTANT: This can only be called once. HTTP streams
+   * handled by PHP's stream wrapper cannot be rewound, and
+   * to keep memory usage low, we don't want to store the
+   * entire content in a string.
+   *
    * @return string
    *   The contents of the response body.
    */
@@ -150,7 +155,7 @@ class Response {
     }
 
     // Should we close or rewind?
-    // Cannot rewind HTTP streams.
+    // Cannot rewind PHP HTTP streams.
     fclose($this->handle);
     //rewind($this->handle);
 
