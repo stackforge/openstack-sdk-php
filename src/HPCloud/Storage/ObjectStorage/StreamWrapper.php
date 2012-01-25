@@ -8,6 +8,7 @@
 namespace HPCloud\Storage\ObjectStorage;
 
 use \HPCloud\Bootstrap;
+use \HPCloud\Storage\ObjectStorage;
 
 /**
  * Provides stream wrapping for Swift.
@@ -93,6 +94,7 @@ use \HPCloud\Bootstrap;
  *   array('swift' => array(
  *     'account' => ACCOUNT_NUMBER,
  *     'key' => SECRET_KEY,
+ *     'tenantId' => TENANT_ID
  *     'endpoint' => AUTH_ENDPOINT_URL,
  *   )
  *  )
@@ -1129,30 +1131,80 @@ class StreamWrapper {
 
   /**
    * Based on the context, initialize the ObjectStorage.
+   *
+   * The following parameters may be set either in the stream context
+   * or through \HPCloud\Bootstrap::setConfiguration():
+   *
+   * - token: An auth token. If this is supplied, authentication is skipped and
+   *     this token is used. NOTE: You MUST set swift_endpoint if using this
+   *     option.
+   * - swift_endpoint: The URL to the swift instance. This is only necessary if
+   *     'token' is set. Otherwise it is ignored.
+   * - username: A username. MUST be accompanied by 'password' and 'tenantid'.
+   * - password: A password. MUST be accompanied by 'username' and 'tenantid'.
+   * - account: An account ID. MUST be accompanied by a 'key' and 'tenantid'.
+   * - key: A secret key. MUST be accompanied by an 'account' and 'tenantid'.
+   * - endpoint: The URL to the authentication endpoint. Necessary if you are not
+   *     using a 'token' and 'swift_endpoint'.
+   * - use_swift_auth: If this is set to TRUE, it will force the app to use
+   *     the deprecated swiftAuth instead of IdentityServices authentication.
+   *     In general, you should avoid using this.
+   *
+   * To find these params, the method first checks the supplied context. If the 
+   * key is not found there, it checks the Bootstrap::conf().
    */
   protected function initializeObjectStorage() {
 
     $token = $this->cxt('token');
     $endpoint = $this->cxt('swift_endpoint');
 
+    $username = $this->cxt('username');
+    $password = $this->cxt('password');
+
+    $account = $this->cxt('account');
+    $key = $this->cxt('key');
+
+    $tenantId = $this->cxt('tenantid');
+    $authUrl = $this->cxt('endpoint');
+
 
     // If context has the info we need, start from there.
     if (!empty($token) && !empty($endpoint)) {
       $this->store = new \HPCloud\Storage\ObjectStorage($token, $endpoint);
     }
-    // Try to authenticate and get a new token.
-    else {
-      // Now we need to get the following things from context:
-      // - Account name
-      // - Account key
-      $account = $this->cxt('account');
-      $key = $this->cxt('key');
-      $baseURL = $this->cxt('endpoint');
+    elseif ($this->cxt('use_swift_auth', FALSE)) {
 
-      if (empty($baseURL) || empty($account) || empty($key)) {
+      if (empty($authUrl) || empty($account) || empty($key)) {
         throw new \HPCloud\Exception('account, endpoint, key are required stream parameters.');
       }
-      $this->store = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($account, $key, $baseURL);
+      $this->store = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($account, $key, $authUrl);
+
+    }
+    // If we get here and tenant ID is not set, we can't get a container.
+    elseif (empty($tenantId) || empty($authUrl)) {
+      throw new \HPCloud\Exception('Tenant ID (tenantid) and endpoint are required.');
+    }
+    // Try to authenticate and get a new token.
+    else {
+      $ident = new \HPCloud\Services\IdentityServices($authUrl);
+
+      if (!empty($username) && !empty($password)) {
+        $token = $ident->authenticateAsUser($username, $password, $tenantId);
+      }
+      elseif (!empty($account) && !empty($key)) {
+        $token = $ident->authenticateAsAccount($account, $key, $tenantId);
+      }
+      else {
+        throw new \HPCloud\Exception('Either username/password or account/key must be provided.');
+      }
+
+      $catalog = $ident->serviceCatalog(ObjectStorage::SERVICE_TYPE);
+      if (empty($catalog) || empty($catalog[0]['endpoints'][0]['publicURL'])) {
+        throw new \HPCloud\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, TRUE));
+      }
+      $serviceURL = $catalog[0]['endpoints'][0]['publicURL'];
+
+      $this->store = new ObjectStorage($token, $serviceURL);
     }
 
     return !empty($this->store);

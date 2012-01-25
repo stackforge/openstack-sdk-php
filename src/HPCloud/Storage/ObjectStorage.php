@@ -49,6 +49,13 @@ class ObjectStorage {
   const ACL_PUBLIC_WRITE = 'public-write';
   const ACL_PUBLIC_READ_WRITE = 'public-read-write';
 
+  /**
+   * The name of this service type in HPCloud.
+   *
+   * This is used with IdentityService::serviceCatalog().
+   */
+  const SERVICE_TYPE = 'object-store';
+
 
   /**
    * Create a new instance after getting an authenitcation token.
@@ -445,8 +452,9 @@ class ObjectStorage {
    *
    * @return array
    *  An associative array of account info. Typical keys are:
-   *  - bytes
-   *  - count
+   *  - bytes: Bytes consumed by existing content.
+   *  - containers: Number of containers.
+   *  - objects: Number of objects.
    * @throws \HPCloud\Transport\AuthorizationException
    *   if the user credentials are invalid or have expired.
    */
@@ -456,7 +464,8 @@ class ObjectStorage {
 
     $results = array(
       'bytes' => $data->header('X-Account-Bytes-Used', 0),
-      'count' => $data->header('X-Account-Container-Count', 0),
+      'containers' => $data->header('X-Account-Container-Count', 0),
+      'objects' => $data->header('X-Account-Container-Count', 0),
     );
 
     return $results;
