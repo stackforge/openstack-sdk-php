@@ -70,6 +70,17 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $tok2 = $service->authenticate($auth);
     $this->assertEquals($tok, $tok2);
 
+    // Again with no tenant ID.
+    $auth = array(
+      'passwordCredentials' => array(
+        'username' => self::conf('hpcloud.identity.username'),
+        'password' => self::conf('hpcloud.identity.password'),
+      ),
+      //'tenantId' => self::conf('hpcloud.identity.tenantId'),
+    );
+    $tok = $service->authenticate($auth);
+    $this->assertNotEmpty($tok);
+
 
     // Test account ID/secret key auth.
     $auth = array(
@@ -98,6 +109,13 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $tok = $service->authenticateAsUser($user, $pass, $tenantId);
 
     $this->assertNotEmpty($tok);
+
+    // Try again, this time with no tenant ID.
+    $tok2 = $service->authenticateAsUser($user, $pass);
+    $this->assertNotEmpty($tok2);
+
+    $details = $service->tokenDetails();
+    $this->assertEmpty($details['tenant']);
   }
 
   /**
@@ -108,9 +126,18 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
 
     $account = self::conf('hpcloud.identity.account');
     $secret = self::conf('hpcloud.identity.secret');
+    $tenantId = self::conf('hpcloud.identity.tenantId');
 
+    // No tenant ID.
     $tok = $service->authenticateAsAccount($account, $secret);
     $this->assertNotEmpty($tok);
+    $this->assertEmpty($service->tenantId());
+
+    // No tenant ID.
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $tok = $service->authenticateAsAccount($account, $secret, $tenantId);
+    $this->assertNotEmpty($tok);
+    $this->assertEquals($tenantId, $service->tenantId());
 
     return $service;
   }
@@ -125,8 +152,33 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
   /**
    * @depends testAuthenticateAsAccount
    */
-  public function testTokenDetails($service) {
+  public function testTenantId() {
+    $user = self::conf('hpcloud.identity.username');
+    $pass = self::conf('hpcloud.identity.password');
+    $tenantId = self::conf('hpcloud.identity.tenantId');
+
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $this->assertNull($service->tenantId());
+
+    $service->authenticateAsUser($user, $pass);
+    $this->assertEmpty($service->tenantId());
+
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service->authenticateAsUser($user, $pass, $tenantId);
+    $this->assertNotEmpty($service->tenantId());
+  }
+
+  /**
+   * @depends testAuthenticateAsAccount
+   */
+  public function testTokenDetails() {
     $now = time();
+    $user = self::conf('hpcloud.identity.username');
+    $pass = self::conf('hpcloud.identity.password');
+    $tenantId = self::conf('hpcloud.identity.tenantId');
+
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service->authenticateAsUser($user, $pass);
 
     // Details for account auth.
     $details = $service->tokenDetails();
@@ -139,9 +191,6 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
 
     // Test details for username auth.
     $service = new IdentityServices(self::conf('hpcloud.identity.url'));
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
     $service->authenticateAsUser($user, $pass, $tenantId);
 
     $details = $service->tokenDetails();
@@ -151,6 +200,8 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $this->assertStringStartsWith($expectUser, $details['tenant']['name']);
     $this->assertNotEmpty($details['id']);
     $this->assertNotEmpty($details['tenant']['id']);
+
+    $this->assertEquals($tenantId, $details['tenant']['id']);
 
     $ts = strtotime($details['expires']);
     $this->assertGreaterThan($now, $ts);
@@ -217,7 +268,38 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testTenants
    */
   function testRescope() {
-    $this->markTestIncomplete();
-  }
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $user = self::conf('hpcloud.identity.username');
+    $pass = self::conf('hpcloud.identity.password');
+    $tenantId = self::conf('hpcloud.identity.tenantId');
 
+    // Authenticate without a tenant ID.
+    $token = $service->authenticateAsUser($user, $pass);
+
+    $this->assertNotEmpty($token);
+
+    $details = $service->tokenDetails();
+    $this->assertEmpty($details['tenant']);
+
+    // With no tenant ID, there should be only
+    // one entry in the catalog.
+    $catalog = $service->serviceCatalog();
+    $this->assertEquals(1, count($catalog));
+
+    $service->rescope($tenantId);
+
+    $details = $service->tokenDetails();
+    $this->assertEquals($tenantId, $details['tenant']['id']);
+
+    $catalog = $service->serviceCatalog();
+    $this->assertGreaterThan(1, count($catalog));
+
+    // Test unscoping
+    $service->rescope('');
+    $details = $service->tokenDetails();
+    $this->assertEmpty($details['tenant']);
+    $catalog = $service->serviceCatalog();
+    $this->assertEquals(1, count($catalog));
+
+  }
 }
