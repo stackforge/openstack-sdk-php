@@ -413,10 +413,12 @@ class IdentityServices {
   }
 
   /**
-   * Get the service catalog.
+   * Get the service catalog, optionaly filtering by type.
    *
    * This returns the service catalog (largely unprocessed) that
-   * is returned during an authentication request.
+   * is returned during an authentication request. If a type is passed in,
+   * only entries of that type are returned. If no type is passed in, the
+   * entire service catalog is returned.
    *
    * The service catalog contains information about what services (if any) are
    * available for the present user. Object storage (Swift) Compute instances
@@ -435,7 +437,7 @@ class IdentityServices {
    * array(
    *   array(
    *     'name' : 'Object Storage',
-   *     'type' => 'object-storage',
+   *     'type' => 'object-store',
    *     'endpoints' => array(
    *       'tenantId' => '123456',
    *       'adminURL' => 'https://example.hpcloud.net/1.0',
@@ -461,14 +463,39 @@ class IdentityServices {
    *
    * This will not be populated until after authentication has been done.
    *
+   * Types:
+   *
+   * While this is by no means an exhaustive list, here are a few types that
+   * might appear in a service catalog (and upon which you can filter):
+   *
+   * - identity: Identity Services (i.e. Keystone)
+   * - compute: Compute instance (Nova)
+   * - object-store: Object Storage (Swift)
+   * - hpext:cdn: HPCloud CDN service (yes, the colon belongs in there)
+   *
+   * Other services will be added.
+   *
    * @todo Paging on the service catalog is not yet implemented.
    *
    * @return array
    *   An associative array representing
    *   the service catalog.
    */
-  public function serviceCatalog() {
-    return $this->serviceCatalog;
+  public function serviceCatalog($type = NULL) {
+    // If no type is specified, return the entire
+    // catalog.
+    if (empty($type)) {
+      return $this->serviceCatalog;
+    }
+
+    $list = array();
+    foreach ($this->serviceCatalog as $entry) {
+      if ($entry['type'] == $type) {
+        $list[] = $entry;
+      }
+    }
+
+    return $list;
   }
 
   /**

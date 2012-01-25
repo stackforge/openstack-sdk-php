@@ -53,6 +53,10 @@ class ObjectStorage {
   /**
    * Create a new instance after getting an authenitcation token.
    *
+   * THIS METHOD IS DEPRECATED. OpenStack now uses Keyston to authenticate.
+   * You should use \HPCloud\Services\IdentityServices to authenticate.
+   * Then use this class's constructor to create an object.
+   *
    * This uses the legacy Swift authentication facility to authenticate
    * to swift, get a new token, and then create a new ObjectStorage 
    * instance with that token.
@@ -81,6 +85,9 @@ class ObjectStorage {
    * @throws \HPCloud\Transport\FileNotFoundException if the URL is
    *   wrong.
    * @throws \HPCloud\Exception if some other exception occurs.
+   *
+   * @deprecated Newer versions of OpenStack use Keystone auth instead
+   * of Swift auth.
    */
   public static function newFromSwiftAuth($account, $key, $url) {
     $headers = array(

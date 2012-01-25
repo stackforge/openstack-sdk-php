@@ -225,6 +225,19 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals('Identity', $idService['name']);
     $this->assertNotEmpty($idService['endpoints']);
     $this->assertNotEmpty($idService['endpoints'][0]['publicURL']);
+
+    // Test filters.
+    $justID = $service->serviceCatalog('identity');
+    $this->assertEquals(1, count($justID));
+
+    $idService = $justID[0];
+    $this->assertEquals('Identity', $idService['name']);
+    $this->assertNotEmpty($idService['endpoints']);
+    $this->assertNotEmpty($idService['endpoints'][0]['publicURL']);
+
+    // Make sure a missed filter returns an empty set.
+    $expectEmpty = $service->serviceCatalog('no-such-servicename');
+    $this->assertEmpty($expectEmpty);
   }
 
 
