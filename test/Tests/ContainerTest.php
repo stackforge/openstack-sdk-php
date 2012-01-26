@@ -376,6 +376,9 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
   }
 
+  /**
+   * @group public
+   */
   public function testAcl() {
     $store = $this->objectStore();
     $cname = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
