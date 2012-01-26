@@ -17,7 +17,7 @@ use \HPCloud\Storage\ObjectStorage\ACL;
 class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   const FNAME = 'streamTest.txt';
-  const FTYPE = 'text/plain';
+  const FTYPE = 'application/x-tuna-fish; charset=iso-8859-13';
 
   protected function newUrl($objectName) {
     $scheme = StreamWrapper::DEFAULT_SCHEME;
@@ -52,6 +52,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $params = $add + array(
       'token' => $this->objectStore()->token(),
       'swift_endpoint' => $this->objectStore()->url(),
+      'content_type' => self::FTYPE,
     );
     $cxt = array($scheme => $params);
 
@@ -80,6 +81,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
       'key' => $key,
       'endpoint' => $baseURL,
       'tenantid' => $tenant,
+      'content_type' => self::FTYPE,
     );
     $cxt = array($scheme => $params);
 
@@ -291,6 +293,24 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals($stat1['size'], $stat2['size']);
 
     return $res;
+  }
+
+  /**
+   * @depends testFlush
+   */
+  public function testStreamGetMetadata($res) {
+    // Grab a copy of the object.
+    $url = $this->newUrl(self::FNAME);
+    $newObj = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+
+    $md = stream_get_meta_data($newObj);
+    //throw new \Exception(print_r($md, true));
+    $obj = $md['wrapper_data']->object();
+
+    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\RemoteObject', $obj);
+
+    $this->assertEquals(self::FTYPE, $obj->contentType());
+
   }
 
   /**

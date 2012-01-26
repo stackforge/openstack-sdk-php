@@ -186,6 +186,43 @@ use \HPCloud\Storage\ObjectStorage;
  *
  * As usual, the underlying \HPCloud\Storage\ObjectStorage\Container class
  * supports the full range of Swift features.
+ *
+ * SUPPORTED CONTEXT PARAMETERS
+ *
+ * This section details paramters that can be passed <i>either</i>
+ * through a stream context <i>or</i> through
+ * \HPCloud\Bootstrap::setConfiguration().
+ *
+ * You are <i>required</i> to pass in authentication information. This
+ * comes in one of three forms:
+ *
+ * 1. API keys: acccount, key, tenantid, endpoint
+ * 2. User login: username, password, tenantid, endpoint
+ * 3. Existing (valid) token: token, swift_endpoint
+ *
+ * The third method (token) can be used when the application has already
+ * authenticated. In this case, a token has been generated and assigneet 
+ * to an account and tenant ID.
+ *
+ * The following parameters may be set either in the stream context
+ * or through \HPCloud\Bootstrap::setConfiguration():
+ *
+ * - token: An auth token. If this is supplied, authentication is skipped and
+ *     this token is used. NOTE: You MUST set swift_endpoint if using this
+ *     option.
+ * - swift_endpoint: The URL to the swift instance. This is only necessary if
+ *     'token' is set. Otherwise it is ignored.
+ * - username: A username. MUST be accompanied by 'password' and 'tenantid'.
+ * - password: A password. MUST be accompanied by 'username' and 'tenantid'.
+ * - account: An account ID. MUST be accompanied by a 'key' and 'tenantid'.
+ * - key: A secret key. MUST be accompanied by an 'account' and 'tenantid'.
+ * - endpoint: The URL to the authentication endpoint. Necessary if you are not
+ *     using a 'token' and 'swift_endpoint'.
+ * - use_swift_auth: If this is set to TRUE, it will force the app to use
+ *     the deprecated swiftAuth instead of IdentityServices authentication.
+ *     In general, you should avoid using this.
+ * - content_type: This is effective only when writing files. It will
+ *     set the Content-Type of the file during upload.
  */
 class StreamWrapper {
 
@@ -500,6 +537,11 @@ class StreamWrapper {
    * Internally, this is used by flush and close.
    */
   protected function writeRemote() {
+
+    $contentType = $this->cxt('content_type');
+    if (!empty($contentType)) {
+      $this->obj->setContentType($contentType);
+    }
 
     // Skip debug streams.
     if ($this->isNeverDirty) {
@@ -909,6 +951,35 @@ class StreamWrapper {
   }
 
   /**
+   * Get the Object.
+   *
+   * This provides low-level access to the
+   * \PHCloud\Storage\ObjectStorage\Object instance in which the content
+   * is stored.
+   *
+   * Accessing the object's payload (Object::content()) is strongly
+   * discouraged, as it will modify the pointers in the stream that the
+   * stream wrapper is using.
+   *
+   * HOWEVER, accessing the Object's metadata properties, content type,
+   * and so on is okay. Changes to this data will be written on the next
+   * flush, provided that the file stream data has also been changed.
+   *
+   * To access this:
+   *
+   * @code
+   * <?php
+   *  $handle = fopen('swift://container/test.txt', 'rb', $cxt);
+   *  $md = stream_get_meta_data($handle);
+   *  $obj = $md['wrapper_data']->object();
+   * ?>
+   * @endocde
+   */
+  public function object() {
+    return $this->obj;
+  }
+
+  /**
    * Generate a reasonably accurate STAT array.
    *
    * Notes on mode:
@@ -1061,6 +1132,17 @@ class StreamWrapper {
 
   /**
    * Get an item out of the context.
+   *
+   * @todo Should there be an option to NOT query the Bootstrap::conf()?
+   *
+   * @param string $name
+   *   The name to look up. First look it up in the context, then look
+   *   it up in the Bootstrap config.
+   * @param mixed $default
+   *   The default value to return if no config param was found.
+   * @return mixed
+   *   The discovered result, or $default if specified, or NULL if
+   *   no $default is specified.
    */
   protected function cxt($name, $default = NULL) {
 
