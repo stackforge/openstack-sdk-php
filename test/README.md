@@ -7,6 +7,9 @@ The HPCloud bindings offer a few stand-alone tests for testing basic
 connectivity to the HPCloud services, but most tests are of the
 automated variety.
 
+*IMPORTANT*: Make sure your settings.ini file is up-to-date! Options
+have changed!
+
 ## Stand-alone Tests
 
 Stand-alone tests are designed to verify that certain preconditions of
@@ -31,26 +34,24 @@ including:
 
 * ID: The ID given to you by HP Cloud.
 * KEY: Your account's key.
+* TENANT ID: Your account's tenant ID.
 * URL: The Endpoint URL.
 
-All three pieces of information can be found by logging into [the
+All four pieces of information can be found by logging into [the
 management console](https://manage.hpcloud.com) and going to the section
 called *Storage*. There should be a link on that page that says *Get
-Storage API Keys*. That page displays all three pieces of required
+Storage API Keys*. That page displays all four pieces of required
 information.
 
 From there, you can execute a command like this:
 
 ```
-$ php test/AuthTest.php 123made-up-key  456made-up-secret https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/
+$ php test/AuthTest.php 123made-up-key  456made-up-secret https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/ 1234567
 
 ```
 
-If successfull, it should return something like this:
-
-```
-Success! The authentication token is AUTH_tk0a12345678987654321b922d29101478.
-```
+If successfull, it should return details about your username, token, and
+the services in your service catalog.
 
 ## Unit Tests
 
@@ -73,18 +74,24 @@ Your settings should look something like this:
 
 ```
 ; Settings to work with swift:
-hpcloud.swift.account = 12345678:87654321
-hpcloud.swift.key = abcdef123456
-hpcloud.swift.url = https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/
+; hpcloud.swift.account = 12345678:87654321
+; hpcloud.swift.key = abcdef123456
+; hpcloud.swift.url = https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/
+
 hpcloud.swift.container = "I♡HPCloud"
+
+hpcloud.identity.url = https://region-a.geo-1.idenity.hpcloudsvc.com
+hpcloud.identity.tenantId =
+hpcloud.identity.username =
+hpcloud.identity.password =
+hpcloud.identity.account =
+hpcloud.identity.key =
 ```
 
-* hpcloud.swift.account: Your account ID
-* hpcloud.swift.key: Your secret key
-* hpcloud.swift.url: The endpoint URL
+You will need to add all of the `hpcloud.identity` settings, and all of
+this information can be found on your management console.
 
-All three of these pieces of information can be ascertained by following
-the instructions in the AuthTest section above.
+The hpcloud.swift.account, key, and url params are no longer required.
 
 Beginning from the root directory of the project (you should see `src/`
 and `test/` in that directory), run this command to execute all of the
