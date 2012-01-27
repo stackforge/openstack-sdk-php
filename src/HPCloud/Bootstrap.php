@@ -180,6 +180,16 @@ class Bootstrap {
     return $default;
   }
 
+  /**
+   * Check whether the given configuration option is set.
+   *
+   * @param string $name
+   *   The name of the item to check for.
+   * @return boolean
+   *   TRUE if the named option is set, FALSE otherwise. Note that the value may
+   *   be falsey (FALSE, 0, etc.), but if the value is NULL, this will return
+   *   false.
+   */
   public static function hasConfig($name) {
     return isset(self::$config[$name]);
   }
