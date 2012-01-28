@@ -203,7 +203,9 @@ TAB_SIZE               = 2
 # will result in a user-defined paragraph with heading "Side Effects:".
 # You can put \n's in the value part of an alias to insert newlines.
 
-ALIASES                =
+ALIASES                = "depends=\par Depends on \n"\
+                        "expectedException=\par Expects exception:\n"\
+                        "group=\par Test Group:\n"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C
 # sources only. Doxygen will then generate output that is more tailored for C.
@@ -679,9 +681,9 @@ RECURSIVE              = YES
 # Note that relative paths are relative to directory from which doxygen is run.
 
 EXCLUDE                = ./bin/build \
-                         ./doc \
+                         ./doc/api \
                          ./dist \
-                         ./.git
+                         .git
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
