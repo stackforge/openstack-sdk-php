@@ -187,4 +187,47 @@
  *     performance when reading objects.
  *
  */
+// Note that Doxygen assumes that dot (.) is the namespace separator in
+// package descriptions.
+/**
+ * @package HPCloud
+ * The HPCloud PHP library.
+ */
+/**
+ * @namespace HPCloud.Services
+ * HPCloud classes providing access to various services.
+ *
+ * HPCloud offers a number of services, including Compute (Nova),
+ * IdentityServices, and CDN.
+ *
+ * This package is reserved for classes that provide access to
+ * services.
+ */
+/**
+ * @package HPCloud.Storage
+ * HPCloud classes for remote storage.
+ *
+ * Services for now and the future:
+ *
+ * - ObjectStorage
+ * - CDN caching of storage
+ * - Others coming.
+ *
+ */
+/**
+ * @package HPCloud.Storage.ObjectStorage
+ * Classes specific to ObjectStorage.
+ *
+ * The main class is HPCloud::Storage::ObjectStorage.
+ */
+/**
+ * @package HPCloud.Transport
+ * HTTP/REST/JSON classes.
+ *
+ * HTTP/HTTPS is the transport protocol for OpenStack's RESTful services.
+ *
+ * This library provides both CURL and PHP Streams-based HTTP support,
+ * and this package provides a simple REST client architecture, along
+ * with the minimal JSON processing necessary.
+ */
 ?>
