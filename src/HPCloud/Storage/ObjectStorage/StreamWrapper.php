@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains the stream wrapper for `swift://` URLs.
@@ -21,19 +20,15 @@ use \HPCloud\Storage\ObjectStorage;
  * unauthenticated access to files (which can be done using the HTTP
  * stream wrapper -- no need for swift-specific logic).
  *
- * URL Structure
+ * <b>URL Structure</b>
  *
  * This takes URLs of the following form:
  *
- * @code
- * swift://CONTAINER/FILE
- * @endcode
+ * <tt>swift://CONTAINER/FILE</tt>
  *
  * Example:
  *
- * @code
- * swift://public/example.txt
- * @encode
+ * <tt>swift://public/example.txt</tt>
  *
  * The example above would access the `public` container and attempt to
  * retrieve the file named `example.txt`.
@@ -41,9 +36,7 @@ use \HPCloud\Storage\ObjectStorage;
  * Slashes are legal in Swift filenames, so a pathlike URL can be constructed
  * like this:
  *
- * @code
- * swift://public/path/like/file/name.txt
- * @endcode
+ * <tt>swift://public/path/like/file/name.txt</tt>
  *
  * The above would attempt to find a file in object storage named
  * `path/like/file/name.txt`.
@@ -53,7 +46,7 @@ use \HPCloud\Storage\ObjectStorage;
  * and object name (path) if there is any possibility that it will contain
  * UTF-8 characters.
  *
- * Locking
+ * <b>Locking</b>
  *
  * This library does not support locking (e.g. flock()). This is because the
  * OpenStack Object Storage implementation does not support locking. But there
@@ -65,7 +58,7 @@ use \HPCloud\Storage\ObjectStorage;
  *   TWO COPIES of the object. This can, of course, lead to nasty race
  *   conditions if each copy is modified.
  *
- * Usage
+ * <b>Usage</b>
  *
  * The principle purpose of this wrapper is to make it easy to access and
  * manipulate objects on a remote object storage instance. Managing
@@ -73,17 +66,17 @@ use \HPCloud\Storage\ObjectStorage;
  * the HPCloud API). Consequently, almost all actions done through the
  * stream wrapper are focused on objects, not containers, servers, etc.
  *
- * Retrieving an Existing Object
+ * <b>Retrieving an Existing Object</b>
  *
  * Retrieving an object is done by opening a file handle to that object.
  *
- * Writing an Object
+ * <b>Writing an Object</b>
  *
  * Nothing is written to the remote storage until the file is closed. This
  * keeps network traffic at a minimum, and respects the more-or-less stateless
  * nature of ObjectStorage.
  *
- * USING FILE/STREAM RESOURCES
+ * <b>USING FILE/STREAM RESOURCES</b>
  *
  * In general, you should access files like this:
  *
@@ -109,7 +102,7 @@ use \HPCloud\Storage\ObjectStorage;
  * ?>
  * @endcode
  *
- * Notes:
+ * @remarks
  *
  * - file_get_contents() works fine.
  * - You can write to a stream, too. Nothing is pushed to the server until
@@ -118,7 +111,7 @@ use \HPCloud\Storage\ObjectStorage;
  *   constraints are slightly relaxed to accomodate efficient local buffering.
  * - Files are buffered locally.
  *
- * USING FILE-LEVEL FUNCTIONS
+ * <b>USING FILE-LEVEL FUNCTIONS</b>
  *
  * PHP provides a number of file-level functions that stream wrappers can
  * optionally support. Here are a few such functions:
@@ -137,7 +130,7 @@ use \HPCloud\Storage\ObjectStorage;
  *   * An auth request
  *   * A request for the container (to get container permissions)
  *   * A request for the object
- * - IMPORTANT: Unlike the fopen()/fclose()... functions NONE of these functions
+ * - <em>IMPORTANT:</em> Unlike the fopen()/fclose()... functions NONE of these functions
  *   retrieves the body of the file. If you are working with large files, using
  *   these functions may be orders of magnitude faster than using fopen(), etc.
  *   (The crucial detail: These kick off a HEAD request, will fopen() does a
@@ -162,7 +155,7 @@ use \HPCloud\Storage\ObjectStorage;
  * - stat/fstat provide only one timestamp. Swift only tracks mtime, so mtime, atime,
  *   and ctime are all set to the last modified time.
  *
- * DIRECTORIES
+ * <b>DIRECTORIES</b>
  *
  * OpenStack Swift does not really have directories. Rather, it allows
  * characters such as '/' to be used to designate namespaces on object
@@ -187,7 +180,7 @@ use \HPCloud\Storage\ObjectStorage;
  * As usual, the underlying \HPCloud\Storage\ObjectStorage\Container class
  * supports the full range of Swift features.
  *
- * SUPPORTED CONTEXT PARAMETERS
+ * <b>SUPPORTED CONTEXT PARAMETERS</b>
  *
  * This section details paramters that can be passed <i>either</i>
  * through a stream context <i>or</i> through
@@ -196,9 +189,9 @@ use \HPCloud\Storage\ObjectStorage;
  * You are <i>required</i> to pass in authentication information. This
  * comes in one of three forms:
  *
- * 1. API keys: acccount, key, tenantid, endpoint
- * 2. User login: username, password, tenantid, endpoint
- * 3. Existing (valid) token: token, swift_endpoint
+ * -# API keys: acccount, key, tenantid, endpoint
+ * -# User login: username, password, tenantid, endpoint
+ * -# Existing (valid) token: token, swift_endpoint
  *
  * The third method (token) can be used when the application has already
  * authenticated. In this case, a token has been generated and assigneet 
@@ -592,7 +585,7 @@ class StreamWrapper {
    *
    * @param string $path
    *   The URL to the resource. See the class description for details, but
-   *   typically this expects URLs in the form `swift://CONTAINER/OBJECT`.
+   *   typically this expects URLs in the form <tt>swift://CONTAINER/OBJECT</tt>.
    * @param string $mode
    *   Any of the documented mode strings. See fopen(). For any file that is
    *   in a writing mode, the file will be saved remotely on flush or close.
@@ -973,7 +966,7 @@ class StreamWrapper {
    *  $md = stream_get_meta_data($handle);
    *  $obj = $md['wrapper_data']->object();
    * ?>
-   * @endocde
+   * @endcode
    */
   public function object() {
     return $this->obj;
@@ -987,8 +980,8 @@ class StreamWrapper {
    *   XXX is replaced by the permission string. Thus,
    *   this always reports that the type is "file" (100).
    * - Currently, only two permission sets are generated:
-   *   * 770: Represents the ACL::makePrivate() perm.
-   *   * 775: Represents the ACL::makePublic() perm.
+   *   - 770: Represents the ACL::makePrivate() perm.
+   *   - 775: Represents the ACL::makePublic() perm.
    *
    * Notes on mtime/atime/ctime:
    * - For whatever reason, Swift only stores one timestamp.
@@ -1058,6 +1051,12 @@ class StreamWrapper {
   // All methods beneath this line are not part of the Stream API.
   ///////////////////////////////////////////////////////////////////
 
+  /**
+   * Set the fopen mode.
+   *
+   * @param string $mode
+   *   The mode string, e.g. `r+` or `wb`.
+   */
   protected function setMode($mode) {
     $mode = strtolower($mode);
 

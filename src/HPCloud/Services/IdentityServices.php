@@ -4,11 +4,13 @@
  *
  * This file contains the main IdentityServices class.
  */
+
 namespace HPCloud\Services;
 
 /**
+ * IdentityServices provides authentication and authorization.
  *
- * Identity Services (a.k.a. Keystone) provides a central service for managing
+ * IdentityServices (a.k.a. Keystone) provides a central service for managing
  * other services. Through it, you can do the following:
  *
  * - Authenticate
@@ -16,7 +18,7 @@ namespace HPCloud\Services;
  * - Obtain a list of the services currently available with a token
  * - Associate with tenants using tenant IDs.
  *
- * AUTHENTICATION
+ * @b AUTHENTICATION
  *
  * The authentication process consists of a single transaction during which the
  * client (us) submits credentials and the server verifies those credentials,
@@ -30,7 +32,7 @@ namespace HPCloud\Services;
  *
  * Other mechanisms may be supported in the future.
  *
- * TENANTS
+ * @b TENANTS
  *
  * Services are associated with tenants. A token is returned when
  * authentication succeeds. It *may* be associated with a tenant. If it is not,
@@ -56,7 +58,7 @@ namespace HPCloud\Services;
  * HPCloud customers can find their tenant ID in the management console along
  * with their account ID and secret key.
  *
- * EXAMPLE
+ * @b EXAMPLE
  *
  * The following example illustrates typical use of this class.
  *
@@ -90,7 +92,7 @@ namespace HPCloud\Services;
  * ?>
  * @endcode
  *
- * PERFORMANCE CONSIDERATIONS
+ * <b>PERFORMANCE CONSIDERATIONS</b>
  *
  * The following methods require network requests:
  *
@@ -192,7 +194,7 @@ class IdentityServices {
   /**
    * Send an authentication request.
    *
-   * EXPERT: This allows authentication requests at a low level. For simple
+   * @remark EXPERT: This allows authentication requests at a low level. For simple
    * authentication requests using account number or username, see the
    * authenticateAsUser() and authenticateAsAccount() methods.
    *
@@ -221,9 +223,9 @@ class IdentityServices {
    *   The token. This is returned for simplicity. The full response is used
    *   to populate this object's service catalog, etc. The token is also
    *   retrievable with token().
-   * @throws \HPCloud\Transport\AuthorizationException
+   * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws \HPCloud\Exception
+   * @throws HPCloud::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -279,9 +281,9 @@ class IdentityServices {
    * @param string $tenantId
    *   The tenant ID for this account. This can be obtained through the
    *   HPCloud management console.
-   * @throws \HPCloud\Transport\AuthorizationException
+   * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws \HPCloud\Exception
+   * @throws HPCloud::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -330,9 +332,9 @@ class IdentityServices {
    *   with this token.
    * @retval string
    *   The auth token.
-   * @throws \HPCloud\Transport\AuthorizationException
+   * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws \HPCloud\Exception
+   * @throws HPCloud::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -405,7 +407,7 @@ class IdentityServices {
    *
    * This will not be populated until after authentication has been done.
    *
-   * @retvals array
+   * @retval array
    *   An associative array of details.
    */
   public function tokenDetails() {
@@ -560,9 +562,9 @@ class IdentityServices {
    * @retval array
    *   An indexed array of tenant info. Each entry will be an associative
    *   array containing tenant details.
-   * @throws \HPCloud\Transport\AuthorizationException
+   * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws \HPCloud\Exception
+   * @throws HPCloud::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -613,9 +615,9 @@ class IdentityServices {
    *
    * @retval string
    *   The authentication token.
-   * @throws \HPCloud\Transport\AuthorizationException
+   * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws \HPCloud\Exception
+   * @throws HPCloud::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -652,7 +654,7 @@ class IdentityServices {
    * This parses the JSON data and parcels out the data to the appropriate
    * fields.
    *
-   * @param \HPCloud\Transport\Response $response
+   * @param HPCloud::Transport::Response $response
    *   A response object.
    */
   protected function handleResponse($response) {
