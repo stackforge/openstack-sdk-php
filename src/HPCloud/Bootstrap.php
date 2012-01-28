@@ -161,7 +161,7 @@ class Bootstrap {
    *   The name of the configuration option to get.
    * @param mixed $default
    *   The default value to return if the name is not found.
-   * @return mixed
+   * @retval mixed
    *   The value, if found; or the default, if set; or NULL.
    */
   public static function config($name = NULL, $default = NULL) {
@@ -185,7 +185,7 @@ class Bootstrap {
    *
    * @param string $name
    *   The name of the item to check for.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the named option is set, FALSE otherwise. Note that the value may
    *   be falsey (FALSE, 0, etc.), but if the value is NULL, this will return
    *   false.

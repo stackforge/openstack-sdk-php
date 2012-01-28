@@ -166,7 +166,7 @@ class PHPStreamTransport implements Transporter {
    *
    * @param array $headers
    *   An associative array of header names to header values.
-   * @return string
+   * @retval string
    *   A string containing formatted headers.
    */
   protected function smashHeaders($headers) {

@@ -138,7 +138,7 @@ class Object {
    *
    * This returns an associative array of all metadata for this object.
    *
-   * @return array
+   * @retval array
    *   An associative array of metadata. This may be empty.
    */
   public function metadata() {
@@ -170,7 +170,7 @@ class Object {
    * Returns the name of an object. If the name has been overwritten
    * using setName(), this will return the latest (overwritten) name.
    *
-   * @return string
+   * @retval string
    *   The name of the object.
    */
   public function name() {
@@ -214,7 +214,7 @@ class Object {
    *
    * This returns the currently set content type.
    *
-   * @return string
+   * @retval string
    *   The content type, including any additional options.
    */
   public function contentType() {
@@ -268,7 +268,7 @@ class Object {
    * When extending this class, you should make sure that this function
    * returns the entire contents of an object.
    *
-   * @return string
+   * @retval string
    *   The content of the file.
    */
   public function content() {
@@ -303,7 +303,7 @@ class Object {
    * When extending this class, generate an ETag by creating an MD5 of
    * the entire object's content (but not the metadata or name).
    *
-   * @return string
+   * @retval string
    *   An MD5 value as a string of 32 hex digits (0-9a-f).
    */
   public function eTag() {
@@ -339,7 +339,7 @@ class Object {
    * Encoding is used to indicate how a file was encoded or compressed.
    * See setEncoding() for more information.
    *
-   * @return string
+   * @retval string
    *   The encoding type.
    */
   public function encoding() {
@@ -376,7 +376,7 @@ class Object {
    *
    * See setDisposition() for discussion.
    *
-   * @return string
+   * @retval string
    *   The disposition string, or NULL if none is set.
    */
   public function disposition() {
@@ -446,7 +446,7 @@ class Object {
    * The contentLength() method is not called for chunked transfers. So
    * if this returns TRUE, contentLength() is ignored.
    *
-   * @return boolean
+   * @retval boolean
    *   TRUE to recommend chunked transfer, FALSE otherwise.
    */
   public function isChunked() {

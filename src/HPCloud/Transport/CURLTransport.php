@@ -203,7 +203,7 @@ class CURLTransport implements Transporter {
    *
    * @param resource $file
    *   A file pointer to the file that has the headers.
-   * @return array
+   * @retval array
    *   An array of headers, one header per line.
    */
   protected function fetchHeaders($file) {

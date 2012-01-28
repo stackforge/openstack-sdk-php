@@ -323,7 +323,7 @@ class StreamWrapper {
    *   The URL to open.
    * @param int $options
    *   Unused.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the directory is opened, FALSE otherwise.
    */
   public function dir_opendir($path, $options) {
@@ -363,7 +363,7 @@ class StreamWrapper {
    *
    * This gets a single line from the directory.
    *
-   * @return string
+   * @retval string
    *   The name of the resource or FALSE when the directory has no more
    *   entries.
    */
@@ -425,7 +425,7 @@ class StreamWrapper {
    *   A swift URL that exists on the remote.
    * @param string $path_to
    *   A swift URL to another path.
-   * @return boolean
+   * @retval boolean
    *   TRUE on success, FALSE otherwise.
    */
   public function rename($path_from, $path_to) {
@@ -470,7 +470,7 @@ class StreamWrapper {
    * the lower-level buffer objects, this function can have unexpected
    * side effects.
    *
-   * @return resource
+   * @retval resource
    *   this returns the underlying stream.
    */
   public function stream_cast($cast_as) {
@@ -507,7 +507,7 @@ class StreamWrapper {
    *
    * See stream_seek().
    *
-   * @return boolean
+   * @retval boolean
    *   TRUE if it has reached the end, FALSE otherwise.
    */
   public function stream_eof() {
@@ -755,7 +755,7 @@ class StreamWrapper {
    *
    * @param int $count
    *   The number of bytes to read (usually 8192).
-   * @return string
+   * @retval string
    *   The data read.
    */
   public function stream_read($count) {
@@ -858,7 +858,7 @@ class StreamWrapper {
    *
    * See ftell() and fseek().
    *
-   * @return int
+   * @retval int
    *   The current position in the stream.
    */
   public function stream_tell() {
@@ -874,7 +874,7 @@ class StreamWrapper {
    *
    * @param string $data
    *   Data to write to the stream.
-   * @return int
+   * @retval int
    *   The number of bytes written. 0 indicates and error.
    */
   public function stream_write($data) {
@@ -896,7 +896,7 @@ class StreamWrapper {
    *
    * @param string $path
    *   The URL.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the file was deleted, FALSE otherwise.
    */
   public function unlink($path) {
@@ -1140,7 +1140,7 @@ class StreamWrapper {
    *   it up in the Bootstrap config.
    * @param mixed $default
    *   The default value to return if no config param was found.
-   * @return mixed
+   * @retval mixed
    *   The discovered result, or $default if specified, or NULL if
    *   no $default is specified.
    */
@@ -1187,7 +1187,7 @@ class StreamWrapper {
    *
    * @param string $url
    *   A Swift URL.
-   * @return array
+   * @retval array
    *   An array as documented in parse_url().
    */
   protected function parseUrl($url) {

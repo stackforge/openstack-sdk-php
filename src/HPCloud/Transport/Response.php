@@ -119,7 +119,7 @@ class Response {
    * the handle returned by file() will also be closed
    * (they are one and the same).
    *
-   * @return resource
+   * @retval resource
    *   A file handle.
    */
   public function file() {
@@ -137,7 +137,7 @@ class Response {
    * to keep memory usage low, we don't want to store the
    * entire content in a string.
    *
-   * @return string
+   * @retval string
    *   The contents of the response body.
    */
   public function content() {
@@ -170,7 +170,7 @@ class Response {
    * Some return extra information on the processing of the
    * data.
    *
-   * @return array
+   * @retval array
    *   An associative array of metadata about the
    *   transaction resulting in this response.
    */
@@ -222,7 +222,7 @@ class Response {
    * Redirects are typically followed, and thus rarely (if ever)
    * appear in a Response object.
    *
-   * @return int
+   * @retval int
    *   The HTTP code, e.g. 200 or 202.
    */
   public function status() {
@@ -235,7 +235,7 @@ class Response {
    * Typically these follow the HTTP protocol specification's
    * recommendations. e.g. 200 returns 'OK'.
    *
-   * @return string
+   * @retval string
    *  A server-generated status message.
    */
   public function statusMessage() {
@@ -247,7 +247,7 @@ class Response {
    *
    * Example: HTTP/1.1
    *
-   * @return string
+   * @retval string
    *   The protocol name and version.
    */
   public function protocol() {
@@ -264,7 +264,7 @@ class Response {
    * @param array $headerArray
    *   An indexed array of headers, as returned by the PHP stream
    *   library.
-   * @return array
+   * @retval array
    *   An associative array of header name/value pairs.
    */
   protected function parseHeaders($headerArray) {

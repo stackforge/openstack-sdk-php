@@ -126,7 +126,7 @@ class ACL {
    *
    * - READ to any host, with container listings.
    *
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval \HPCloud\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makePublic() {
@@ -146,7 +146,7 @@ class ACL {
    * This does not grant any permissions. OpenStack interprets an object
    * with no permissions as a private object.
    *
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval \HPCloud\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makeNonPublic() {
@@ -205,7 +205,7 @@ class ACL {
    *   The permission (ACL::READ, ACL::WRITE).
    * @param string $rule
    *   The string rule to parse.
-   * @return array
+   * @retval array
    *   The rule as an array.
    */
   public static function parseRule($perm, $rule) {
@@ -353,7 +353,7 @@ class ACL {
   /**
    * Get the rules array for this ACL.
    *
-   * @return array
+   * @retval array
    *   An array of associative arrays of rules.
    */
   public function rules() {
@@ -457,7 +457,7 @@ class ACL {
    * This returns TRUE only if this ACL does not grant any permissions
    * at all.
    *
-   * @return boolean
+   * @retval boolean
    *   TRUE if this is private (non-public), FALSE if
    *   any permissions are granted via this ACL.
    */

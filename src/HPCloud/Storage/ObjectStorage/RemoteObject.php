@@ -173,7 +173,7 @@ class RemoteObject extends Object {
    * This returns the array of minimally processed HTTP headers that
    * were sent from the server.
    *
-   * @return array
+   * @retval array
    *   An associative array of header names and values.
    */
   public function headers() {
@@ -195,7 +195,7 @@ class RemoteObject extends Object {
    *
    * Be wary of using this method with large files.
    *
-   * @return string
+   * @retval string
    *   The contents of the file as a string.
    * @throws \HPCloud\Transport\FileNotFoundException
    *   when the requested content cannot be located on the remote
@@ -261,7 +261,7 @@ class RemoteObject extends Object {
    *   If this is set to TRUE, any existing local modifications will be ignored
    *   and the content will be refreshed from the server. Any
    *   local changes to the object will be discarded.
-   * @return resource
+   * @retval resource
    *   A handle to the stream, which is already opened and positioned at
    *   the beginning of the stream.
    */
@@ -324,7 +324,7 @@ class RemoteObject extends Object {
    * Importantly, this indicates whether the object <i>will</i> cache
    * its contents, not whether anything is actually cached.
    *
-   * @return boolean
+   * @retval boolean
    *   TRUE if caching is enabled, FALSE otherwise.
    */
   public function isCaching() {
@@ -366,7 +366,7 @@ class RemoteObject extends Object {
    * returned by the remote server, and comparing that to the server's
    * supplied ETag hash.
    *
-   * @return boolean
+   * @retval boolean
    *   TRUE if this is verifying, FALSE otherwise.
    */
   public function isVerifyingContent() {
@@ -445,7 +445,7 @@ class RemoteObject extends Object {
    *   cause the remote host to return the object in the response body.
    *   The response body is not handled, though. If this is set to
    *   FALSE, a HEAD request is sent, and no body is returned.
-   * @return \HPCloud\Transport\Response
+   * @retval \HPCloud\Transport\Response
    *   containing the object metadata and (depending on the
    *   $fetchContent flag) optionally the data.
    */

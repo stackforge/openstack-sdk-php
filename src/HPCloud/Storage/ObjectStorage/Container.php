@@ -82,7 +82,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   ASCII-armored with no newlines.
    * @param string $prefix
    *   A prefix for the metadata headers.
-   * @return array
+   * @retval array
    *   An array of headers.
    * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e635
    * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e700
@@ -115,7 +115,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   An associative array of HTTP headers.
    * @param string $prefix
    *   The prefix on metadata headers.
-   * @return array
+   * @retval array
    *   An associative array of name/value attribute pairs.
    */
   public static function extractHeaderAttributes($headers, $prefix = NULL) {
@@ -189,7 +189,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $url
    *   The base URL. The container name is automatically appended to
    *   this at construction time.
-   * @return Container
+   * @retval Container
    *   The Container object, initialized and ready for use.
    */
   public static function newFromResponse($name, $response, $token, $url) {
@@ -219,7 +219,7 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Get the name of this container.
    *
-   * @return string
+   * @retval string
    *   The name of the container.
    */
   public function name() {
@@ -229,7 +229,7 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Get the number of bytes in this container.
    *
-   * @return int
+   * @retval int
    *   The number of bytes in this container.
    */
   public function bytes() {
@@ -251,7 +251,7 @@ class Container implements \Countable, \IteratorAggregate {
    * listings do not supply the metadata, while loading a container
    * directly does.
    *
-   * @return array
+   * @retval array
    *   An array of metadata name/value pairs.
    */
   public function metadata() {
@@ -298,7 +298,7 @@ class Container implements \Countable, \IteratorAggregate {
    * ?>
    * @endcode
    *
-   * @return int
+   * @retval int
    *   The number of items in this container.
    */
   public function count() {
@@ -314,7 +314,7 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param \HPCloud\Storage\ObjectStorage\Object $obj
    *   The object to store.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the object was saved.
    * @throws \HPCloud\Transport\LengthRequiredException
    *   if the Content-Length could not be determined and chunked
@@ -432,7 +432,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param \HPCloud\Storage\ObjectStorage\Object $obj
    *   The object to update.
    *
-   * @return boolean
+   * @retval boolean
    *   TRUE if the metadata was updated.
    *
    * @throws \HPCloud\Transport\FileNotFoundException
@@ -541,7 +541,7 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the object to load.
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A remote object with the content already stored locally.
    */
   public function object($name) {
@@ -591,7 +591,7 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the object to fetch.
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A remote object ready for use.
    */
   public function remoteObject($name) {
@@ -640,7 +640,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $maker
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
-   * @return array
+   * @retval array
    *   List of RemoteObject or Subdir instances.
    */
   public function objects($limit = NULL, $marker = NULL) {
@@ -701,7 +701,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $marker
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
-   * @return array
+   * @retval array
    *   List of RemoteObject or Subdir instances.
    */
   public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $marker = NULL) {
@@ -766,7 +766,7 @@ class Container implements \Countable, \IteratorAggregate {
    * Container was set to be public (See 
    * ObjectStorage::createContainer()) will be accessible by this URL.
    *
-   * @return
+   * @retval
    */
   public function url() {
     return $this->url;
@@ -786,7 +786,7 @@ class Container implements \Countable, \IteratorAggregate {
    * ObjectStorage methods.
    *
    * @todo Determine how to get the ACL from JSON data.
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval \HPCloud\Storage\ObjectStorage\ACL
    *   An ACL, or NULL if the ACL could not be retrieved.
    */
   public function acl() {
@@ -902,7 +902,7 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the object to remove.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the file was deleted, FALSE if no such file is found.
    */
   public function delete($name) {

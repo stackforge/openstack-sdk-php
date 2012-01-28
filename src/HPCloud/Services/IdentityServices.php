@@ -182,7 +182,7 @@ class IdentityServices {
    * This includes version number, so in that regard it is not an identical
    * URL to the one passed into the constructor.
    *
-   * @return string
+   * @retval string
    *   The complete URL to the identity services endpoint.
    */
   public function url() {
@@ -217,7 +217,7 @@ class IdentityServices {
    * @param array $ops
    *   An associative array of authentication operations and their respective
    *   parameters.
-   * @return string
+   * @retval string
    *   The token. This is returned for simplicity. The full response is used
    *   to populate this object's service catalog, etc. The token is also
    *   retrievable with token().
@@ -328,7 +328,7 @@ class IdentityServices {
    * @param string $tenantId
    *   A valid tenant ID. This will be used to associate a tenant's services
    *   with this token.
-   * @return string
+   * @retval string
    *   The auth token.
    * @throws \HPCloud\Transport\AuthorizationException
    *   If authentication failed.
@@ -357,7 +357,7 @@ class IdentityServices {
    * This will not be populated until after one of the authentication
    * methods has been run.
    *
-   * @return string
+   * @retval string
    *   The token ID to be used in subsequent calls.
    */
   public function token() {
@@ -373,7 +373,7 @@ class IdentityServices {
    * This will not be populated until after an authentication method has been
    * run.
    *
-   * @return string
+   * @retval string
    *   The tenant ID if available, or NULL.
    */
   public function tenantId() {
@@ -405,7 +405,7 @@ class IdentityServices {
    *
    * This will not be populated until after authentication has been done.
    *
-   * @returns array
+   * @retvals array
    *   An associative array of details.
    */
   public function tokenDetails() {
@@ -477,7 +477,7 @@ class IdentityServices {
    *
    * @todo Paging on the service catalog is not yet implemented.
    *
-   * @return array
+   * @retval array
    *   An associative array representing
    *   the service catalog.
    */
@@ -524,7 +524,7 @@ class IdentityServices {
    *
    * This will not have data until after authentication has been done.
    *
-   * @return array
+   * @retval array
    *   An associative array, as described above.
    */
   public function user() {
@@ -557,7 +557,7 @@ class IdentityServices {
    *
    * Note that this method invokes a new request against the remote server.
    *
-   * @return array
+   * @retval array
    *   An indexed array of tenant info. Each entry will be an associative
    *   array containing tenant details.
    * @throws \HPCloud\Transport\AuthorizationException
@@ -611,7 +611,7 @@ class IdentityServices {
    *   empty string (`''`), the present token will be "unscoped" and its tenant
    *   ID will be removed.
    *
-   * @return string
+   * @retval string
    *   The authentication token.
    * @throws \HPCloud\Transport\AuthorizationException
    *   If authentication failed.

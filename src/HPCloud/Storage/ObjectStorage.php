@@ -152,7 +152,7 @@ class ObjectStorage {
   /**
    * Get the authentication token.
    *
-   * @return string
+   * @retval string
    *   The authentication token.
    */
   public function token() {
@@ -162,7 +162,7 @@ class ObjectStorage {
   /**
    * Get the URL endpoint.
    *
-   * @return string
+   * @retval string
    *   The URL that is the endpoint for this service.
    */
   public function url() {
@@ -198,7 +198,7 @@ class ObjectStorage {
    * @param string $marker
    *   The name of the last object seen. Used when paging.
    *
-   * @return array
+   * @retval array
    *   An associative array of containers, where the key is the
    *   container's name and the value is an
    *   \HPCloud\Storage\ObjectStorage\Container object. Results are
@@ -233,7 +233,7 @@ class ObjectStorage {
    *
    * @param string $name
    *   The name of the container to load.
-   * @return \HPCloud\Storage\ObjectStorage\Container
+   * @retval \HPCloud\Storage\ObjectStorage\Container
    *   A container.
    * @throws \HPCloud\Transport\FileNotFoundException
    *   if the named container is not found on the remote server.
@@ -261,7 +261,7 @@ class ObjectStorage {
    *
    * @param string $name
    *   The name of the container to test.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the container exists, FALSE if it does not.
    * @throws \HPCloud\Exception
    *   If an unexpected network error occurs.
@@ -332,7 +332,7 @@ class ObjectStorage {
    *   non-public (private). To change this behavior, you can add a
    *   custom ACL. To make the container publically readable, you can
    *   use this: `ACL::makePublic()`.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the container was created, FALSE if the container was not
    *   created because it already exists.
    */
@@ -383,7 +383,7 @@ class ObjectStorage {
    * @param \HPCloud\Storage\ObjectStorage\ACL $acl
    *   An ACL. To make the container publically readable, use
    *   ACL::makePublic().
-   * @return boolean
+   * @retval boolean
    *   TRUE if the cointainer was created, FALSE otherwise.
    */
   public function changeContainerACL($name, ACL $acl) {
@@ -404,7 +404,7 @@ class ObjectStorage {
    *
    * @param string $name
    *   The name of the container.
-   * @return boolean
+   * @retval boolean
    *   TRUE if the container was deleted, FALSE if the container was not
    *   found (and hence, was not deleted).
    * @throws \HPCloud\Storage\ObjectStorage\ContainerNotEmptyException
@@ -450,7 +450,7 @@ class ObjectStorage {
    * - The total bytes used by this Object Storage instance (`bytes`).
    * - The number of containers (`count`).
    *
-   * @return array
+   * @retval array
    *  An associative array of account info. Typical keys are:
    *  - bytes: Bytes consumed by existing content.
    *  - containers: Number of containers.

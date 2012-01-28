@@ -18,7 +18,7 @@ class Transport {
   /**
    * Get an instance of a Transporter.
    *
-   * @return \HPCloud\Transport\Transporter
+   * @retval \HPCloud\Transport\Transporter
    *   An initialized transporter.
    */
   public static function instance() {
