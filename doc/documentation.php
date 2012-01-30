@@ -14,6 +14,24 @@
  * The HPCloud-PHP library provides PHP developers with a fully tested,
  * robust, and feature-rich library for working with the HPCloud services.
  *
+ * @attention
+ * Making use of this library will require that you have several pieces of
+ * account information for your HPCloud account (or OpenStack account, if you're
+ * using this library with non-HP OpenStack implentations):
+ * - account ID and secret key: For cases where you want account-wide 
+ *   authentication/authorization.
+ * - username/password: Typically, this is the same username/password you use
+ *   to access the HPCloud management console.
+ * - tenant ID: This associates an account or user with a bundle of services.
+ *   You can find this information in your management console.
+ * - endpoint: You will need the URL to the HPCloud endpoint responsible for
+ *   <i>authenticating users</i>. This can be found in your management
+ *   console.
+ *
+ * (If you are not sure what the "HPCloud Management Console" is, head over to
+ * http://build.hpcloud.com. There you will find some articles and videos
+ * explaining the HPCloud structure.
+ *
  * @section where_to_start Where To Start
  *
  * Cruising a list of methods and classes is not exactly the best way to get
@@ -53,6 +71,9 @@
  * // you might want to use this:
  * \HPCloud\Bootstrap::useAutoloader();
  *
+ * // Turn on stream wrappers.
+ * \HPCloud\Bootstrap::useStreamWrappers();
+ *
  * // Create a stream context. You can get this
  * // information (including tenant ID) from your
  * // HPCloud management console.
@@ -66,7 +87,7 @@
  *
  * // Get an object from the remote object storage and read it as a string
  * // right into $myObject.
- * $myObject = file_get_contents('swift://mycontainer/foo.txt'. 'rb', FALSE, $cxt);
+ * $myObject = file_get_contents('swift://mycontainer/foo.txt', FALSE, $cxt);
  *
  * ?>
  * @endcode
@@ -127,10 +148,10 @@
  * ?>
  * @endcode
  *
- * 1. Our classes use PHP namespaces to organize components. If you've never used
+ * -# Our classes use PHP namespaces to organize components. If you've never used
  *   them before, don't worry. They're easy to get the hang of.
- * 2. The Bootstrap class handles setting up HPCloud services. Read about it at HPCloud::Bootstrap.
- * 3. The IdentityServices class handles authenticating to HP, discovering services, and providing
+ * -# The Bootstrap class handles setting up HPCloud services. Read about it at HPCloud::Bootstrap.
+ * -# The IdentityServices class handles authenticating to HP, discovering services, and providing
  *   access to your account. HPCloud::Services::IdentityServices explains the details, but here are
  *   a few functions you'll want to know:
  *   - HPCloud::Services::IdentityServices::__construct() tells the object where to connect.
@@ -229,5 +250,7 @@
  * This library provides both CURL and PHP Streams-based HTTP support,
  * and this package provides a simple REST client architecture, along
  * with the minimal JSON processing necessary.
+ *
+ *
  */
 ?>
