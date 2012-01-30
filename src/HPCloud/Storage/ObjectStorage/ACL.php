@@ -10,7 +10,7 @@ namespace HPCloud\Storage\ObjectStorage;
 /**
  * Access control list for object storage.
  *
- * EXPERIMENTAL: This is bassed on a feature of Swift that is likely to
+ * @b EXPERIMENTAL: This is bassed on a feature of Swift that is likely to
  * change. Most of this is based on undocmented features of the API
  * discovered both in the Python docs and in discussions by various
  * members of the OpenStack community.
@@ -23,19 +23,19 @@ namespace HPCloud\Storage\ObjectStorage;
  * In the current implementation of Swift, access can be assigned based
  * on two different factors:
  *
- * - Accounts: Access can be granted to specific accounts, and within
+ * - @b Accounts: Access can be granted to specific accounts, and within
  *   those accounts, can be further specified to specific users. See the
  *   addAccount() method for details on this.
- * - Referrers: Access can be granted based on host names or host name
- *   patterns. For example, only subdomains of `*.example.com` may be
+ * - @b Referrers: Access can be granted based on host names or host name
+ *   patterns. For example, only subdomains of <tt>*.example.com</tt> may be
  *   granted READ access to a particular object.
  *
  * ACLs are transmitted within the HTTP headers for an object or
- * container. Two headers are used: X-Container-Read for READ rules, and
- * X-Container-Write for WRITE rules. Each header may have a chain of
+ * container. Two headers are used: @c X-Container-Read for READ rules, and
+ * @c X-Container-Write for WRITE rules. Each header may have a chain of
  * rules.
  *
- * Examples
+ * @b Examples
  *
  * For most casual cases, only the static constructor functions are
  * used. For example, an ACL that does not grant any public access can
@@ -43,7 +43,7 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * @code
  * <?php
- * ACL::makeNonPublic();
+ * $acl = ACL::makeNonPublic();
  * ?>
  * @endcode
  *
@@ -51,13 +51,16 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * @code
  * <?php
- * ACL::makePublic();
+ * $acl = ACL::makePublic();
  * ?>
  * @endcode
  *
+ * (Note that in both cases, what is returned is an instance of an ACL with
+ * all of the necessary configuration done.)
+ *
  * Sometimes you will need more sophisticated access control rules. The
- * following grants READ access to anyone coming from an `example.com`
- * domain, but grants WRITE access only to the account `admins`:
+ * following grants READ access to anyone coming from an @c example.com
+ * domain, but grants WRITE access only to the account @c admins:
  *
  * @code
  * <?php
@@ -105,6 +108,8 @@ class ACL {
   const WRITE = 2;
   /**
    * Flag for READ and WRITE.
+   *
+   * This is equivalent to <tt>ACL::READ | ACL::WRITE</tt>
    */
   const READ_WRITE = 3; // self::READ | self::WRITE;
 
@@ -126,7 +131,7 @@ class ACL {
    *
    * - READ to any host, with container listings.
    *
-   * @retval \HPCloud\Storage\ObjectStorage\ACL
+   * @retval HPCloud::Storage::ObjectStorage::ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makePublic() {
@@ -146,7 +151,7 @@ class ACL {
    * This does not grant any permissions. OpenStack interprets an object
    * with no permissions as a private object.
    *
-   * @retval \HPCloud\Storage\ObjectStorage\ACL
+   * @retval HPCloud::Storage::ObjectStorage::ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makeNonPublic() {
@@ -155,12 +160,23 @@ class ACL {
   }
 
   /**
-   * Alias of makeNonPublic().
+   * Alias of ACL::makeNonPublic().
    */
   public static function makePrivate() {
     return self::makeNonPublic();
   }
 
+  /**
+   * Given a list of headers, get the ACL info.
+   *
+   * This is a utility for processing headers and discovering any ACLs embedded
+   * inside the headers.
+   *
+   * @param array $headers
+   *   An associative array of headers.
+   * @retval ACL
+   *   A new ACL.
+   */
   public static function newFromHeaders($headers) {
     $acl = new ACL();
 
@@ -254,7 +270,7 @@ class ACL {
   public function __construct() {}
 
   /**
-   * Allow an account access.
+   * Grant ACL access to an account.
    *
    * Optionally, a user may be given to further limit access.
    *
@@ -269,7 +285,7 @@ class ACL {
    *
    * If $user is an array, every user in the array will be granted
    * access under the provided account. That is, for each user in the
-   * array, an entry of the form 'account:user' will be generated in the
+   * array, an entry of the form \c account:user will be generated in the
    * final ACL.
    *
    * At this time there does not seem to be a way to grant global write
@@ -336,7 +352,7 @@ class ACL {
    *
    * By default, granting READ permission on a container does not grant
    * permission to list the contents of a container. Setting the
-   * allowListings() permission will allow matching hosts to also list
+   * ACL::allowListings() permission will allow matching hosts to also list
    * the contents of a container.
    *
    * In the current Swift implementation, there is no mechanism for
@@ -499,6 +515,15 @@ class ACL {
     return $allowsAllHosts && $allowsRListings;
   }
 
+  /**
+   * Implements the magic __toString() PHP function.
+   *
+   * This allows you to <tt>print $acl</tt> and get back
+   * a pretty string.
+   *
+   * @retval string
+   *   The ACL represented as a string.
+   */
   public function __toString() {
     $headers = $this->headers();
 
