@@ -3,6 +3,13 @@
  * @file
  * Base test case.
  */
+/**
+ * @defgroup Tests
+ *
+ * The HPCloud library is tested with PHPUnit tests.
+ *
+ * This group contains all of the unit testing classes.
+ */
 
 
 namespace HPCloud\Tests;
@@ -13,6 +20,9 @@ require_once 'src/HPCloud/Bootstrap.php';
 
 //use \mageekguy\atoum;
 
+/**
+ * @ingroup Tests
+ */
 class TestCase extends \PHPUnit_Framework_TestCase {
 
   public static $settings = array();
