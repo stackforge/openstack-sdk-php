@@ -18,9 +18,9 @@ namespace HPCloud\Storage\ObjectStorage;
  * Containers are iterable, which means you can iterate over a container
  * and access each file inside of it.
  *
- * Typically, containers are created using ObjectStorage::addContainer().
+ * Typically, containers are created using ObjectStorage::createContainer().
  * They are retrieved using ObjectStorage::container() or
- * ObjectStoarge::containers().
+ * ObjectStorage::containers().
  *
  * @code
  * <?php
@@ -211,9 +211,30 @@ class Container implements \Countable, \IteratorAggregate {
 
   /**
    * Construct a new Container.
+   *
+   * @attention
+   * Typically a container should be created by ObjectStorage::createContainer().
+   * Get existing containers with ObjectStorage::container() or
+   * ObjectStorage::containers(). Do not use this unless you know what you are doing.
+   *
+   * Simply creating a container does not save the container remotely.
+   *
+   * Also, this does no checking of the underlying container. That is, simply
+   * constructing a Container in no way guarantees that such a container exists
+   * on the origin object store.
+   *
+   * @param string $name
+   *   The name.
+   * @param string $url
+   *   The full URL to the container.
+   * @param string $token
+   *   The auth token.
+   *
    */
-  public function __construct($name) {
+  public function __construct($name , $url = NULL, $token = NULL) {
     $this->name = $name;
+    $this->url = $url;
+    $this->token = $token;
   }
 
   /**
@@ -308,23 +329,23 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Save an Object into Object Storage.
    *
-   * This takes an \HPCloud\Storage\ObjectStorage\Object
+   * This takes an HPCloud::Storage::ObjectStorage::Object
    * and stores it in the given container in the present
    * container on the remote object store.
    *
-   * @param \HPCloud\Storage\ObjectStorage\Object $obj
+   * @param HPCloud::Storage::ObjectStorage::Object $obj
    *   The object to store.
    * @retval boolean
    *   TRUE if the object was saved.
-   * @throws \HPCloud\Transport\LengthRequiredException
+   * @throws HPCloud::Transport::LengthRequiredException
    *   if the Content-Length could not be determined and chunked
    *   encoding was not enabled. This should not occur for this class,
    *   which always automatically generates Content-Length headers.
    *   However, subclasses could generate this error.
-   * @throws \HPCloud\Transport\UnprocessableEntityException
+   * @throws HPCloud::Transport::UnprocessableEntityException
    *   if the checksome passed here does not match the checksum
    *   calculated remotely.
-   * @throws \HPCloud\Exception when an unexpected (usually
+   * @throws HPCloud::Exception when an unexpected (usually
    *   network-related) error condition arises.
    */
   public function save(Object $obj, $file = NULL) {
@@ -429,13 +450,13 @@ class Container implements \Countable, \IteratorAggregate {
    * particularly in cases where custom headers have been set.
    * Use with caution.
    *
-   * @param \HPCloud\Storage\ObjectStorage\Object $obj
+   * @param HPCloud::Storage::ObjectStorage::Object $obj
    *   The object to update.
    *
    * @retval boolean
    *   TRUE if the metadata was updated.
    *
-   * @throws \HPCloud\Transport\FileNotFoundException
+   * @throws HPCloud::Transport::FileNotFoundException
    *   if the object does not already exist on the object storage.
    */
   public function updateMetadata(Object $obj) {
@@ -477,7 +498,7 @@ class Container implements \Countable, \IteratorAggregate {
    * Note that there is no MOVE operation. You must copy and then DELETE
    * in order to achieve that.
    *
-   * @param \HPCloud\Storage\ObjectStorage\Object $obj
+   * @param HPCloud::Storage::ObjectStorage::Object $obj
    *   The object to copy. This object MUST already be saved on the
    *   remote server. The body of the object is not sent. Instead, the
    *   copy operation is performed on the remote server. You can, and
@@ -657,7 +678,7 @@ class Container implements \Countable, \IteratorAggregate {
    * that begin with that prefix.
    *
    * (Directory-like behavior is also supported by using "directory
-   * markers". See objectsWithPath().)
+   * markers". See objectsByPath().)
    *
    * Prefixes
    *
@@ -716,7 +737,7 @@ class Container implements \Countable, \IteratorAggregate {
    * Specify a path (subdirectory) to traverse.
    *
    * OpenStack Swift provides two basic ways to handle directory-like
-   * structures. The first is using a prefix (see objectsByPrefix()).
+   * structures. The first is using a prefix (see objectsWithPrefix()).
    * The second is to create directory markers and use a path.
    *
    * A directory marker is just a file with a name that is
@@ -796,6 +817,12 @@ class Container implements \Countable, \IteratorAggregate {
     return $this->acl;
   }
 
+  /**
+   * Get missing fields.
+   *
+   * Not all containers come fully instantiated. This method is sometimes
+   * called to "fill in" missing fields.
+   */
   protected function loadExtraData() {
       // Do a GET on $url to fetch headers.
       $client = \HPCloud\Transport::instance();
