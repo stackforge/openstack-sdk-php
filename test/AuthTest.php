@@ -91,3 +91,5 @@ $services = $cs->serviceCatalog();
 foreach ($services as $service) {
   print "\t" . $service['name'] . PHP_EOL;
 }
+
+//print_r($services);
