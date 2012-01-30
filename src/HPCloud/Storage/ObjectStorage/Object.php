@@ -19,9 +19,9 @@ namespace HPCloud\Storage\ObjectStorage;
  *   pathing rules).
  * - Content: The content of the object.
  * - Content type: The MIME type of the object. Examples:
- *   * text/plain; charset=UTF-8
- *   * image/png
- *   * application/x-my-custom-mime
+ *   - text/plain; charset=UTF-8
+ *   - image/png
+ *   - application/x-my-custom-mime
  * - Metadata: File attributes that are stored along with the file on
  *   object store.
  *
@@ -386,7 +386,8 @@ class Object {
   /**
    * Set additional headers for storage.
    *
-   * EXPERT.
+   * @attention EXPERT: You will need to understand OpenStack
+   * internals to use this effectively.
    *
    * Headers set here will be added to the HTTP request during save
    * operations. They are not merged into existing headers until

@@ -12,7 +12,7 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * A remote object is one whose canonical copy is stored in a remote
  * object storage. It represents a local (and possibly partial) copy of
- * an object.
+ * an object. (Contrast this with HPCloud::Storage::ObjectStorage::Object)
  *
  * Depending on how the object was constructed, it may or may not have a
  * local copy of the entire contents of the file. It may only have the
@@ -22,7 +22,8 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * Remote objects can be modified locally. Simply modifying an object
  * will not result in those modifications being stored on the remote
- * server. The object must be saved (see Container::save()). When an
+ * server. The object must be saved (see 
+ * HPCloud::Storage::ObjectStorage::Container::save()). When an
  * object is modified so that its local contents differ from the remote
  * stored copy, it is marked dirty (see isDirty()).
  */
@@ -168,7 +169,7 @@ class RemoteObject extends Object {
   /**
    * Get the HTTP headers sent by the server.
    *
-   * EXPERT.
+   * @attention EXPERT.
    *
    * This returns the array of minimally processed HTTP headers that
    * were sent from the server.
