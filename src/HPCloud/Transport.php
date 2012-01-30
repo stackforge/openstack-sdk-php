@@ -10,6 +10,20 @@ namespace HPCloud;
  * Interaction with the OpenStack/HPCloud services is handled via
  * HTTPS/REST requests. This class provides transport for requests.
  *
+ * <b>Usage</b>
+ *
+ * @code
+ * <?php
+ * // Create a new transport.
+ * $client = Transport::instance();
+ *
+ * // Send a request.
+ * $response = $client->doRequest($uri, $method, $headerArray, $body);
+ *
+ * print $response->content();
+ * ?>
+ * @endcode
+ *
  */
 class Transport {
 
@@ -18,7 +32,26 @@ class Transport {
   /**
    * Get an instance of a Transporter.
    *
-   * @retval \HPCloud\Transport\Transporter
+   * See HPCloud::Transport::CURLTransport and HPCloud::Transport::PHPStreamTransport
+   * for implementations of an HPCloud::Transport::Transporter.
+   *
+   * To set the transport, the suggested method is this:
+   *
+   * @code
+   * <?php
+   * // Set the 'transport' config option.
+   * $settings = array(
+   *   // Make sure you use the entire namespace, and that
+   *   // your classloader can find this namespace.
+   *   'transport' => '\HPCloud\Transport\CURLTransport',
+   * );
+   *
+   * // Merge $settings into existing configuration.
+   * \HPCloud\Bootstrap::setConfiguration($settings);
+   * ?>
+   * @endcode
+   *
+   * @retval HPCloud::Transport::Transporter
    *   An initialized transporter.
    */
   public static function instance() {
