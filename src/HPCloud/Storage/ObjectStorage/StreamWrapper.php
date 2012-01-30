@@ -184,7 +184,7 @@ use \HPCloud\Storage\ObjectStorage;
  *
  * This section details paramters that can be passed <i>either</i>
  * through a stream context <i>or</i> through
- * \HPCloud\Bootstrap::setConfiguration().
+ * HPCloud::Bootstrap::setConfiguration().
  *
  * @attention
  * PHP functions that do not allow you to pass a context may still be supported
@@ -202,7 +202,7 @@ use \HPCloud\Storage\ObjectStorage;
  * to an account and tenant ID.
  *
  * The following parameters may be set either in the stream context
- * or through \HPCloud\Bootstrap::setConfiguration():
+ * or through HPCloud::Bootstrap::setConfiguration():
  *
  * - token: An auth token. If this is supplied, authentication is skipped and
  *     this token is used. NOTE: You MUST set swift_endpoint if using this
@@ -300,6 +300,20 @@ class StreamWrapper {
    *
    * This closes a directory handle, freeing up the resources.
    *
+   * @code
+   * <?php
+   *
+   * // Assuming a valid context in $cxt...
+   *
+   * // Get the container as if it were a directory.
+   * $dir = opendir('swift://mycontainer', $cxt);
+   *
+   * // Do something with $dir
+   *
+   * closedir($dir);
+   * ?>
+   * @endcode
+   *
    * NB: Some versions of PHP 5.3 don't clear all buffers when
    * closing, and the handle can occasionally remain accessible for
    * some period of time.
@@ -315,6 +329,20 @@ class StreamWrapper {
 
   /**
    * Open a directory for reading.
+   *
+   * @code
+   * <?php
+   *
+   * // Assuming a valid context in $cxt...
+   *
+   * // Get the container as if it were a directory.
+   * $dir = opendir('swift://mycontainer', $cxt);
+   *
+   * // Do something with $dir
+   *
+   * closedir($dir);
+   * ?>
+   * @endcode
    *
    * See opendir() and scandir().
    *
@@ -361,6 +389,21 @@ class StreamWrapper {
    * Read an entry from the directory.
    *
    * This gets a single line from the directory.
+   * @code
+   * <?php
+   *
+   * // Assuming a valid context in $cxt...
+   *
+   * // Get the container as if it were a directory.
+   * $dir = opendir('swift://mycontainer', $cxt);
+   *
+   * while (($entry = readdir($dir)) !== FALSE) {
+   *   print $entry . PHP_EOL;
+   * }
+   *
+   * closedir($dir);
+   * ?>
+   * @endcode
    *
    * @retval string
    *   The name of the resource or FALSE when the directory has no more
@@ -395,6 +438,25 @@ class StreamWrapper {
    * Rewind to the beginning of the listing.
    *
    * This repositions the read pointer at the first entry in the directory.
+   * @code
+   * <?php
+   *
+   * // Assuming a valid context in $cxt...
+   *
+   * // Get the container as if it were a directory.
+   * $dir = opendir('swift://mycontainer', $cxt);
+   *
+   * while (($entry = readdir($dir)) !== FALSE) {
+   *   print $entry . PHP_EOL;
+   * }
+   *
+   * rewinddir($dir);
+   *
+   * $first = readdir($dir);
+   *
+   * closedir($dir);
+   * ?>
+   * @endcode
    */
   public function dir_rewinddir() {
     $this->dirIndex = 0;
@@ -419,6 +481,24 @@ class StreamWrapper {
    * This DOES support cross-container renaming.
    *
    * See Container::copy().
+   *
+   * @code
+   * <?php
+   * Bootstrap::setConfiguration(array(
+   *   'tenantid' => '1234',
+   *   'account' => '1234',
+   *   'secret' => '4321',
+   *   'endpoint' => 'https://auth.example.com',
+   * ));
+   *
+   * $from = 'swift://containerOne/file.txt';
+   * $to = 'swift://containerTwo/file.txt';
+   *
+   *  // Rename can also take a context as a third param.
+   * rename($from, $to);
+   *
+   * ?>
+   * @endcode
    *
    * @param string $path_from
    *   A swift URL that exists on the remote.
@@ -458,9 +538,11 @@ class StreamWrapper {
     }
   }
 
+  /*
   public function copy($path_from, $path_to) {
     throw new \Exception("UNDOCUMENTED.");
   }
+   */
 
   /**
    * Cast stream into a lower-level stream.
@@ -479,9 +561,23 @@ class StreamWrapper {
   /**
    * Close a stream, writing if necessary.
    *
+   * @code
+   * <?php
+   *
+   * // Assuming $cxt has a valid context.
+   *
+   * $file = fopen('swift://container/file.txt', 'r', FALSE, $cxt);
+   *
+   * fclose($file);
+   *
+   * ?>
+   * @endcode
+   *
    * This will close the present stream. Importantly,
    * this will also write to the remote object storage if
    * any changes have been made locally.
+   *
+   * See stream_open().
    */
   public function stream_close() {
 
@@ -504,6 +600,8 @@ class StreamWrapper {
    * This checks whether the stream has reached the
    * end of the object's contents.
    *
+   * Called when \c feof() is called on a stream.
+   *
    * See stream_seek().
    *
    * @retval boolean
@@ -518,6 +616,8 @@ class StreamWrapper {
    *
    * If the local copy of this object has been modified,
    * it is written remotely.
+   *
+   * Called when \c fflush() is called on a stream.
    */
   public function stream_flush() {
     try {
@@ -596,6 +696,7 @@ class StreamWrapper {
    *   print $bytes;
    * }
    * fclose($file);
+   * ?>
    * @endcode
    *
    * If a file is opened in write mode, its contents will be retrieved from the
@@ -794,6 +895,9 @@ class StreamWrapper {
   /**
    * Perform a seek.
    *
+   * This is called whenever \c fseek() or \c rewind() is called on a
+   * Swift stream.
+   *
    * @attention
    * IMPORTANT: Unlike the PHP core, this library
    * allows you to fseek() inside of a file opened
@@ -841,6 +945,10 @@ class StreamWrapper {
    *   $stats = fstat($file);
    * ?>
    * @endcode
+   *
+   * To use standard \c stat() on a Swift stream, you will
+   * need to set account information (tenant ID, account ID, secret,
+   * etc.) through HPCloud::Bootstrap::setConfiguration().
    *
    * @retval array
    *   The stats array.
@@ -937,6 +1045,10 @@ class StreamWrapper {
    * delete either one. If you are using directory markers, not that deleting
    * a marker will NOT delete the contents of the "directory".
    *
+   * @attention
+   * You will need to use HPCloud::Bootstrap::setConfiguration() to set the
+   * necessary stream configuration, since \c unlink() does not take a context.
+   *
    * @param string $path
    *   The URL.
    * @retval boolean
@@ -971,6 +1083,9 @@ class StreamWrapper {
 
   }
 
+  /**
+   * @see stream_stat().
+   */
   public function url_stat($path, $flags) {
     $url = $this->parseUrl($path);
 
@@ -997,7 +1112,7 @@ class StreamWrapper {
    * Get the Object.
    *
    * This provides low-level access to the
-   * \PHCloud\Storage\ObjectStorage\Object instance in which the content
+   * PHCloud::Storage::ObjectStorage::Object instance in which the content
    * is stored.
    *
    * Accessing the object's payload (Object::content()) is strongly
@@ -1264,7 +1379,7 @@ class StreamWrapper {
    * Based on the context, initialize the ObjectStorage.
    *
    * The following parameters may be set either in the stream context
-   * or through \HPCloud\Bootstrap::setConfiguration():
+   * or through HPCloud::Bootstrap::setConfiguration():
    *
    * - token: An auth token. If this is supplied, authentication is skipped and
    *     this token is used. NOTE: You MUST set swift_endpoint if using this

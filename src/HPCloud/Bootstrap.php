@@ -163,7 +163,7 @@ class Bootstrap {
    * Common configuration directives:
    *
    * - 'transport': The namespaced classname for the transport that
-   *   should be used. Example: `\HPCloud\Transport\CURLTransport`
+   *   should be used. Example: @code \HPCloud\Transport\CURLTransport @endcode
    * - 'transport.debug': The integer 1 for enabling debug, 0 for
    *   disabling. Enabling will turn on verbose debugging output
    *   for any transport that supports it.
@@ -193,7 +193,7 @@ class Bootstrap {
    *
    * This is a special-purpose autoloader for loading
    * only the HPCloud classes. It will not attempt to
-   * autoload anything outside of the \HPCloud namespace.
+   * autoload anything outside of the HPCloud namespace.
    *
    * Because this is a special-purpose autoloader, it
    * should be safe to use with other special-purpose

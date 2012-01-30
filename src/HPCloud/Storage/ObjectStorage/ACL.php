@@ -326,6 +326,8 @@ class ACL {
    * Note that a simple minus sign ('-') is illegal, though it seems it
    * should be "disallow all hosts."
    *
+   * @param string $perm
+   *   The permission being granted. One of ACL:READ, ACL::WRITE, or ACL::READ_WRITE.
    * @param string $host
    *   A host specification string as described above.
    */

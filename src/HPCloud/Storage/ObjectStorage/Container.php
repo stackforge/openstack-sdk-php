@@ -182,7 +182,7 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the container.
-   * @param \HPCloud\Transport\Response $respose
+   * @param object $response HPCloud::Transport::Response
    *   The HTTP response object from the Transporter layer
    * @param string $token
    *   The auth token.
@@ -333,8 +333,11 @@ class Container implements \Countable, \IteratorAggregate {
    * and stores it in the given container in the present
    * container on the remote object store.
    *
-   * @param HPCloud::Storage::ObjectStorage::Object $obj
+   * @param object $obj HPCloud::Storage::ObjectStorage::Object
    *   The object to store.
+   * @param resource $file
+   *   An optional file argument that, if set, will be treated as the
+   *   contents of the object.
    * @retval boolean
    *   TRUE if the object was saved.
    * @throws HPCloud::Transport::LengthRequiredException
@@ -450,7 +453,7 @@ class Container implements \Countable, \IteratorAggregate {
    * particularly in cases where custom headers have been set.
    * Use with caution.
    *
-   * @param HPCloud::Storage::ObjectStorage::Object $obj
+   * @param object $obj HPCloud::Storage::ObjectStorage::Object
    *   The object to update.
    *
    * @retval boolean
@@ -498,7 +501,7 @@ class Container implements \Countable, \IteratorAggregate {
    * Note that there is no MOVE operation. You must copy and then DELETE
    * in order to achieve that.
    *
-   * @param HPCloud::Storage::ObjectStorage::Object $obj
+   * @param object $obj HPCloud::Storage::ObjectStorage::Object
    *   The object to copy. This object MUST already be saved on the
    *   remote server. The body of the object is not sent. Instead, the
    *   copy operation is performed on the remote server. You can, and
@@ -658,7 +661,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param int $limit
    *   An integer indicating the maximum number of items to return. This 
    *   cannot be greater than the Swift maximum (10k).
-   * @param string $maker
+   * @param string $marker
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
    * @retval array
@@ -787,7 +790,8 @@ class Container implements \Countable, \IteratorAggregate {
    * Container was set to be public (See 
    * ObjectStorage::createContainer()) will be accessible by this URL.
    *
-   * @retval
+   * @retval string
+   *   The URL.
    */
   public function url() {
     return $this->url;

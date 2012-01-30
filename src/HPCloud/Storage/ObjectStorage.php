@@ -323,15 +323,17 @@ class ObjectStorage {
    * ?>
    * @endcode
    *
-   * For details on ACLs, see \HPCloud\Storage\ObjectStorage\ACL.
+   * For details on ACLs, see HPCloud::Storage::ObjectStorage::ACL.
    *
    * @param string $name
    *   The name of the container.
-   * @param HPCloud::Storage::ObjectStorage::ACL $acl
+   * @param object $acl HPCloud::Storage::ObjectStorage::ACL
    *   An access control list object. By default, a container is
    *   non-public (private). To change this behavior, you can add a
    *   custom ACL. To make the container publically readable, you can
-   *   use this: `ACL::makePublic()`.
+   *   use this: HPCloud::Storage::ObjectStorage::ACL::makePublic().
+   * @param array $metadata
+   *   An associative array of metadata to attach to the container.
    * @retval boolean
    *   TRUE if the container was created, FALSE if the container was not
    *   created because it already exists.
@@ -380,7 +382,7 @@ class ObjectStorage {
    *
    * @param string $name
    *   The name of the container.
-   * @param HPCloud::Storage::ObjectStorage::ACL $acl
+   * @param object $acl HPCloud::Storage::ObjectStorage::ACL
    *   An ACL. To make the container publically readable, use
    *   ACL::makePublic().
    * @retval boolean

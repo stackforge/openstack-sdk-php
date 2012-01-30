@@ -154,7 +154,7 @@ class Object {
    * object store.
    *
    * To copy an object, see
-   * \HPCloud\Storage\ObjectStorage\Container::copyObject().
+   * HPCloud::Storage::ObjectStorage::Container::copyObject().
    *
    * @param string $name
    *   A file or object name.

@@ -654,7 +654,7 @@ class IdentityServices {
    * This parses the JSON data and parcels out the data to the appropriate
    * fields.
    *
-   * @param HPCloud::Transport::Response $response
+   * @param object $response HPCloud::Transport::Response
    *   A response object.
    */
   protected function handleResponse($response) {
