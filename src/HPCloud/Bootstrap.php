@@ -183,7 +183,7 @@ class Bootstrap {
    * HPCloud autoloader.
    *
    * An implementation of a PHP autoload function. Use
-   * Bootstrap::useAutoloader() if you want PHP to automatically
+   * HPCloud::useAutoloader() if you want PHP to automatically
    * load classes using this autoloader.
    *
    * @code
