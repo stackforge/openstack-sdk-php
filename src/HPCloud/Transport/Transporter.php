@@ -58,8 +58,6 @@ interface Transporter {
    *
    * Note that all parameters are required.
    *
-   * @todo Declare this in Transporter.
-   *
    * @param string $uri
    *   The target URI.
    * @param string $method
