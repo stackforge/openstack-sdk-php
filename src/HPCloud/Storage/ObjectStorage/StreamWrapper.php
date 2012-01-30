@@ -177,7 +177,7 @@ use \HPCloud\Storage\ObjectStorage;
  * said markers ought to be created, they are not supported by the stream
  * wrapper.
  *
- * As usual, the underlying \HPCloud\Storage\ObjectStorage\Container class
+ * As usual, the underlying HPCloud::Storage::ObjectStorage::Container class
  * supports the full range of Swift features.
  *
  * <b>SUPPORTED CONTEXT PARAMETERS</b>
@@ -185,6 +185,10 @@ use \HPCloud\Storage\ObjectStorage;
  * This section details paramters that can be passed <i>either</i>
  * through a stream context <i>or</i> through
  * \HPCloud\Bootstrap::setConfiguration().
+ *
+ * @attention
+ * PHP functions that do not allow you to pass a context may still be supported
+ * here <em>IF</em> you have set options using Bootstrap::setConfiguration().
  *
  * You are <i>required</i> to pass in authentication information. This
  * comes in one of three forms:
@@ -216,6 +220,8 @@ use \HPCloud\Storage\ObjectStorage;
  *     In general, you should avoid using this.
  * - content_type: This is effective only when writing files. It will
  *     set the Content-Type of the file during upload.
+ *
+ * @see http://us3.php.net/manual/en/class.streamwrapper.php
  */
 class StreamWrapper {
 
@@ -575,6 +581,23 @@ class StreamWrapper {
    *
    * This opens a given stream resource and prepares it for reading or writing.
    *
+   * @code
+   * <?php
+   * $cxt = stream_context_create(array(
+   *   'account' => '1bc123456',
+   *   'tenantid' => '987654321',
+   *   'secret' => 'eieio',
+   *   'endpoint' => 'https://auth.example.com',
+   * ));
+   * ?>
+   *
+   * $file = fopen('swift://myContainer/myObject.csv', 'rb', FALSE, $cxt);
+   * while ($bytes = fread($file, 8192)) {
+   *   print $bytes;
+   * }
+   * fclose($file);
+   * @endcode
+   *
    * If a file is opened in write mode, its contents will be retrieved from the
    * remote storage and cached locally for manipulation. If the file is opened
    * in a write-only mode, the contents will be created locally and then pushed
@@ -746,6 +769,19 @@ class StreamWrapper {
    *
    * See fread(), fgets(), and so on for examples.
    *
+   * @code
+   * <?php
+   * $cxt = stream_context_create(array(
+   *   'tenantid' => '12345',
+   *   'username' => 'me@example.com',
+   *   'password' => 'secret',
+   *   'endpoint' => 'https://auth.example.com',
+   * ));
+   *
+   * $content = file_get_contents('swift://public/myfile.txt', FALSE, $cxt);
+   * ?>
+   * @endcode
+   *
    * @param int $count
    *   The number of bytes to read (usually 8192).
    * @retval string
@@ -758,6 +794,7 @@ class StreamWrapper {
   /**
    * Perform a seek.
    *
+   * @attention
    * IMPORTANT: Unlike the PHP core, this library
    * allows you to fseek() inside of a file opened
    * in append mode ('a' or 'a+').
@@ -795,6 +832,19 @@ class StreamWrapper {
 
   }
 
+  /**
+   * Perform stat()/lstat() operations.
+   *
+   * @code
+   * <?php
+   *   $file = fopen('swift://foo/bar', 'r+', FALSE, $cxt);
+   *   $stats = fstat($file);
+   * ?>
+   * @endcode
+   *
+   * @retval array
+   *   The stats array.
+   */
   public function stream_stat() {
     $stat = fstat($this->objStream);
 
