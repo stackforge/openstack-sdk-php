@@ -18,6 +18,11 @@ namespace HPCloud\Transport;
  * needs.
  *
  * You can use a single PHPStreamTransport object to execute multiple requests.
+ *
+ * @attention This class should not be constructed directly.
+ * Use HPCloud::Transport::instance() to get an instance.
+ *
+ * See HPCloud::Transport and HPCloud::Bootstrap.
  */
 class PHPStreamTransport implements Transporter {
 

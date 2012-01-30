@@ -52,8 +52,8 @@ class Response {
    *   The HTTP method, e.g. 'HEAD', 'GET', 'DELETE'.
    * @param string $extra
    *   An extra string of debugging information. (NOT USED)
-   * @throws \HPCloud\Exception
-   *   A wide variety of \HPCloud\Transport exceptions.
+   * @throws HPCloud::Exception
+   *   A wide variety of HPCloud::Transport exceptions.
    */
   public static function failure($code, $err = 'Unknown', $uri = '', $method = '', $extra = '') {
 
@@ -132,6 +132,7 @@ class Response {
    * This returns the body of the response (no HTTP headers)
    * as a single string.
    *
+   * @attention
    * IMPORTANT: This can only be called once. HTTP streams
    * handled by PHP's stream wrapper cannot be rewound, and
    * to keep memory usage low, we don't want to store the
@@ -180,6 +181,14 @@ class Response {
 
   /**
    * Convenience function to retrieve a single header.
+   *
+   * @param string $name
+   *   The name of the header.
+   * @param mixed $default
+   *   An optional default value.
+   *
+   * @retval mixed
+   *   The value, if found, or the default, is specified, or NULL.
    */
   public function header($name, $default = NULL) {
     if (isset($this->headers[$name])) {
@@ -196,6 +205,9 @@ class Response {
    * headers returned by the remote server.
    *
    * These are available even if the stream has been closed.
+   *
+   * @retval
+   *   array The array of headers.
    */
   public function headers() {
     return $this->headers;
