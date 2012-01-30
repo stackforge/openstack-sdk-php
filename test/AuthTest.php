@@ -24,7 +24,9 @@ $config = array(
 $help = "Authenticate against HPCloud Identity Services.
 
 You can authenticate either by account number and access key, or (by using the
--u flag) by username, password, and tenant ID.
+-u flag) by username, password.
+
+While Tenant ID is optional, it is recommended.
 
 In both cases, you must supply a URL to the Identity Services endpoint.
 ";
@@ -53,10 +55,8 @@ $user = $argv[1 + $offset];
 $key = $argv[2 + $offset];
 $uri = $argv[3 + $offset];
 
-if ($asUser) {
-  if (empty($argv[4 + $offset])) {
-    die("ERROR: Tenant ID is required as a fourth parameter." . PHP_EOL);
-  }
+$tenantId = NULL;
+if (!empty($argv[4 + $offset])) {
   $tenantId = $argv[4 + $offset];
 }
 
@@ -71,7 +71,7 @@ if ($asUser) {
   $token = $cs->authenticateAsUser($user, $key, $tenantId);
 }
 else {
-  $token = $cs->authenticateAsAccount($user, $key);
+  $token = $cs->authenticateAsAccount($user, $key, $tenantId);
 }
 
 if (empty($token)) {
