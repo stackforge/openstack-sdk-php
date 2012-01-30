@@ -14,21 +14,61 @@ namespace HPCloud;
  *
  * There is no requirement that this class be used. HPCloud is
  * built to be flexible, and any individual component can be
- * used directly, with one caveat: No explicit `require` or
- * `include` calls are made. See the "autoloaders" discussion
+ * used directly, with one caveat: No explicit @c require or
+ * @c include calls are made. See the "autoloaders" discussion
  * below.
  *
  * This class provides the following services:
  *
- * - Stream Wrappers: This class can initialize a set of stream
+ * - <em>Configuration:</em> "global" settings are set here.
+ *   See the setConfiguration() method to see how they
+ *   can be set, and the config() and hasConfig() methods to see
+ *   how configuration might be checked.
+ * - <em>Stream Wrappers:</em> This class can initialize a set of stream
  *   wrappers which will make certain HPCloud services available
  *   through the core PHP stream support.
- * - Autoloader: It provides a special-purpose autoloader that can
+ * - <em>Autoloader:</em> It provides a special-purpose autoloader that can
  *   load the HPCloud classes, but which will not interfere with
  *   other autoloading facilities.
  *
- * AUTOLOADING
+ * <b>Configuration</b>
  *
+ * Configuration directives can be merged into the existing confiuration
+ * using the setConfiguration method.
+ *
+ * @code
+ * <?php
+ * $config = array(
+ *   // Use the faster and better CURL transport.
+ *   'transport' => '\HPCloud\Transport\CURLTransport',
+ *   // Set the HTTP max wait time to 500.
+ *   'transport.timeout' => 500,
+ * );
+ * Bootstrap::setConfiguration($config);
+ *
+ * // Check and get params.
+ * if (Bootstrap::hasConf('transport.timeout') {
+ *   $to = Bootstrap::conf('transport.timeout');
+ * }
+ *
+ * // Or get a param with a default value:
+ * $val = Bootstrap::conf('someval', 'default value');
+ *
+ * // $val will be set to 'default value' because there
+ * // is no 'someval' configuration param.
+ *
+ * ?>
+ * @endcode
+ *
+ * <b>AUTOLOADING</b>
+ *
+ * HPCloud comes with a built-in autoloader that can be called like this:
+ *
+ * @code
+ * Bootstrap::useAutoloader();
+ * @endcode
+ *
+ * @attention
  * The structure of the HPCloud file hierarchy is PSR-0 compliant.
  * This means that you can use any standard PSR-0 classloader to
  * load all of the classes here.
@@ -38,7 +78,9 @@ namespace HPCloud;
  * classloader that will load JUST the HPCloud classes. See
  * the Bootstrap::useAutoloader() static method.
  *
- * STREAM WRAPPERS
+ * See https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
+ *
+ * <b>STREAM WRAPPERS</b>
  *
  * Stream wrappers allow you to use the built-in file manipulation
  * functions in PHP to interact with other services. Specifically,
@@ -73,9 +115,40 @@ class Bootstrap {
    * full PSR-0 classloader should be capable of loading
    * these classes witout issue. You may prefer to use
    * a standard PSR-0 loader instead of this one.
+   *
+   * @see https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
    */
   public static function useAutoloader() {
     spl_autoload_register(__NAMESPACE__ . '\Bootstrap::autoload');
+  }
+
+  /**
+   * Register stream wrappers for HPCloud.
+   *
+   * This register the ObjectStorage stream wrapper, which allows you to access
+   * ObjectStorage through standard file access mechanisms.
+   *
+   * @code
+   * // Enable stream wrapper.
+   * Bootstrap::useStreamWrappers();
+   *
+   * // Create a context resource.
+   * $cxt = stream_context_create(array(
+   *   'tenantid' => '12de21',
+   *   'account' => '123454321',
+   *   'secret' => 'f78saf7hhlll',
+   *   'endpoint' => 'https://identity.hpcloud.com' // <-- not real URL!
+   * ));
+   *
+   * // Get the contents of a Swift object.
+   * $content = file_get_contents('swift://public/notes.txt', 'r', FALSE, $cxt);
+   * @endcode
+   */
+  public static function useStreamWrappers() {
+    return stream_wrapper_register(
+      \HPCloud\Storage\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
+      \HPCloud\Storage\ObjectStorage\StreamWrapper
+    );
   }
 
   /**
@@ -110,8 +183,13 @@ class Bootstrap {
    * HPCloud autoloader.
    *
    * An implementation of a PHP autoload function. Use
-   * HPCloud::useAutoloader() if you want PHP to automatically
+   * Bootstrap::useAutoloader() if you want PHP to automatically
    * load classes using this autoloader.
+   *
+   * @code
+   * // Enable the autoloader.
+   * Bootstrap::useAutoloader();
+   * @endcode
    *
    * This is a special-purpose autoloader for loading
    * only the HPCloud classes. It will not attempt to
@@ -182,6 +260,12 @@ class Bootstrap {
 
   /**
    * Check whether the given configuration option is set.
+   *
+   * @code
+   * if (Bootstrap::hasConfig('transport')) {
+   *   syslog(LOG_INFO, 'An alternate transport is supplied.');
+   * }
+   * @endcode
    *
    * @param string $name
    *   The name of the item to check for.
