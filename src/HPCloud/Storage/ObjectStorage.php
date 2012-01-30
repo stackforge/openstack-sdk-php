@@ -56,6 +56,15 @@ class ObjectStorage {
    */
   const SERVICE_TYPE = 'object-store';
 
+  /**
+   * The authorization token.
+   */
+  protected $token = NULL;
+  /**
+   * The URL to the Swift endpoint.
+   */
+  protected $url = NULL;
+
 
   /**
    * Create a new instance after getting an authenitcation token.
@@ -65,7 +74,7 @@ class ObjectStorage {
    * Then use this class's constructor to create an object.
    *
    * This uses the legacy Swift authentication facility to authenticate
-   * to swift, get a new token, and then create a new ObjectStorage 
+   * to swift, get a new token, and then create a new ObjectStorage
    * instance with that token.
    *
    * To use the legacy Object Storage authentication mechanism, you will
@@ -87,7 +96,7 @@ class ObjectStorage {
    * @param string $url
    *   The URL to the object storage endpoint.
    *
-   * @throws HPCloud::Transport::AuthorizationException if the 
+   * @throws HPCloud::Transport::AuthorizationException if the
    *   authentication failed.
    * @throws HPCloud::Transport::FileNotFoundException if the URL is
    *   wrong.
@@ -124,15 +133,6 @@ class ObjectStorage {
 
     return $store;
   }
-
-  /**
-   * The authorization token.
-   */
-  protected $token = NULL;
-  /**
-   * The URL to the Swift endpoint.
-   */
-  protected $url = NULL;
 
   /**
    * Construct a new ObjectStorage object.
