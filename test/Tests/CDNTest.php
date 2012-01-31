@@ -39,7 +39,7 @@ class CDNTest extends \HPCloud\Tests\TestCase {
     $url = 'https://' . $parts['host'];
     $tenantId = $catalog[0]['endpoints'][0]['tenantId'];
 
-    $cdn = new CDN($url, $token, $tenantId);
+    $cdn = new CDN($token, $url, $tenantId);
 
     $this->assertInstanceOf('\HPCloud\Storage\CDN', $cdn);
 

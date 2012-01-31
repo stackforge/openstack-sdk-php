@@ -10,7 +10,9 @@ require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
 use \HPCloud\Storage\ObjectStorage\ACL;
-
+/**
+ * @ingroup Tests
+ */
 class ACLTest extends \HPCloud\Tests\TestCase {
 
   public function testConstructor() {
