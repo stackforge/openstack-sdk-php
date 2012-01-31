@@ -122,10 +122,13 @@ class TestCase extends \PHPUnit_Framework_TestCase {
         throw new \Exception('No object-store service found.');
       }
 
+      /*
       //$serviceURL = $services[0]['endpoints'][0]['adminURL'];
       $serviceURL = $services[0]['endpoints'][0]['publicURL'];
 
       $objStore = new \HPCloud\Storage\ObjectStorage($ident->token(), $serviceURL);
+       */
+      $objStore = \HPCloud\Storage\ObjectStorage::newFromServiceCatalog($services, $ident->token());
 
       self::$ostore = $objStore;
 
