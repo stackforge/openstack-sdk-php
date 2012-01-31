@@ -65,8 +65,10 @@ class CDNTest extends \HPCloud\Tests\TestCase {
     $retval = $cdn->enable($container, self::TTL);
     $this->assertTrue($retval);
 
-    $retval = $cdn->enable($container);
-    $this->assertFalse($retval);
+    // enabling twice STILL returns 201.
+    // $retval = $cdn->enable($container, self::TTL);
+    // $this->assertFalse($retval);
+    $cdn->enable('test');
 
     return $cdn;
   }
@@ -80,7 +82,7 @@ class CDNTest extends \HPCloud\Tests\TestCase {
 
     $this->assertTrue(is_array($containerList));
 
-    $this->assertGreaterThanOrEquals(1, count($containerList));
+    $this->assertGreaterThanOrEqual(1, count($containerList));
 
     $find = NULL;
     foreach ($containerList as $container) {
@@ -99,7 +101,41 @@ class CDNTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
-   * @depend testContainers
+   * @depends testContainers
+   */
+  public function testContainer($cdn) {
+    $cname = $this->conf('hpcloud.swift.container');
+    $properties = $cdn->container($cname);
+
+    //throw new \Exception(print_r($properties, TRUE));
+
+    $this->assertNotEmpty($properties);
+
+    $this->assertEquals(self::TTL, $properties['ttl']);
+    $this->assertNotEmpty($properties['x-cdn-uri']);
+    $this->assertFalse($properties['log_retention']);
+    $this->assertTrue($properties['cdn_enabled']);
+
+    return $cdn;
+  }
+
+  /**
+   * @depends testContainer
+   */
+  public function testUpdate($cdn) {
+    $cname = $this->conf('hpcloud.swift.container');
+
+    $cdn->update($cname, array('ttl' => '4321'));
+
+    $props = $cdn->container($cname);
+
+    $this->assertEquals('4321', $props['ttl']);
+
+    return $cdn;
+  }
+
+  /**
+   * @depends testUpdate
    */
   public function testDisable($cdn) {
     $this->markTestIncomplete();
@@ -107,7 +143,7 @@ class CDNTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
-   * @depend testDisableContainer
+   * @depends testDisableContainer
    */
   public function testDelete($cdn) {
     $this->markTestIncomplete();
