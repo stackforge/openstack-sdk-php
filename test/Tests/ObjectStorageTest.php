@@ -38,16 +38,33 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    * @group auth
    */
   public function testConstructor() {
-    $ostore = $this->objectStore();
+    $ident = $this->identity();
+
+    $services = $ident->serviceCatalog(\HPCloud\Storage\ObjectStorage::SERVICE_TYPE);
+
+    if (empty($services)) {
+      throw new \Exception('No object-store service found.');
+    }
+
+    //$serviceURL = $services[0]['endpoints'][0]['adminURL'];
+    $serviceURL = $services[0]['endpoints'][0]['publicURL'];
+
+    $ostore = new \HPCloud\Storage\ObjectStorage($ident->token(), $serviceURL);
 
     $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
 
   }
 
+  public function testNewFromServiceCatalog() {
+    $ostore = $this->objectStore();
+    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $this->assertTrue(strlen($ostore->token()) > 0);
+  }
+
   /**
    * @group auth
-   * @group acl
+   * @ group acl
    */
   public function testCreateContainer() {
     $testCollection = self::$settings['hpcloud.swift.container'];
@@ -56,9 +73,12 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
     $store = $this->objectStore();//swiftAuth();
 
+    $this->destroyContainerFixture();
+    /*
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
     }
+     */
 
     $md = array('Foo' => 1234);
 
@@ -202,6 +222,11 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     // no content in the container, we use the format=xml to make sure
     // we get some data back.
     $url = $container->url() . '?format=xml';
+
+    // Use CURL to get better debugging:
+    //$client = \HPCloud\Transport::instance();
+    //$response = $client->doRequest($url, 'GET');
+
     $data = file_get_contents($url);
     $this->assertNotEmpty($data, $url);
 

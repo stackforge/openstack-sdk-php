@@ -41,13 +41,13 @@ use HPCloud\Storage\ObjectStorage\ACL;
  * - Create a new container with createContainer().
  * - List containers with containers().
  * - Remove a container with deleteContainer().
+ *
+ * @todo ObjectStorage is not yet constrained to a particular version
+ * of the API. It attempts to use whatever version is passed in to the
+ * URL. This is different than IdentityServices and CDN, which use a
+ * fixed version.
  */
 class ObjectStorage {
-
-  const ACL_PRIVATE = 'private';
-  const ACL_PUBLIC_READ = 'public-read';
-  const ACL_PUBLIC_WRITE = 'public-write';
-  const ACL_PUBLIC_READ_WRITE = 'public-read-write';
 
   /**
    * The name of this service type in HPCloud.
@@ -55,6 +55,8 @@ class ObjectStorage {
    * This is used with IdentityService::serviceCatalog().
    */
   const SERVICE_TYPE = 'object-store';
+
+  const API_VERSION = '1';
 
   /**
    * The authorization token.
@@ -135,7 +137,45 @@ class ObjectStorage {
   }
 
   /**
+   * Given a service catalog and an token, create an ObjectStorage instance.
+   *
+   * The IdentityServices object contains a service catalog listing all of the
+   * services to which the present account has access.
+   *
+   * This builder can scan the catalog and generate a new ObjectStorage
+   * instance pointed to the first object storage endpoint in the catalog.
+   *
+   * @param array $catalog
+   *   The serice catalog from IdentityServices::serviceCatalog(). This
+   *   can be either the entire catalog or a catalog filtered to
+   *   just ObjectStorage::SERVICE_TYPE.
+   * @param string $authToken
+   *   The auth token returned by IdentityServices.
+   * @retval object ObjectStorage
+   *   A new ObjectStorage instance.
+   */
+  public static function newFromServiceCatalog($catalog, $authToken) {
+    $c = count($catalog);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
+        foreach ($catalog[$i]['endpoints'] as $endpoint) {
+          if (isset($endpoint['publicURL'])) {
+            $cdn = new ObjectStorage($authToken, $endpoint['publicURL']);
+            //$cdn->url = $endpoint['publicURL'];
+
+            return $cdn;
+          }
+        }
+      }
+    }
+    return FALSE;
+
+  }
+
+  /**
    * Construct a new ObjectStorage object.
+   *
+   * Use this if newFromServiceCatalog() does not meet your needs.
    *
    * @param string $authToken
    *   A token that will be included in subsequent requests to validate
@@ -369,6 +409,18 @@ class ObjectStorage {
     else {
       throw new \HPCloud\Exception('Server returned unexpected code: ' . $status);
     }
+  }
+
+  /**
+   * Alias of createContainer().
+   *
+   * At present, there is no distinction in the Swift REST API between
+   * creating an updating a container. In the future this may change, so
+   * you are encouraged to use this alias in cases where you clearly intend
+   * to update an existing container.
+   */
+  public function updateContainer($name, ACL $acl = NULL, $metadata = array()) {
+    return $this->createContainer($name, $acl, $metadata);
   }
 
   /**
