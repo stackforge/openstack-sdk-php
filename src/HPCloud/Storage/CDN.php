@@ -120,7 +120,33 @@ class CDN {
   /**
    * Create a new CDN object based on a service catalog.
    *
-   * This assumes that the appropriate Tenant ID was already set.
+   * The IdentityServices class contains a service catalog, which tracks all
+   * services that the present account can access. The service catalog
+   * contains data necessary to connect to a CDN endpoint. This builder
+   * simplifies the process of creating a new CDN by accepting a service
+   * catalog and discovering the CDN service automatically.
+   *
+   * In the vast majority of cases, this is the easiest way to proceed. If,
+   * however, a service catalog has multiple CDN instances (a possibility,
+   * though not currently supported), the present method has no means of
+   * determining which should be used. It simply chooses the first CDN
+   * service endpoint.
+   *
+   * This uses the tenant ID that is found in the service catalog.
+   *
+   * Either of the following work:
+   * @code
+   * <?php
+   *
+   * // Use a full service catalog:
+   * $fullCatalog = $identityService->serviceCatalog();
+   * $cdn = CDN::newFromServiceCatalog($fullCatalog);
+   *
+   * // Use a filtered service catalog:
+   * $catalog = $identitySerice->serviceCatalog(CDN::SERVICE_TYPE);
+   * $cdn = CDN::newFromServiceCatalog($catalog);
+   * ?>
+   * @endcode
    *
    * @param array $catalog
    *   A service catalog; see HPCloud::Services::IdentityServices::serviceCatalog().
@@ -136,13 +162,16 @@ class CDN {
       if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
           if (isset($endpoint['publicURL'])) {
-            //$parts = parse_url($endpoint['publicURL']);
-            //$base = $parts['scheme'] . '://' . $parts['host'];
-            //if (isset($parts['port'])) {
-              //$base .= ':' . $parts['port'];
-            //}
-            $base = $endpoint['publicURL'];
-            return new CDN($base, $token);
+            $parts = parse_url($endpoint['publicURL']);
+            $base = $parts['scheme'] . '://' . $parts['host'];
+            if (isset($parts['port'])) {
+              $base .= ':' . $parts['port'];
+            }
+            //$base = $endpoint['publicURL'];
+            $cdn = new CDN($base, $token, $endpoint['tenantId']);
+            //$cdn->url = $endpoint['publicURL'];
+
+            return $cdn;
           }
         }
       }
@@ -155,37 +184,96 @@ class CDN {
    *
    * This object facilitates communication with the CDN cloud service.
    *
+   * This creates a new CDN object that will view as its endpoint the server
+   * with the base URL, $endpoint, for the version CDN::API_VERSION, and with
+   * the ID $account:
+   *
+   * @code
+   * https://ENDPOINT/API_VERSION/ACCOUNT
+   * @endcode
+   *
+   * @attention
+   * Since this URL is built up, you must pass in @em only the base URL
+   * as $endpoint. If you pass in a complete URL (with version and account),
+   * the constructed URL will be incorrect.
+   *
+   * On older SwiftAuth-based services, the token should be the swauth token.
+   * On newer releaes, the token is retrieved from IdentityServices.
+   *
    * @param string $endpoint
    *   The URL of the CDN service. It should look something like this:
-   *   @code https://cdnmgmt.rndd.aw1.hpcloud.net @endcode
-   *   NOT 
-   *   @code https://cdnmgmt.rndd.aw1.hpcloud.net/v1.0/72020596871800 @endcode
+   *   @c https://cdnmgmt.rndd.aw1.hpcloud.net
+   *   @b NOT
+   *   @c https://cdnmgmt.rndd.aw1.hpcloud.net/v1.0/72020596871800
    * @param string $token
    *   The authentication token. This can be retrieved from IdentityServices::token().
+   * @param string $account
+   *   The accound ID for the CDN account. Typically this is the same as the tenant ID.
    */
-  public function __construct($endpoint, $token/*, $account*/) {
-    //$this->url = $endpoint . '/v' . self::API_VERSION . '/' . $account;
-    $this->url = $endpoint;
+  public function __construct($endpoint, $token, $account) {
+    $this->url = $endpoint . '/v' . self::API_VERSION . '/' . $account;
     $this->token = $token;
   }
 
   /**
    * Get a list of containers that the CDN system knows of.
    *
-   * This returns a list of ObjectStorage Containers that the 
+   * This returns a list of ObjectStorage Containers that the
    * CDN service knows of. These containers can be either enabled or
    * disabled.
    *
+   * The CDN service does not attempt to discover all of the containers
+   * from a Swift endpoint. Instead, it passively acquires a list of
+   * containers (added via, for example, enabledContainer()).
+   *
+   * Once a container has been added to the CDN service, it can be in
+   * one of two states:
+   *
+   * - enabled (\c cdn_enabled=TRUE)
+   * - disabled (\c cdn_enabled=FALSE)
+   *
+   * This listing will retrieve both enabled and disabled unless
+   * $enabledOnly is set to TRUE.
+   *
+   * Returned data is in this format:
+   * @code
+   * <?php
+   * array(
+   *   array(
+   *     'log_retention' => 0
+   *     'cdn_enabled' => 1
+   *     'name' => 'I♡HPCloud'
+   *     'x-cdn-uri' => 'http://hcf937838.cdn.aw1.hpcloud.net'
+   *     'ttl' => 1234
+   *   ),
+   *   array(
+   *     'log_retention' => 0
+   *     'cdn_enabled' => 0
+   *     'name' => 'HPCloud2'
+   *     'x-cdn-uri' => 'http://hcf9abc38.cdn.aw1.hpcloud.net'
+   *     'ttl' => 1234
+   *   ),
+   * );
+   * ?>
+   * @endcode
+   *
+   * @param boolean $enabledOnly
+   *   If this is set to TRUE, then only containers that are
+   *   CDN-enabled will be returned.
    * @retval array
    *   An indexed array of associative arrays. The format of each
    *   associative array is explained on container().
    * @throws HPCloud::Exception
    *   An HTTP-level exception on error.
    */
-  public function containers() {
+  public function containers($enabledOnly = FALSE) {
     $client = \HPCloud\Transport::instance();
     $url = $this->url . '/?format=json';
-    //$url = 'https://cdnmgmt.rndd.aw1.hpcloud.net/v1.0/';
+
+    if ($enabledOnly) {
+      $url .= '&enabled_only=true';
+    }
+
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
@@ -193,7 +281,6 @@ class CDN {
     $response = $client->doRequest($url, 'GET', $headers);
 
     $raw = $response->content();
-    // throw new \Exception($url . ' ' . $raw);
     $json = json_decode($raw, TRUE);
 
     return $json;
@@ -202,7 +289,7 @@ class CDN {
   /**
    * Get a container by name.
    *
-   * @fixme The current (1.0) version does not support a verb for getting
+   * @todo The current (1.0) version does not support a verb for getting
    * just one container, so we have to get the entire list of containers.
    *
    * Example return value:
@@ -238,7 +325,8 @@ class CDN {
   /**
    * Enable a container.
    *
-   * This turns on caching for the specified container.
+   * This turns on caching for the specified container. If the container
+   * is not already in the CDN service list, it is added.
    *
    * In the CDN API, this one operation accomplishes two different things:
    *
@@ -284,8 +372,11 @@ class CDN {
    * The following attributes are supported:
    *
    * - 'ttl': Time to life in seconds (int).
-   * - 'enabled': Whether the CDN is enabled (boolean).
-   * - 'logs': Whether logs are retained (boolean). UNSUPPORTED.
+   * - 'cdn_enabled': Whether the CDN is enabled (boolean).
+   * - 'log_retention': Whether logs are retained (boolean). UNSUPPORTED.
+   *
+   * Future versions of the CDN service will likely provide other
+   * properties.
    *
    * @param string $name
    *   The name of the container.
@@ -305,9 +396,11 @@ class CDN {
           $headers['X-TTL'] = (int) $val;
           break;
         case 'enabled':
+        case 'cdn_enabled':
           $headers['X-CDN-Enabled'] = 'True';
           break;
         case 'logs':
+        case 'log_retention':
           $headers['X-Log-Retention'] = 'True';
           break;
         default:
@@ -329,6 +422,9 @@ class CDN {
    * temporary measure. See delete() for completely removing a container from
    * CDN service.
    *
+   * Disabled items will still show up in the list returned by containers(),
+   * and will also be retrievable via container().
+   *
    * @param string $name
    *   The name of the container whose cache should be suspended.
    * @retval boolean
@@ -347,6 +443,11 @@ class CDN {
    *
    * This will remove a container from CDN services,
    * completely stopping all caching on that container.
+   *
+   * Deleted containers will no longer show up in the containers()
+   * list, nor will they be accessible via container().
+   *
+   * Deleted containers can be added back with enable().
    *
    * @param string $name
    *   The Container name.

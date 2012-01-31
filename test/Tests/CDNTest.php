@@ -20,7 +20,12 @@ class CDNTest extends \HPCloud\Tests\TestCase {
 
   protected function destroyCDNFixture($cdn) {
     $cname = $this->conf('hpcloud.swift.container');
-    $cdn->delete($cname);
+    try {
+      $cdn->delete($cname);
+    }
+    catch (\HPCloud\Exception $e) {
+      syslog(LOG_WARNING, $e);
+    }
   }
 
   public function testConstructor() {
@@ -32,8 +37,9 @@ class CDNTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($catalog[0]['endpoints'][0]['publicURL']);
     $parts = parse_url($catalog[0]['endpoints'][0]['publicURL']);
     $url = 'https://' . $parts['host'];
+    $tenantId = $catalog[0]['endpoints'][0]['tenantId'];
 
-    $cdn = new CDN($url, $token);
+    $cdn = new CDN($url, $token, $tenantId);
 
     $this->assertInstanceOf('\HPCloud\Storage\CDN', $cdn);
 
@@ -138,15 +144,33 @@ class CDNTest extends \HPCloud\Tests\TestCase {
    * @depends testUpdate
    */
   public function testDisable($cdn) {
-    $this->markTestIncomplete();
+    $cname = $this->conf('hpcloud.swift.container');
+
+    $cdn->disable($cname);
+
+    $props = $cdn->container($cname);
+    $this->assertFalse($props['cdn_enabled']);
+
     return $cdn;
   }
 
   /**
-   * @depends testDisableContainer
+   * @depends testDisable
    */
   public function testDelete($cdn) {
-    $this->markTestIncomplete();
+    $cname = $this->conf('hpcloud.swift.container');
+
+    $cdn->delete($cname);
+
+    $containers = $cdn->containers();
+
+    $match = 0;
+    foreach ($containers as $container) {
+      if ($container['name'] == $cname) {
+        ++$match;
+      }
+    }
+    $this->assertEquals(0, $match);
     return $cdn;
   }
 
