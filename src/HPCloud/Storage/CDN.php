@@ -257,6 +257,10 @@ class CDN {
    * ?>
    * @endcode
    *
+   * @attention
+   * The $enabledOnly flag sendes \c enabled_only to the
+   * endpoint. The endpoint may or may not honor this.
+   *
    * @param boolean $enabledOnly
    *   If this is set to TRUE, then only containers that are
    *   CDN-enabled will be returned.
@@ -266,12 +270,17 @@ class CDN {
    * @throws HPCloud::Exception
    *   An HTTP-level exception on error.
    */
-  public function containers($enabledOnly = FALSE) {
+  public function containers($enabledOnly = NULL) {
     $client = \HPCloud\Transport::instance();
     $url = $this->url . '/?format=json';
 
     if ($enabledOnly) {
       $url .= '&enabled_only=true';
+    }
+    // DEVEX-1733 suggests that this should result in the
+    // server listing only DISABLED containers.
+    elseif ($enabledOnly === FALSE) {
+      $url .= '&enabled_only=false';
     }
 
     $headers = array(

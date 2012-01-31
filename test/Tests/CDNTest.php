@@ -155,6 +155,43 @@ class CDNTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
+   * @ depends testDisable
+   */
+  /* Temporarily removed. It's unclear what exactly
+   * the correct behavior is supposed to be.
+  public function testContainersEnabledOnly($cdn) {
+    $cname = $this->conf('hpcloud.swift.container');
+
+    \HPCloud\Bootstrap::setConfiguration(array('transport.debug' => 1));
+    $containers = $cdn->containers(TRUE);
+
+    throw new \Exception(print_r($containers, TRUE));
+
+    $found = 0;
+    foreach ($containers as $container) {
+      if ($container['name'] == $cname) {
+        ++$found;
+      }
+    }
+
+    $this->assertEquals(0, $found);
+
+    $containers = $cdn->containers(FALSE);
+    $found = 0;
+    foreach ($containers as $container) {
+      if ($container['name'] == $cname) {
+        ++$found;
+      }
+    }
+
+    $this->assertEquals(1, $found);
+    \HPCloud\Bootstrap::setConfiguration(array('transport.debug' => 0));
+
+
+  }
+   */
+
+  /**
    * @depends testDisable
    */
   public function testDelete($cdn) {
