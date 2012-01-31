@@ -168,7 +168,7 @@ class CDN {
               $base .= ':' . $parts['port'];
             }
             //$base = $endpoint['publicURL'];
-            $cdn = new CDN($base, $token, $endpoint['tenantId']);
+            $cdn = new CDN($token, $base, $endpoint['tenantId']);
             //$cdn->url = $endpoint['publicURL'];
 
             return $cdn;
@@ -210,7 +210,7 @@ class CDN {
    * @param string $account
    *   The accound ID for the CDN account. Typically this is the same as the tenant ID.
    */
-  public function __construct($endpoint, $token, $account) {
+  public function __construct($token, $endpoint, $account) {
     $this->url = $endpoint . '/v' . self::API_VERSION . '/' . $account;
     $this->token = $token;
   }
