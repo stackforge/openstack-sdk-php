@@ -97,6 +97,42 @@ class Container implements \Countable, \IteratorAggregate {
     }
     return $headers;
   }
+  /**
+   * Create an object URL.
+   *
+   * Given a base URL and an object name, create an object URL.
+   *
+   * This is useful because object names can contain certain characters
+   * (namely slashes (`/`)) that are normally URLencoded when they appear
+   * inside of path sequences.
+   *
+   * @note
+   * Swift does not distinguish between @c %2F and a slash character, so
+   * this is not strictly necessary.
+   *
+   * @param string $base
+   *   The base URL. This is not altered; it is just prepended to
+   *   the returned string.
+   * @param string $oname
+   *   The name of the object.
+   * @retval string
+   *   The URL to the object. Characters that need escaping will be escaped,
+   *   while slash characters are not. Thus, the URL will look pathy.
+   */
+  public static function objectUrl($base, $oname) {
+    if (strpos($oname, '/') === FALSE) {
+      return $base . '/' . $oname;
+    }
+
+    $oParts = explode('/', $oname);
+    $buffer = array();
+    foreach ($oParts as $part) {
+      $buffer[] = urlencode($part);
+    }
+    $newname = implode('/', $buffer);
+    return $base . '/' . $newname;
+  }
+
 
   /**
    * Extract object attributes from HTTP headers.
@@ -360,7 +396,8 @@ class Container implements \Countable, \IteratorAggregate {
       throw new \HPCloud\Exception('Container does not have a URL to send data.');
     }
 
-    $url = $this->url . '/' . urlencode($obj->name());
+    //$url = $this->url . '/' . urlencode($obj->name());
+    $url = self::objectUrl($this->url, $obj->name());
 
     // See if we have any metadata.
     $headers = array();
@@ -463,7 +500,8 @@ class Container implements \Countable, \IteratorAggregate {
    *   if the object does not already exist on the object storage.
    */
   public function updateMetadata(Object $obj) {
-    $url = $this->url . '/' . urlencode($obj->name());
+    //$url = $this->url . '/' . urlencode($obj->name());
+    $url = self::objectUrl($this->url, $obj->name());
     $headers = array();
 
     // See if we have any metadata. We post this even if there
@@ -517,7 +555,8 @@ class Container implements \Countable, \IteratorAggregate {
    *
    */
   public function copy(Object $obj, $newName, $container = NULL) {
-    $sourceUrl = $obj->url();
+    //$sourceUrl = $obj->url(); // This doesn't work with Object; only with RemoteObject.
+    $sourceUrl = self::objectUrl($this->url, $obj->name());
 
     if (empty($newName)) {
       throw new \HPCloud\Expcetion("An object name is required to copy the object.");
@@ -528,7 +567,7 @@ class Container implements \Countable, \IteratorAggregate {
       $container = $this->name;
     }
     $container = urlencode($container);
-    $destUrl = '/' . $container . '/' . urlencode($newName);
+    $destUrl = self::objectUrl('/' . $container, $newName);
 
     $headers = array(
       'X-Auth-Token' => $this->token,
@@ -570,7 +609,7 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function object($name) {
 
-    $url = $this->url . '/' . urlencode($name);
+    $url = self::objectUrl($this->url, $name);
     $headers = array();
 
     // Auth token.
@@ -619,7 +658,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   A remote object ready for use.
    */
   public function remoteObject($name) {
-    $url = $this->url . '/' . urlencode($name);
+    $url = self::objectUrl($this->url, $name);
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
@@ -860,6 +899,7 @@ class Container implements \Countable, \IteratorAggregate {
     $params['format'] = 'json';
 
     $query = http_build_query($params);
+    $query = str_replace('%2F', '/', $query);
     $url = $this->url . '?' . $query;
 
     $client = \HPCloud\Transport::instance();
@@ -888,7 +928,8 @@ class Container implements \Countable, \IteratorAggregate {
         throw new \HPCloud\Exception('Unexpected entity returned.');
       }
       else {
-        $url = $this->url . '/' . urlencode($item['name']);
+        //$url = $this->url . '/' . urlencode($item['name']);
+        $url = self::objectUrl($this->url, $item['name']);
         $list[] = RemoteObject::newFromJSON($item, $this->token, $url);
       }
     }
@@ -937,7 +978,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   TRUE if the file was deleted, FALSE if no such file is found.
    */
   public function delete($name) {
-    $url = $this->url . '/' . urlencode($name);
+    $url = self::objectUrl($this->url, $name);
     $headers = array(
       'X-Auth-Token' => $this->token,
     );

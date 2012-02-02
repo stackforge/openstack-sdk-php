@@ -16,6 +16,9 @@ test :
 test-group :
 	phpunit --color -v --group $(GROUP) $(TESTS)
 
+test-verbose :
+	phpunit --color -v  --exclude-group=deprecated $(TESTS) 2> curl-output.txt
+
 lint : $(SRCDIR)
 	find $(SRCDIR) -iname *.php -exec php -l {} ';'
 

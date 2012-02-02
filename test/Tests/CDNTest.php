@@ -156,6 +156,7 @@ class CDNTest extends \HPCloud\Tests\TestCase {
 
   /**
    * @depends testDisable
+   * @group CDN-129
    */
   public function testContainersEnabledOnly($cdn) {
     $cname = $this->conf('hpcloud.swift.container');
