@@ -1,7 +1,8 @@
-
+PROJ := 'hpcloud-php'
 SRCDIR := src
 TESTS := test/Tests
 VERSION := 'DEV'
+DATE := `date "+%Y%m%d"`
 GROUP := 'deprecated'
 
 VFILES = src/HPCloud
@@ -15,12 +16,13 @@ test :
 test-group :
 	phpunit --color -v --group $(GROUP) $(TESTS)
 
-lint : src/HPCloud/*.php
-	php -l $?
+lint : $(SRCDIR)
+	find $(SRCDIR) -iname *.php -exec php -l {} ';'
 
 dist: tar
 
-tar: ;
-	
+tar: 
+	@echo $(PROJ)-$(VERSION)-$(DATE).tgz
+	# @tar -zcvf $(PROJ)-$(VERSION)-$(DATE).tgz $(SRCDIR)
 
 .PHONY: docs test dist tar lint
