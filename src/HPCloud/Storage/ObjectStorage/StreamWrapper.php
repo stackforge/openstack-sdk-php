@@ -42,7 +42,7 @@ use \HPCloud\Storage\ObjectStorage;
  * `path/like/file/name.txt`.
  *
  * A note on UTF-8 and URLs: PHP does not yet natively support many UTF-8
- * charcters in URLs. Thus, you ought to urlencode() your container name
+ * characters in URLs. Thus, you ought to urlencode() your container name
  * and object name (path) if there is any possibility that it will contain
  * UTF-8 characters.
  *
