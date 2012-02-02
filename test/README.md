@@ -61,6 +61,8 @@ test this package, you will need to [install that tool](http://www.phpunit.de/ma
 Next, you need to create your own `settings.ini` file to contain your HP
 Cloud credentials, along with your preferred testing parameters.
 
+### Creating settings.ini
+
 The easiest way to do this is to copy the example settings file, and
 then make the necessary changes:
 
@@ -81,17 +83,59 @@ Your settings should look something like this:
 hpcloud.swift.container = "I♡HPCloud"
 
 hpcloud.identity.url = https://region-a.geo-1.idenity.hpcloudsvc.com
-hpcloud.identity.tenantId =
-hpcloud.identity.username =
-hpcloud.identity.password =
-hpcloud.identity.account =
-hpcloud.identity.key =
+hpcloud.identity.tenantId = 12345
+hpcloud.identity.username = butcher@hp.com
+hpcloud.identity.password = secret
+hpcloud.identity.account =  54321
+hpcloud.identity.key = 9878787
 ```
 
 You will need to add all of the `hpcloud.identity` settings, and all of
 this information can be found on your management console.
 
-The hpcloud.swift.account, key, and url params are no longer required.
+The hpcloud.swift.account, key, and url params are no longer required
+for the basic tests, but are required if you are also running the tests
+in the group `deprecated`.
+
+### Running Tests with Make
+
+The `Makefile` included with the HPCloud library can run the tests.
+Beginning from the root directory of the project, simply type the
+following:
+
+```
+$ make test
+```
+
+By default, this will run ALL of the unit tests. However, you can run
+a subset of the tests using the TESTS argument:
+
+```
+$ make test TESTS=test/Tests/CDNTest.php
+```
+
+The above only runs the CDN unit tests. To specify a list of tests, 
+make sure you put quotes around the entire string:
+
+```
+$ make test TESTS="test/Tests/CDNTest.php test/Tests/ACLTest.php"
+```
+
+If you know which *group* of tests you want to run, you can run just
+a select group of tests using the `test-group` target:
+
+```
+$ make test-group GROUP=deprecated
+```
+
+The above will run all of the unit tests in the `@group deprecated` group.
+(Note: the library does not use group tests very often, so this is
+unlikely to be a commonly required feature.)
+
+### Running Tests Using `phpunit`
+
+If for some reason the Makefile doesn't suite your needs, you have the
+option of running the tests directly using `phpunit`.
 
 Beginning from the root directory of the project (you should see `src/`
 and `test/` in that directory), run this command to execute all of the
