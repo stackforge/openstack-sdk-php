@@ -1,0 +1,22 @@
+{
+  "name": "HPCloud/HPCloud-PHP",
+  "description": "Access HPCloud and OpenStack services in PHP.",
+  "type": "library",
+  "keywords": ["openstack","hpcloud","cloud","swift","nova"],
+  "license": "",
+  "homepage": "http://hpcloud.com",
+  "authors": [
+    {
+      "name": "M Butcher",
+      "email": "matthew.butcher@hp.com"
+    }
+  ],
+  "version": "1.0.x",
+
+  "require": {
+    "php": ">=5.3.0"
+  },
+  "suggest": {
+    "curl": ">=7.0.0"
+  }
+}
