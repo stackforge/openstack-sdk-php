@@ -513,7 +513,7 @@ class StreamWrapper {
     $dest = $this->parseUrl($path_to);
 
     if ($src['scheme'] != $dest['scheme']) {
-      trigger_error("I'm to stupid to copy across protocols.", E_USER_WARNING);
+      trigger_error("I'm too stupid to copy across protocols.", E_USER_WARNING);
     }
 
     if ( empty($src['host'])  || empty($src['path'])
@@ -787,7 +787,7 @@ class StreamWrapper {
     // us the peace of mind that we have an actual container.
     $this->container = $this->store->container($containerName);
 
-    // Now we fetch the file. Only under certain circumstances to we generate
+    // Now we fetch the file. Only under certain circumstances do we generate
     // an error if the file is not found.
     // FIXME: We should probably allow a context param that can be set to 
     // mark the file as lazily fetched.

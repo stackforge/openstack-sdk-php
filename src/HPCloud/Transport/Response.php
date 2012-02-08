@@ -146,6 +146,7 @@ class Response {
     // This should always be set... but...
     if (isset($this->metadata['unread_bytes'])) {
       $out = fread($this->handle, $this->metadata['unread_bytes']);
+      //$out = stream_get_contents($this->handle);
     }
     // XXX: In cases of large files, isn't this the safer default?
     else {
