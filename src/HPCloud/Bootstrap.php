@@ -147,7 +147,7 @@ class Bootstrap {
   public static function useStreamWrappers() {
     return stream_wrapper_register(
       \HPCloud\Storage\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
-      \HPCloud\Storage\ObjectStorage\StreamWrapper
+      '\HPCloud\Storage\ObjectStorage\StreamWrapper'
     );
   }
 
