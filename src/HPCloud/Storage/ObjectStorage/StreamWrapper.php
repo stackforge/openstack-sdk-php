@@ -785,6 +785,8 @@ class StreamWrapper {
 
     // Now we need to get the container. Doing a server round-trip here gives
     // us the peace of mind that we have an actual container.
+    // XXX: Should we make it possible to get a container blindly, without the
+    // server roundtrip?
     $this->container = $this->store->container($containerName);
 
     // Now we fetch the file. Only under certain circumstances do we generate
@@ -1398,6 +1400,8 @@ class StreamWrapper {
    *
    * To find these params, the method first checks the supplied context. If the 
    * key is not found there, it checks the Bootstrap::conf().
+   *
+   * @fixme This should be rewritten to use ObjectStorage::newFromServiceCatalog().
    */
   protected function initializeObjectStorage() {
 
@@ -1414,6 +1418,7 @@ class StreamWrapper {
     $authUrl = $this->cxt('endpoint');
 
 
+    // FIXME: If a token is invalidated, we should try to re-authenticate.
     // If context has the info we need, start from there.
     if (!empty($token) && !empty($endpoint)) {
       $this->store = new \HPCloud\Storage\ObjectStorage($token, $endpoint);

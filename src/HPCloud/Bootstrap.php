@@ -171,6 +171,11 @@ class Bootstrap {
    *   the transport layer should wait for an HTTP request. A
    *   transport MAY ignore this parameter, but the ones included
    *   with the library honor it.
+   * - 'account' and 'secret'
+   * - 'username' and 'password'
+   * - 'tenantid'
+   * - 'endpoint': The full URL to identity services. This is used by stream
+   *   wrappers.
    *
    * @param array $array
    *   An associative array of configuration directives.

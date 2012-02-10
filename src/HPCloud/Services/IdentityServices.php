@@ -161,6 +161,10 @@ class IdentityServices {
    * than http://cs.example.com/v2.0. The version number must be
    * controlled by the library.
    *
+   * @attention
+   * If a version is included in the URI, the library will attempt to use
+   * that URI.
+   *
    * @code
    * <?php
    * $cs = new \HPCloud\Services\IdentityServices('http://example.com');
@@ -175,7 +179,14 @@ class IdentityServices {
    *   should <i>always</i> be to an SSL/TLS encrypted endpoint.</b>.
    */
   public function __construct($url) {
-    $this->endpoint = rtrim($url, '/') . '/v' . self::API_VERSION;
+    $parts = parse_url($url);
+
+    if (!empty($parts['path'])) {
+      $this->endpoint = $url;
+    }
+    else {
+      $this->endpoint = rtrim($url, '/') . '/v' . self::API_VERSION;
+    }
   }
 
   /**

@@ -162,6 +162,7 @@ class CDN {
       if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
           if (isset($endpoint['publicURL'])) {
+            /*
             $parts = parse_url($endpoint['publicURL']);
             $base = $parts['scheme'] . '://' . $parts['host'];
             if (isset($parts['port'])) {
@@ -170,6 +171,8 @@ class CDN {
             //$base = $endpoint['publicURL'];
             $cdn = new CDN($token, $base, $endpoint['tenantId']);
             //$cdn->url = $endpoint['publicURL'];
+             */
+            $cdn = new CDN($token, $endpoint['publicURL']);
 
             return $cdn;
           }
@@ -185,33 +188,25 @@ class CDN {
    * This object facilitates communication with the CDN cloud service.
    *
    * This creates a new CDN object that will view as its endpoint the server
-   * with the base URL, $endpoint, for the version CDN::API_VERSION, and with
-   * the ID $account:
+   * with the URL $endpoint, which has the form:
    *
    * @code
    * https://ENDPOINT/API_VERSION/ACCOUNT
    * @endcode
    *
-   * @attention
-   * Since this URL is built up, you must pass in @em only the base URL
-   * as $endpoint. If you pass in a complete URL (with version and account),
-   * the constructed URL will be incorrect.
    *
    * On older SwiftAuth-based services, the token should be the swauth token.
    * On newer releaes, the token is retrieved from IdentityServices.
    *
    * @param string $endpoint
    *   The URL of the CDN service. It should look something like this:
-   *   @c https://cdnmgmt.rndd.aw1.hpcloud.net
-   *   @b NOT
    *   @c https://cdnmgmt.rndd.aw1.hpcloud.net/v1.0/72020596871800
    * @param string $token
    *   The authentication token. This can be retrieved from IdentityServices::token().
-   * @param string $account
-   *   The accound ID for the CDN account. Typically this is the same as the tenant ID.
    */
-  public function __construct($token, $endpoint, $account) {
-    $this->url = $endpoint . '/v' . self::API_VERSION . '/' . $account;
+  public function __construct($token, $endpoint/*, $account*/) {
+    //$this->url = $endpoint . '/v' . self::API_VERSION . '/' . $account;
+    $this->url = $endpoint;
     $this->token = $token;
   }
 
