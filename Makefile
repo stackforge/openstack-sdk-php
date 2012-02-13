@@ -11,7 +11,7 @@ docs :
 	@cat ./config.doxy | sed 's/-UNSTABLE%/$(VERSION)/' | doxygen -
 
 test :
-	phpunit --color -v  --exclude-group=deprecated $(TESTS)
+	phpunit --color --exclude-group=deprecated $(TESTS)
 
 test-group :
 	phpunit --color -v --group $(GROUP) $(TESTS)

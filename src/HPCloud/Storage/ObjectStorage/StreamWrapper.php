@@ -1075,7 +1075,11 @@ class StreamWrapper {
 
     try {
       $this->initializeObjectStorage();
-      $container = $this->store->container($url['host']);
+      // $container = $this->store->container($url['host']);
+      $name = $url['host'];
+      $token = $this->store->token();
+      $endpoint_url = $this->store->url() . '/' . urlencode($name);
+      $container = new \HPCloud\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
       return $container->delete($url['path']);
     }
     catch (\HPCLoud\Exception $e) {
@@ -1092,22 +1096,42 @@ class StreamWrapper {
     $url = $this->parseUrl($path);
 
     if (empty($url['host']) || empty($url['path'])) {
-      trigger_error('Container name (host) and path are required.', E_USER_WARNING);
+      if ($flags & STREAM_URL_STAT_QUIET) {
+        trigger_error('Container name (host) and path are required.', E_USER_WARNING);
+      }
       return FALSE;
     }
 
     try {
       $this->initializeObjectStorage();
-      $container = $this->store->container($url['host']);
+
+      // Since we are throwing the $container away without really using its
+      // internals, we create an unchecked container. It may not actually
+      // exist on the server, which will cause a 404 error.
+      //$container = $this->store->container($url['host']);
+      $name = $url['host'];
+      $token = $this->store->token();
+      $endpoint_url = $this->store->url() . '/' . urlencode($name);
+      $container = new \HPCloud\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
       $obj = $container->remoteObject($url['path']);
     }
     catch(\HPCloud\Exception $e) {
-      //trigger_error('Could not stat remote file: ' . $e->getMessage(), E_USER_WARNING);
+      // Apparently file_exists does not set STREAM_URL_STAT_QUIET.
+      //if ($flags & STREAM_URL_STAT_QUIET) {
+        //trigger_error('Could not stat remote file: ' . $e->getMessage(), E_USER_WARNING);
+      //}
       return FALSE;
     }
 
+    if ($flags & STREAM_URL_STAT_QUIET) {
+      try {
+        return @$this->generateStat($obj, $container, $obj->contentLength());
+      }
+      catch (\HPCloud\Exception $e) {
+        return FALSE;
+      }
+    }
     return $this->generateStat($obj, $container, $obj->contentLength());
-
   }
 
   /**
