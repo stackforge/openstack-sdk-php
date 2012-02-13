@@ -142,10 +142,20 @@ class Response {
    *   The contents of the response body.
    */
   public function content() {
+    $out = '';
 
     // This should always be set... but...
     if (isset($this->metadata['unread_bytes'])) {
-      $out = fread($this->handle, $this->metadata['unread_bytes']);
+      $bytes = (int) $this->metadata['unread_bytes'];
+      if ($bytes == 0 && $this->header('Content-Length', 0) > 0) {
+        throw new \HPCloud\Exception(sprintf(
+          'Content length %d doesn\'t match byte count %d.',
+          $this->header('Content-Length', 0),
+          $bytes
+        ));
+        throw new \Exception(print_r($this->metadata, TRUE));
+      }
+      $out = fread($this->handle, $bytes);
       //$out = stream_get_contents($this->handle);
     }
     // XXX: In cases of large files, isn't this the safer default?
