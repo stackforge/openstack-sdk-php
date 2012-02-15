@@ -61,8 +61,9 @@ class Response {
     switch ($code) {
 
       case '403':
+        throw new \HPCloud\Transport\ForibiddenException($err);
       case '401':
-        throw new \HPCloud\Transport\AuthorizationException($err);
+        throw new \HPCloud\Transport\UnauthorizedException($err);
       case '404':
         throw new \HPCloud\Transport\FileNotFoundException($err . " ($uri)");
       case '405':
