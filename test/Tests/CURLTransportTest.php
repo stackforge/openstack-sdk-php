@@ -14,6 +14,16 @@ use \HPCloud\Transport\CURLTransport;
 
 class ObjectTest extends \HPCloud\Tests\TestCase {
 
+  public static function tearDownAfterClass() {
+    $transport = NULL;
+    if (isset(self::$settings['transport'])) {
+      $transport = self::$settings['transport'];
+    }
+    \HPCloud\Bootstrap::setConfiguration(array(
+      'transport' => $transport,
+    ));
+  }
+
   public function testConstructor() {
     $curl = new CURLTransport();
 
