@@ -963,47 +963,6 @@ class StreamWrapper {
     $contentLength = $stat['size'];
 
     return $this->generateStat($this->obj, $this->container, $contentLength);
-/*
-
-    if ($this->obj instanceof \HPCloud\Storage\ObjectStorage\RemoteObject) {
-      $mtime = $this->obj->lastModified();
-    }
-    else {
-      $mtime = 0;
-    }
-    return array(
-      0 => NULL,
-      1 => NULL,
-      2 => NULL,
-      3 => NULL,
-      4 => 0,
-      5 => 0,
-      6 => -1,
-      7 => $contentLength,
-      8 => $mtime,
-      9 => $mtime,
-      10 => $mtime,
-      11 => -1,
-      12 => -1,
-      'dev' => NULL,
-      'ino' => NULL,
-      'mode' => NULL,
-      'nlink' => NULL,
-      'uid' => 0,
-      'gid' => 0,
-      'rdev' => -1,
-      // FIXME!!!
-      'size' => $contentLength,
-
-      // All we have is modification time.
-      'atime' => $mtime,
-      'mtime' => $mtime,
-      'ctime' => $mtime,
-
-      'blksize' => -1,
-      'blocks' => -1,
-    );
- */
   }
 
   /**
