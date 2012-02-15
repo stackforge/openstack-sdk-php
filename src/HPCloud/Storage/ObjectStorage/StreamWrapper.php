@@ -783,17 +783,17 @@ class StreamWrapper {
     //syslog(LOG_WARNING, "Container: " . $containerName);
 
 
-    // Now we need to get the container. Doing a server round-trip here gives
-    // us the peace of mind that we have an actual container.
-    // XXX: Should we make it possible to get a container blindly, without the
-    // server roundtrip?
-    $this->container = $this->store->container($containerName);
-
-    // Now we fetch the file. Only under certain circumstances do we generate
-    // an error if the file is not found.
-    // FIXME: We should probably allow a context param that can be set to 
-    // mark the file as lazily fetched.
     try {
+      // Now we need to get the container. Doing a server round-trip here gives
+      // us the peace of mind that we have an actual container.
+      // XXX: Should we make it possible to get a container blindly, without the
+      // server roundtrip?
+      $this->container = $this->store->container($containerName);
+
+      // Now we fetch the file. Only under certain circumstances do we generate
+      // an error if the file is not found.
+      // FIXME: We should probably allow a context param that can be set to 
+      // mark the file as lazily fetched.
       $this->obj = $this->container->object($objectName);
       $stream = $this->obj->stream();
       $streamMeta = stream_get_meta_data($stream);
