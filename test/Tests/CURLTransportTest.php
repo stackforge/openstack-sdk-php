@@ -27,6 +27,8 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
   public function testConstructor() {
     $curl = new CURLTransport();
 
+    // This is prone to failure because instance() caches
+    // the class.
     $trans = '\HPCloud\Transport\CURLTransport';
     \HPCloud\Bootstrap::setConfiguration(array(
       'transport' => $trans,
