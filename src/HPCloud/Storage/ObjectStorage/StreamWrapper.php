@@ -522,11 +522,11 @@ class StreamWrapper {
         return FALSE;
     }
 
-    $container = $this->store->container($src['host']);
-
-    $object = $container->remoteObject($src['path']);
-
     try {
+      $container = $this->store->container($src['host']);
+
+      $object = $container->remoteObject($src['path']);
+
       $ret = $container->copy($object, $dest['path'], $dest['host']);
       if ($ret) {
         return $container->delete($src['path']);
