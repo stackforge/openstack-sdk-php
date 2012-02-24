@@ -67,14 +67,16 @@ class CDNTest extends \HPCloud\Tests\TestCase {
     $container = $this->conf('hpcloud.swift.container');
 
     $this->destroyCDNFixture($cdn);
+    $was_created = FALSE;
+    $retval = $cdn->enable($container, self::TTL, $was_created);
 
-    $retval = $cdn->enable($container, self::TTL);
-    $this->assertTrue($retval);
+    $this->assertRegexp('/^http[s]?:\/\//', $retval);
+    $this->assertTrue($was_created);
 
-    // enabling twice STILL returns 201.
-    // $retval = $cdn->enable($container, self::TTL);
-    // $this->assertFalse($retval);
-    $cdn->enable('test');
+    // Enabling twice STILL returns 201.
+    //$was_created = FALSE;
+    //$retval = $cdn->enable($container, self::TTL, $was_created);
+    //$this->assertFalse($was_created);
 
     return $cdn;
   }
@@ -102,6 +104,10 @@ class CDNTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($find['x-cdn-uri']);
     $this->assertFalse($find['log_retention']);
     $this->assertTrue($find['cdn_enabled']);
+
+    // Test that the URI returned is valid:
+    //$res = file_get_contents($find['x-cdn-uri'] . '/' . $cname);
+    //$this->assertEquals('Foo', $res);
 
     return $cdn;
   }

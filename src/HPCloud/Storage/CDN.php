@@ -336,6 +336,8 @@ class CDN {
    *
    * - If the container is not in the CDN list, it is added and enabled.
    * - If the container <em>is</em> in the CDN list, it is (re-)enabled.
+   *   (This is not always the case. Re-enabling should be done with
+   *   update()).
    *
    * The endpoint is supposed to return different results based on the above;
    * accordingly this method should return TRUE if the container was added
@@ -351,21 +353,26 @@ class CDN {
    *   maximum amount of time. There is, however, no assurance that the object
    *   will remain for the full TTL. 15 minutes is the minimum time. Five years
    *   is the max.
-   * @return boolean
-   *   TRUE if the container was enabled, FALSE if the container was already
-   *   CDN-enabled (and thus nothing happened).
+   * @param boolean $created
+   *   If this is passed, then its value will be set to TRUE if the
+   *   container was created in the CDN, or FALSE if the container
+   *   already existed in CDN.
+   * @return string
+   *   TRUE if the container was created, FALSE if the container was already
+   *   added to the CDN (and thus nothing happened).
    * @throws HPCloud::Exception
    *   Several HTTP-level exceptions can be thrown.
    */
-  public function enable($name, $ttl = NULL) {
+  public function enable($name, $ttl = NULL, &$created = FALSE) {
     $headers = array();
     if (!empty($ttl)) {
       $headers['X-TTL'] = (int) $ttl;
     }
     $res = $this->modifyContainer($name, 'PUT', $headers);
+    $created = $res->status() == 201;
 
-    // 201 = success, 202 = already enabled.
-    return $res->status() == 201;
+    $url = $res->header('X-Cdn-Uri', 'UNKNOWN');
+    return $url;
   }
 
   /**
