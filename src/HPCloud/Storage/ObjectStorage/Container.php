@@ -127,7 +127,7 @@ class Container implements \Countable, \IteratorAggregate {
     $oParts = explode('/', $oname);
     $buffer = array();
     foreach ($oParts as $part) {
-      $buffer[] = urlencode($part);
+      $buffer[] = rawurlencode($part);
     }
     $newname = implode('/', $buffer);
     return $base . '/' . $newname;
@@ -190,7 +190,7 @@ class Container implements \Countable, \IteratorAggregate {
 
     $container->baseUrl = $url;
 
-    $container->url = $url . '/' . urlencode($jsonArray['name']);
+    $container->url = $url . '/' . rawurlencode($jsonArray['name']);
     $container->token = $token;
 
     // Access to count and bytes is basically controlled. This is is to
@@ -233,7 +233,7 @@ class Container implements \Countable, \IteratorAggregate {
     $container->bytes = $response->header('X-Container-Bytes-Used', 0);
     $container->count = $response->header('X-Container-Object-Count', 0);
     $container->baseUrl = $url;
-    $container->url = $url . '/' . urlencode($name);
+    $container->url = $url . '/' . rawurlencode($name);
     $container->token = $token;
 
     $container->acl = ACL::newFromHeaders($response->headers());
@@ -396,7 +396,7 @@ class Container implements \Countable, \IteratorAggregate {
       throw new \HPCloud\Exception('Container does not have a URL to send data.');
     }
 
-    //$url = $this->url . '/' . urlencode($obj->name());
+    //$url = $this->url . '/' . rawurlencode($obj->name());
     $url = self::objectUrl($this->url, $obj->name());
 
     // See if we have any metadata.
@@ -414,7 +414,7 @@ class Container implements \Countable, \IteratorAggregate {
     // Add content encoding, if necessary.
     $encoding = $obj->encoding();
     if (!empty($encoding)) {
-      $headers['Content-Encoding'] = urlencode($encoding);
+      $headers['Content-Encoding'] = rawurlencode($encoding);
     }
 
     // Add content disposition, if necessary.
@@ -500,7 +500,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   if the object does not already exist on the object storage.
    */
   public function updateMetadata(Object $obj) {
-    //$url = $this->url . '/' . urlencode($obj->name());
+    //$url = $this->url . '/' . rawurlencode($obj->name());
     $url = self::objectUrl($this->url, $obj->name());
     $headers = array();
 
@@ -566,7 +566,7 @@ class Container implements \Countable, \IteratorAggregate {
     if (empty($container)) {
       $container = $this->name;
     }
-    $container = urlencode($container);
+    $container = rawurlencode($container);
     $destUrl = self::objectUrl('/' . $container, $newName);
 
     $headers = array(
@@ -928,7 +928,7 @@ class Container implements \Countable, \IteratorAggregate {
         throw new \HPCloud\Exception('Unexpected entity returned.');
       }
       else {
-        //$url = $this->url . '/' . urlencode($item['name']);
+        //$url = $this->url . '/' . rawurlencode($item['name']);
         $url = self::objectUrl($this->url, $item['name']);
         $list[] = RemoteObject::newFromJSON($item, $this->token, $url);
       }

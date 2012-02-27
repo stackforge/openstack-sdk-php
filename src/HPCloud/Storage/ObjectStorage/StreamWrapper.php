@@ -42,7 +42,7 @@ use \HPCloud\Storage\ObjectStorage;
  * `path/like/file/name.txt`.
  *
  * A note on UTF-8 and URLs: PHP does not yet natively support many UTF-8
- * characters in URLs. Thus, you ought to urlencode() your container name
+ * characters in URLs. Thus, you ought to rawurlencode() your container name
  * and object name (path) if there is any possibility that it will contain
  * UTF-8 characters.
  *
@@ -1037,7 +1037,7 @@ class StreamWrapper {
       // $container = $this->store->container($url['host']);
       $name = $url['host'];
       $token = $this->store->token();
-      $endpoint_url = $this->store->url() . '/' . urlencode($name);
+      $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
       $container = new \HPCloud\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
       return $container->delete($url['path']);
     }
@@ -1070,7 +1070,7 @@ class StreamWrapper {
       //$container = $this->store->container($url['host']);
       $name = $url['host'];
       $token = $this->store->token();
-      $endpoint_url = $this->store->url() . '/' . urlencode($name);
+      $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
       $container = new \HPCloud\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
       $obj = $container->remoteObject($url['path']);
     }
@@ -1329,7 +1329,7 @@ class StreamWrapper {
    * Parse a URL.
    *
    * In order to provide full UTF-8 support, URLs must be
-   * urlencoded before they are passed into the stream wrapper.
+   * rawurlencoded before they are passed into the stream wrapper.
    *
    * This parses the URL and urldecodes the container name and
    * the object name.

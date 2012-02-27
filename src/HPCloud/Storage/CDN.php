@@ -487,7 +487,7 @@ class CDN {
    *   The expected HTTP code.
    */
   protected function modifyContainer($name, $method, $headers = array(), $qstring = '') {
-    $url = $this->url . '/' . urlencode($name) . $qstring;
+    $url = $this->url . '/' . rawurlencode($name) . $qstring;
     $headers['X-Auth-Token'] = $this->token;
 
     $client = \HPCloud\Transport::instance();

@@ -280,7 +280,7 @@ class ObjectStorage {
    */
   public function container($name) {
 
-    $url = $this->url() . '/' . urlencode($name);
+    $url = $this->url() . '/' . rawurlencode($name);
     $data = $this->req($url, 'HEAD', FALSE);
 
     $status = $data->status();
@@ -379,7 +379,7 @@ class ObjectStorage {
    *   created because it already exists.
    */
   public function createContainer($name, ACL $acl = NULL, $metadata = array()) {
-    $url = $this->url() . '/' . urlencode($name);
+    $url = $this->url() . '/' . rawurlencode($name);
     $headers = array(
       'X-Auth-Token' => $this->token(),
     );
@@ -469,7 +469,7 @@ class ObjectStorage {
    *   results in a non-standard code.
    */
   public function deleteContainer($name) {
-    $url = $this->url() . '/' . urlencode($name);
+    $url = $this->url() . '/' . rawurlencode($name);
 
     try {
       $data = $this->req($url, 'DELETE', FALSE);
