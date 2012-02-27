@@ -330,15 +330,25 @@ class CDN {
   /**
    * Enable a container.
    *
-   * This turns on caching for the specified container. If the container
-   * is not already in the CDN service list, it is added.
+   * This adds the container to the CDN service and turns on caching.
    *
-   * In the CDN API, this one operation accomplishes two different things:
+   * In the CDN API, there are two meanings for the term "enable":
    *
-   * - If the container is not in the CDN list, it is added and enabled.
-   * - If the container <em>is</em> in the CDN list, it is (re-)enabled.
-   *   (This is not always the case. Re-enabling should be done with
-   *   update()).
+   * 1. To "CDN-enable" a container means to add that container to the CDN
+   * service. There is no "CDN-disable".
+   * 2. To "enable" a container means to cache that container's
+   * content in a publically available CDN server. There is also a
+   * way to "disable" in this sense -- which blocks a container from 
+   * caching.
+   *
+   * This method does the first -- it adds a container to the CDN
+   * service. It so happens that adding a container also enables (in the
+   * second sense) the
+   * container. (This is a feature of the remote service, not the API).
+   *
+   * Enabling and disabling (in the second sense) are considered temporary operations
+   * to switch on and off caching on a particular container. Both of
+   * these operations are done with the update() method.
    *
    * The endpoint is supposed to return different results based on the above;
    * accordingly this method should return TRUE if the container was added
@@ -363,6 +373,7 @@ class CDN {
    *   added to the CDN (and thus nothing happened).
    * @throws HPCloud::Exception
    *   Several HTTP-level exceptions can be thrown.
+   * @see http://api-docs.hpcloud.com/hpcloud-cdn-storage/1.0/content/cdn-enable-container.html
    */
   public function enable($name, $ttl = NULL, &$created = FALSE) {
     $headers = array();
