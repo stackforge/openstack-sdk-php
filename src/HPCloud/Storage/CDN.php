@@ -47,9 +47,10 @@ namespace HPCloud\Storage;
  * - List the containers that CDN knows about: CDN::containers()
  * - Retrieve the CDN properties for a particular Container: CDN::container().
  * - Add and enable containers: CDN::enable().
- * - Enable or Disable containers: CDN::enable() and CDN::disable().
  * - Remove a Container from CDN: CDN::delete().
  * - Modify the caching properties of a Container: CDN::update().
+ * - Temporarily enable or disable caching for a container with
+ *   CDN::update().
  *
  * <b>Example</b>
  *
@@ -85,10 +86,10 @@ namespace HPCloud\Storage;
  * $cdn->update('myContainer', array('ttl' => 7200));
  *
  * // Temporarily stop the container from caching:
- * $cdn->disable('myContainer');
+ * $cdn->update('myContainer', array('cdn_enabled' => FALSE);
  *
  * //This can be re-enabled again:
- * $cdn->enable('myContainer');
+ * $cdn->update('myContainer', array('cdn_enabled' => TRUE);
  *
  * // If we no longer want this Container in CDN, we
  * // should delete it, not just disable it:
@@ -426,7 +427,7 @@ class CDN {
     return $response->status() == 204;
   }
 
-  /**
+  /*
    * Temporarily disable CDN for a container.
    *
    * This will suspend caching on the named container. It is intended to be a
@@ -443,11 +444,13 @@ class CDN {
    * @throws HPCloud::Exception
    *   HTTP exceptions may be thrown if an error occurs.
    */
+  /*
   public function disable($name) {
     $headers = array('X-CDN-Enabled' => 'False');
     $res = $this->modifyContainer($name, 'POST', $headers);
     return $res->status() == 204;
   }
+   */
 
   /**
    * Attempt to remove a container from CDN.
