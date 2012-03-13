@@ -1218,7 +1218,7 @@ class StreamWrapper {
     $this->isText = strpos($mode, 't') !== FALSE;
 
     // Rewrite mode to remove b or t:
-    preg_replace('/[bt]?/', '', $mode);
+    $mode = preg_replace('/[bt]?/', '', $mode);
 
     switch ($mode) {
       case 'r+':
