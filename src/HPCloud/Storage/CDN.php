@@ -420,11 +420,25 @@ class CDN {
           break;
         case 'enabled':
         case 'cdn_enabled':
-          $headers['X-CDN-Enabled'] = 'True';
+          if (isset($val) && $val == FALSE) {
+            $flag = 'False';
+          }
+          // Default is TRUE.
+          else {
+            $flag = 'True';
+          }
+          $headers['X-CDN-Enabled'] = $flag;
           break;
         case 'logs':
         case 'log_retention':
-          $headers['X-Log-Retention'] = 'True';
+          // The default is TRUE.
+          if (isset($val) && $val == FALSE) {
+            $flag = 'False';
+          }
+          else {
+            $flag = 'True';
+          }
+          $headers['X-Log-Retention'] = $flag;
           break;
         default:
           $headers[$item] = (string) $val;
