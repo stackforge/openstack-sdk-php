@@ -13,6 +13,9 @@ docs :
 test :
 	phpunit --color --exclude-group=deprecated $(TESTS)
 
+test-cdn :
+	php test/CDNTest.php
+
 test-group :
 	phpunit --color -v --group $(GROUP) $(TESTS)
 
