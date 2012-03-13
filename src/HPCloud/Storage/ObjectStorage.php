@@ -67,6 +67,13 @@ class ObjectStorage {
    */
   protected $url = NULL;
 
+  /**
+   * CDN containers.
+   *
+   * This is an associative array of container names to URLs.
+   */
+  protected $cdnContainers;
+
 
   /**
    * Create a new instance after getting an authenitcation token.
@@ -190,6 +197,54 @@ class ObjectStorage {
   }
 
   /**
+   * Indicate that this ObjectStorage instance should use the given CDN service.
+   *
+   * This will cause this ObjectStorage instance to use CDN as often as it can.
+   * Any containers (and subsequently container objects) that can leverage
+   * CDN services will act accordingly.
+   *
+   * CDN is used for *read* operations. Because CDN is a time-based cache,
+   * objects in CDN can be older than objects in Swift itself. For that
+   * reason, CDN should not be used when a combination of read and write
+   * operations occur.
+   */
+  public function useCDN($cdn) {
+    $containers = $cdn->containers(TRUE);
+    $buffer = array();
+
+    foreach ($containers as $item) {
+      // This is needed b/c of a bug in SOS that sometimes
+      // returns disabled containers (DEVEX-1733).
+      if ($item['cdn_enabled'] == 1) {
+        $buffer[$item['name']] = $item['x-cdn-uri'];
+      }
+    }
+    $this->cdnContainers = $buffer;
+  }
+
+  public function hasCDN() {
+    return !empty($this->cdnContainers);
+  }
+
+  /**
+   * Return the CDN URL for a particular container.
+   *
+   * If CDN is enabled, this will attempt to get the URL
+   * to the CDN endpoint for the given container.
+   *
+   * @param string $containerName
+   *   The name of the container.
+   * @retval string
+   *   The URL to the CDN container, or NULL if no such
+   *   URL is found.
+   */
+  public function cdnUrl($containerName) {
+    if (!empty($this->cdnContainers[$containerName])) {
+      return $this->cdnContainers[$containerName];
+    }
+  }
+
+  /**
    * Get the authentication token.
    *
    * @retval string
@@ -260,7 +315,12 @@ class ObjectStorage {
 
     $containerList = array();
     foreach ($containers as $container) {
-      $containerList[$container['name']] = Container::newFromJSON($container, $this->token(), $this->url());
+      $cname = $container['name'];
+      $containerList[$cname] = Container::newFromJSON($container, $this->token(), $this->url());
+
+      if (!empty($this->cdnContainers[$cname])) {
+        $containerList[$cname]->useCDN($this->cdnContainers[$cname]);
+      }
     }
 
     return $containerList;
@@ -285,7 +345,13 @@ class ObjectStorage {
 
     $status = $data->status();
     if ($status == 204) {
-      return Container::newFromResponse($name, $data, $this->token(), $this->url());
+      $container = Container::newFromResponse($name, $data, $this->token(), $this->url());
+
+      if (isset($this->cdnContainers[$name])) {
+        $container->useCDN($this->cdnContainers[$name]);
+      }
+
+      return $container;
     }
 
     // If we get here, it's not a 404 and it's not a 204.

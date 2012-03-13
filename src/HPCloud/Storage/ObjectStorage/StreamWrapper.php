@@ -82,6 +82,7 @@ use \HPCloud\Storage\ObjectStorage;
  *
  * @code
  * <?php
+ * \HPCloud\Bootstrap::useStreamWrappers();
  * // Set up the context.
  * $context = stream_context_create(
  *   array('swift' => array(
@@ -220,12 +221,28 @@ use \HPCloud\Storage\ObjectStorage;
  *     In general, you should avoid using this.
  * - content_type: This is effective only when writing files. It will
  *     set the Content-Type of the file during upload.
+ * - use_cdn: If this is set to TRUE, then whenever possible assets will be
+ *     loaded from CDN instead of from the object store. The following
+ *     conditions must obtain for this to work:
+ *     - The container must allow public reading (ACL)
+ *     - The container must have CDN enabled
+ *     - The CDN container must be active ("cdn-enabled")
  *
  * @see http://us3.php.net/manual/en/class.streamwrapper.php
  */
 class StreamWrapper {
 
   const DEFAULT_SCHEME = 'swift';
+
+  /**
+   * Cache of auth token -> service catalog.
+   *
+   * This will eventually be replaced by a better system, but for a system of
+   * moderate complexity, many, many file operations may be run during the
+   * course of a request. Caching the catalog can prevent numerous calls
+   * to identity services.
+   */
+  protected static $serviceCatalogCache = array();
 
   /**
    * The stream context.
@@ -782,6 +799,25 @@ class StreamWrapper {
 
     //syslog(LOG_WARNING, "Container: " . $containerName);
 
+    // EXPERIMENTAL:
+    // If we can get the resource from CDN, we do so now. Note that we try to sidestep
+    // the Container creation, which saves us an HTTP request.
+    $cdnUrl = $this->store->cdnUrl($containerName);
+    if (!empty($cdnUrl) && !$this->isWriting && !$this->isAppending) {
+      try {
+        $newUrl = $this->store->url() . '/' . $containerName;
+        $token = $this->store->token();
+        $this->container = new \HPCloud\Storage\ObjectStorage\Container($containerName, $newUrl, $token);
+        $this->container->useCDN($cdnUrl);
+        $this->obj = $this->container->object($objectName);
+        $this->objStream = $this->obj->stream();
+
+        return TRUE;
+      }
+      // If there is an error, fall back to regular handling.
+      catch (\HPCloud\Exception $e) {}
+    }
+    // End EXPERIMENTAL section.
 
     try {
       // Now we need to get the container. Doing a server round-trip here gives
@@ -1123,6 +1159,41 @@ class StreamWrapper {
   }
 
   /**
+   * EXPERT: Get the ObjectStorage for this wrapper.
+   *
+   * @retval object HPCloud::ObjectStorage
+   *   An ObjectStorage object.
+   * @see object()
+   */
+  public function objectStorage() {
+    return $this->store;
+  }
+
+  /**
+   * EXPERT: Get the auth token for this wrapper.
+   *
+   * @retval string
+   *   A token.
+   * @see object()
+   */
+  public function token() {
+    return $this->store->token();
+  }
+
+  /**
+   * EXPERT: Get the service catalog (IdentityServices) for this wrapper.
+   *
+   * This is only available when a file is opened via fopen().
+   *
+   * @retval array
+   *   A service catalog.
+   * @see object()
+   */
+  public function serviceCatalog() {
+    return self::$serviceCatalogCache[$this->token()];
+  }
+
+  /**
    * Generate a reasonably accurate STAT array.
    *
    * Notes on mode:
@@ -1389,23 +1460,25 @@ class StreamWrapper {
   protected function initializeObjectStorage() {
 
     $token = $this->cxt('token');
-    $endpoint = $this->cxt('swift_endpoint');
-
-    $username = $this->cxt('username');
-    $password = $this->cxt('password');
 
     $account = $this->cxt('account');
     $key = $this->cxt('key');
 
     $tenantId = $this->cxt('tenantid');
     $authUrl = $this->cxt('endpoint');
+    $endpoint = $this->cxt('swift_endpoint');
 
+    $serviceCatalog = NULL;
+    if (isset(self::$serviceCatalogCache[$token])) {
+      $serviceCatalog = self::$serviceCatalogCache[$token];
+    }
 
     // FIXME: If a token is invalidated, we should try to re-authenticate.
     // If context has the info we need, start from there.
     if (!empty($token) && !empty($endpoint)) {
       $this->store = new \HPCloud\Storage\ObjectStorage($token, $endpoint);
     }
+    // DEPRECATED: For old swift auth.
     elseif ($this->cxt('use_swift_auth', FALSE)) {
 
       if (empty($authUrl) || empty($account) || empty($key)) {
@@ -1420,29 +1493,101 @@ class StreamWrapper {
     }
     // Try to authenticate and get a new token.
     else {
-      $ident = new \HPCloud\Services\IdentityServices($authUrl);
+      $ident = $this->authenticate();
 
-      if (!empty($username) && !empty($password)) {
-        $token = $ident->authenticateAsUser($username, $password, $tenantId);
-      }
-      elseif (!empty($account) && !empty($key)) {
-        $token = $ident->authenticateAsAccount($account, $key, $tenantId);
-      }
-      else {
-        throw new \HPCloud\Exception('Either username/password or account/key must be provided.');
-      }
+      // Update token and service catalog. The old pair may be out of date.
+      $token = $ident->token();
+      $serviceCatalog = $ident->serviceCatalog();
+      self::$serviceCatalogCache[$token] = $serviceCatalog;
 
+      $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $ident->token());
+
+      /*
       $catalog = $ident->serviceCatalog(ObjectStorage::SERVICE_TYPE);
       if (empty($catalog) || empty($catalog[0]['endpoints'][0]['publicURL'])) {
-        throw new \HPCloud\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, TRUE));
+        //throw new \HPCloud\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, TRUE));
+        throw new \HPCloud\Exception('No object storage services could be found for this tenant ID.');
       }
       $serviceURL = $catalog[0]['endpoints'][0]['publicURL'];
 
       $this->store = new ObjectStorage($token, $serviceURL);
+       */
+    }
+
+    try {
+      $this->initializeCDN($token, $serviceCatalog);
+    }
+    catch (\HPCloud\Exception $e) {
+      fwrite(STDOUT, $e);
+      throw new \HPCloud\Exception('CDN could not be initialized', 1, $e);
+
     }
 
     return !empty($this->store);
 
+  }
+
+  /**
+   * Initialize CDN service.
+   *
+   * When the `use_cdn` parameter is passed into the context, we try
+   * to use a CDN service wherever possible.
+   *
+   * If `use_cdn` is set to TRUE, we try to create a new CDN object.
+   * This will require a service catalog.
+   *
+   * When use_cdn is set to TRUE, the wrapper tries to use CDN service.
+   * In such cases, we need a handle to the CDN object. This initializes
+   * that handle, which can later be used to get other information.
+   */
+  protected function initializeCDN($token, $catalog) {
+    $cdn = $this->cxt('use_cdn', FALSE);
+
+    // No CDN should be enabled.
+    if (empty($cdn)) {
+      return FALSE;
+    }
+    // Use the CDN object, if provided.
+    elseif ($cdn instanceof \HPCloud\Storage\CDN) {
+      $this->cdn = $cdn;
+    }
+    // Or try to create a new CDN from the catalog.
+    else {
+      if (empty($catalog)) {
+        $ident = $this->authenticate();
+        $catalog = $ident->serviceCatalog();
+        $token = $ident->token();
+      }
+      $this->cdn = \HPCloud\Storage\CDN::newFromServiceCatalog($catalog, $token);
+    }
+
+    $this->store->useCDN($this->cdn);
+    return TRUE;
+  }
+
+  protected function authenticate() {
+    $username = $this->cxt('username');
+    $password = $this->cxt('password');
+
+    $account = $this->cxt('account');
+    $key = $this->cxt('key');
+
+    $tenantId = $this->cxt('tenantid');
+    $authUrl = $this->cxt('endpoint');
+
+    $ident = new \HPCloud\Services\IdentityServices($authUrl);
+
+    if (!empty($username) && !empty($password)) {
+      $token = $ident->authenticateAsUser($username, $password, $tenantId);
+    }
+    elseif (!empty($account) && !empty($key)) {
+      $token = $ident->authenticateAsAccount($account, $key, $tenantId);
+    }
+    else {
+      throw new \HPCloud\Exception('Either username/password or account/key must be provided.');
+    }
+
+    return $ident;
   }
 
 }
