@@ -227,6 +227,11 @@ use \HPCloud\Storage\ObjectStorage;
  *     - The container must allow public reading (ACL)
  *     - The container must have CDN enabled
  *     - The CDN container must be active ("cdn-enabled")
+ *     - Authentication info must be accessible to the stream wrapper.
+ *
+ * @attention
+ *  ADVANCED: You can also pass an HPCloud::Storage::CDN object in use_cdn instead of
+ *  a boolean.
  *
  * @see http://us3.php.net/manual/en/class.streamwrapper.php
  */
