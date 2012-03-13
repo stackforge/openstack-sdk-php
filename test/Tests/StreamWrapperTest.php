@@ -172,6 +172,48 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     $this->assertTrue(is_resource($res));
 
+    fclose($res);
+
+  }
+
+  /**
+   * @depends testOpen
+   */
+  public function testOpenWithCDN() {
+    // Unfortunately we cannot test with CDN directly, because CDN requires ten
+    // minutes to an our to configure itself. Use the `php test/CDNTest.php` program
+    // to directly test CDN on an already-prepared container.
+
+    $this->containerFixture();
+
+    // Simple write test.
+    $oUrl = $this->newUrl('foo→/test.csv');
+
+    // Now we test the same, but re-using the auth token:
+    $cxt = $this->authSwiftContext(array('use_cdn' => TRUE));
+    $res = fopen($oUrl, 'nope', FALSE, $cxt);
+
+    $this->assertTrue(is_resource($res));
+
+    // For this to work, we need to re-use auth tokens.
+    $md = stream_get_meta_data($res);
+    $wrapper = $md['wrapper_data'];
+
+    fclose($res);
+
+    // Test with auth token.
+    $cxt = $this->basicSwiftContext(array('token' => $wrapper->token(), 'use_cdn' => TRUE));
+    $res = fopen($oUrl, 'nope', FALSE, $cxt);
+    $this->assertTrue(is_resource($res));
+    fclose($res);
+
+    // Test with CDN object
+    $cdn = \HPCloud\Storage\CDN::newFromServiceCatalog($wrapper->serviceCatalog(), $wrapper->token());
+    $cxt = $this->basicSwiftContext(array('use_cdn' => $cdn));
+    $res = fopen($oUrl, 'nope', FALSE, $cxt);
+    $this->assertTrue(is_resource($res));
+    fclose($res);
+
   }
 
   /**
