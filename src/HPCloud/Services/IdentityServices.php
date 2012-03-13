@@ -557,7 +557,7 @@ class IdentityServices {
    * <?php
    * array(
    *   array(
-   *     "id" =>  "395I95655514446",
+   *     "id" =>  "395I91234514446",
    *     "name" => "Banking Tenant Services",
    *     "description" => "Banking Tenant Services for TimeWarner",
    *     "enabled" => TRUE,
@@ -678,5 +678,3 @@ class IdentityServices {
   }
 
 }
-
-
