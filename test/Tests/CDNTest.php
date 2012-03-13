@@ -152,7 +152,8 @@ class CDNTest extends \HPCloud\Tests\TestCase {
   public function testDisable($cdn) {
     $cname = $this->conf('hpcloud.swift.container');
 
-    $cdn->disable($cname);
+    //$cdn->disable($cname);
+    $cdn->update($cname, array('cdn_enabled' => FALSE));
 
     $props = $cdn->container($cname);
     $this->assertFalse($props['cdn_enabled']);
