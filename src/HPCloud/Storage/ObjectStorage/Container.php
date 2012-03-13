@@ -49,6 +49,7 @@ namespace HPCloud\Storage\ObjectStorage;
  * container.
  *
  * @todo Add support for container metadata.
+ * @todo Add CDN support fo container listings.
  */
 class Container implements \Countable, \IteratorAggregate {
   /**
@@ -61,14 +62,19 @@ class Container implements \Countable, \IteratorAggregate {
   //protected $properties = array();
   protected $name = NULL;
 
-  protected $count = 0;
-  protected $bytes = 0;
+  // These were both changed from 0 to NULL to allow
+  // lazy loading.
+  protected $count = NULL;
+  protected $bytes = NULL;
 
   protected $token;
   protected $url;
   protected $baseUrl;
   protected $acl;
   protected $metadata;
+
+  // This is only set if CDN service is activated.
+  protected $cdnUrl;
 
   /**
    * Transform a metadata array into headers.
@@ -251,13 +257,36 @@ class Container implements \Countable, \IteratorAggregate {
    * @attention
    * Typically a container should be created by ObjectStorage::createContainer().
    * Get existing containers with ObjectStorage::container() or
-   * ObjectStorage::containers(). Do not use this unless you know what you are doing.
+   * ObjectStorage::containers(). Using the constructor directly has some
+   * side effects of which you should be aware.
    *
    * Simply creating a container does not save the container remotely.
    *
    * Also, this does no checking of the underlying container. That is, simply
    * constructing a Container in no way guarantees that such a container exists
    * on the origin object store.
+   *
+   * The constructor involves a selective lazy loading. If a new container is created,
+   * and one of its accessors is called before the accessed values are initialized, then
+   * this will make a network round-trip to get the container from the remote server.
+   *
+   * Containers loaded from ObjectStorage::container() or Container::newFromRemote()
+   * will have all of the necessary values set, and thus will not require an extra network
+   * transaction to fetch properties.
+   *
+   * The practical result of this:
+   *
+   * - If you are creating a new container, it is best to do so with
+   *   ObjectStorage::createContainer().
+   * - If you are manipulating an existing container, it is best to load the
+   *   container with ObjectStorage::container().
+   * - If you are simply using the container to fetch resources from the
+   *   container, you may wish to use `new Container($name, $url, $token)`
+   *   and then load objects from that container. Note, however, that
+   *   manipulating the container directly will likely involve an extra HTTP
+   *   transaction to load the container data.
+   * - When in doubt, use the ObjectStorage methods. That is always the safer
+   *   option.
    *
    * @param string $name
    *   The name.
@@ -271,6 +300,24 @@ class Container implements \Countable, \IteratorAggregate {
     $this->name = $name;
     $this->url = $url;
     $this->token = $token;
+  }
+
+  /**
+   * Set the URL of the CDN to use.
+   *
+   * If this is set, the Container will attempt to fetch objects
+   * from the CDN instead of the Swift storage whenever possible.
+   *
+   * If ObjectStorage::useCDN() is already called, this is not necessary.
+   *
+   * Setting this to NULL will have the effect of turning off CDN for this
+   * container.
+   *
+   * @param string $url
+   *   The URL to the CDN for this container.
+   */
+  public function useCDN($url) {
+    $this->cdnUrl = $url;
   }
 
   /**
@@ -290,13 +337,16 @@ class Container implements \Countable, \IteratorAggregate {
    *   The number of bytes in this container.
    */
   public function bytes() {
+    if (is_null($this->bytes)) {
+      $this->loadExtraData();
+    }
     return $this->bytes;
   }
 
   /**
    * Get the container metadata.
    *
-   * Metadata (also called tags) are name/value pairs that can be 
+   * Metadata (also called tags) are name/value pairs that can be
    * attached to a container.
    *
    * Names can be no longer than 128 characters, and values can be no
@@ -359,6 +409,9 @@ class Container implements \Countable, \IteratorAggregate {
    *   The number of items in this container.
    */
   public function count() {
+    if (is_null($this->count)) {
+      $this->loadExtraData();
+    }
     return $this->count;
   }
 
@@ -602,6 +655,10 @@ class Container implements \Countable, \IteratorAggregate {
    * - If-Modified-Since/If-Unmodified-Since
    * - If-Match/If-None-Match
    *
+   * If a CDN has been specified either using useCDN() or
+   * ObjectStorage::useCDN(), this will attempt to fetch the object
+   * from the CDN.
+   *
    * @param string $name
    *   The name of the object to load.
    * @retval \HPCloud\Storage\ObjectStorage\RemoteObject
@@ -610,13 +667,20 @@ class Container implements \Countable, \IteratorAggregate {
   public function object($name) {
 
     $url = self::objectUrl($this->url, $name);
+    $cdn = self::objectUrl($this->cdnUrl, $name);
     $headers = array();
 
     // Auth token.
     $headers['X-Auth-Token'] = $this->token;
 
     $client = \HPCloud\Transport::instance();
-    $response = $client->doRequest($url, 'GET', $headers);
+
+    if (empty($this->cdnUrl)) {
+      $response = $client->doRequest($url, 'GET', $headers);
+    }
+    else {
+      $response = $client->doRequest($cdn, 'GET', $headers);
+    }
 
     if ($response->status() != 200) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
@@ -624,6 +688,10 @@ class Container implements \Countable, \IteratorAggregate {
 
     $remoteObject = RemoteObject::newFromHeaders($name, $response->headers(), $this->token, $url);
     $remoteObject->setContent($response->content());
+
+    if (!empty($this->cdnUrl)) {
+      $remoteObject->useCDN($cdn);
+    }
 
     return $remoteObject;
   }
@@ -659,13 +727,20 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function remoteObject($name) {
     $url = self::objectUrl($this->url, $name);
+    $cdn = self::objectUrl($this->cdnUrl, $name);
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
 
 
     $client = \HPCloud\Transport::instance();
-    $response = $client->doRequest($url, 'HEAD', $headers);
+
+    if (empty($this->cdnUrl)) {
+      $response = $client->doRequest($url, 'HEAD', $headers);
+    }
+    else {
+      $response = $client->doRequest($cdn, 'HEAD', $headers);
+    }
 
     if ($response->status() != 200) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
@@ -673,7 +748,13 @@ class Container implements \Countable, \IteratorAggregate {
 
     $headers = $response->headers();
 
-    return RemoteObject::newFromHeaders($name, $headers, $this->token, $url);
+    $obj = RemoteObject::newFromHeaders($name, $headers, $this->token, $url);
+
+    if (!empty($this->cdnUrl)) {
+      $obj->useCDN($cdn);
+    }
+
+    return $obj;
   }
 
   /**
@@ -836,6 +917,10 @@ class Container implements \Countable, \IteratorAggregate {
     return $this->url;
   }
 
+  public function cdnUrl() {
+    return $this->cdnUrl;
+  }
+
   /**
    * Get the ACL.
    *
@@ -867,19 +952,31 @@ class Container implements \Countable, \IteratorAggregate {
    * called to "fill in" missing fields.
    */
   protected function loadExtraData() {
-      // Do a GET on $url to fetch headers.
-      $client = \HPCloud\Transport::instance();
-      $headers = array(
-        'X-Auth-Token' => $this->token,
-      );
-      $response = $client->doRequest($this->url, 'GET', $headers);
 
-      // Get ACL.
-      $this->acl = ACL::newFromHeaders($response->headers());
+    // If URL and token are empty, we are dealing with
+    // a local item that has not been saved, and was not
+    // created with Container::createContainer(). We treat
+    // this as an error condition.
+    if (empty($this->url) || empty($this->token)) {
+      throw new \HPCloud\Exception('Remote data cannot be fetched. Tokena and endpoint URL are required.');
+    }
+    // Do a GET on $url to fetch headers.
+    $client = \HPCloud\Transport::instance();
+    $headers = array(
+      'X-Auth-Token' => $this->token,
+    );
+    $response = $client->doRequest($this->url, 'GET', $headers);
 
-      // Get metadata.
-      $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
-      $this->setMetadata(Container::extractHeaderAttributes($response->headers(), $prefix));
+    // Get ACL.
+    $this->acl = ACL::newFromHeaders($response->headers());
+
+    // Update size and count.
+    $this->bytes = $response->header('X-Container-Bytes-Used', 0);
+    $this->count = $response->header('X-Container-Object-Count', 0);
+
+    // Get metadata.
+    $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
+    $this->setMetadata(Container::extractHeaderAttributes($response->headers(), $prefix));
 
   }
 
