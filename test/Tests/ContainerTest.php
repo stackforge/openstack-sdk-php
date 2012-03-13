@@ -26,8 +26,23 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   public function testConstructor() {
     $container = new Container('foo');
     $this->assertEquals('foo', $container->name());
+
+    // These will now cause the system to try to fetch a remote
+    // container.
+    //$this->assertEquals(0, $container->bytes());
+    //$this->assertEquals(0, $container->count());
+  }
+
+  /**
+   * @expectedException \HPCloud\Exception
+   */
+  public function testConstructorFailure() {
+    $container = new Container('foo');
+    $this->assertEquals('foo', $container->name());
+
+    // These will now cause the system to try to fetch a remote
+    // container. This is a failure condition.
     $this->assertEquals(0, $container->bytes());
-    $this->assertEquals(0, $container->count());
   }
 
   public function testCountable() {
