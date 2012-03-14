@@ -57,15 +57,23 @@ class TestCase extends \PHPUnit_Framework_TestCase {
 
   //public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
   public static function setUpBeforeClass() {
+    global $bootstrap_settings;
+
+    if (!isset($bootstrap_settings)) {
+      $bootstrap_settings = array();
+    }
+    self::$settings = $bootstrap_settings;
 
 
     //$this->setTestNamespace('Tests\Units');
     if (file_exists('test/settings.ini')) {
-      self::$settings = parse_ini_file('test/settings.ini');
+      self::$settings += parse_ini_file('test/settings.ini');
     }
     else {
       throw new Exception('Could not access test/settings.ini');
     }
+
+
     \HPCloud\Bootstrap::useAutoloader();
     \HPCloud\Bootstrap::setConfiguration(self::$settings);
 
