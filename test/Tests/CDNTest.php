@@ -197,10 +197,11 @@ class CDNTest extends \HPCloud\Tests\TestCase {
     foreach ($containers as $container) {
       if ($container['name'] == $cname) {
         ++$found;
+        //throw new \Exception(print_r($container, TRUE));
       }
     }
 
-    $this->assertEquals(0, $found);
+    $this->assertEquals(0, $found, "A disabled container should not be returned.");
 
     $containers = $cdn->containers(FALSE);
     $found = 0;

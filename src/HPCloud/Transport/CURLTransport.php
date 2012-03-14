@@ -100,7 +100,13 @@ class CURLTransport implements Transporter {
    */
   protected function handleDoRequest($uri, $method, $headers, $in = NULL) {
 
-    syslog(LOG_WARNING, "Real Operation: $method $uri");
+    // XXX: I don't like this, but I'm getting bug reports that mistakenly
+    // assume this library is broken, when in fact CURL is not installed.
+    if (!function_exists('curl_init')) {
+      throw new \HPCloud\Exception('The CURL library is not available.');
+    }
+
+    //syslog(LOG_WARNING, "Real Operation: $method $uri");
 
     //$urlParts = parse_url($uri);
 
