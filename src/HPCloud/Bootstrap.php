@@ -121,7 +121,11 @@ class Bootstrap {
   public static $config = array(
     // The transport implementation. By default, we use the PHP stream
     // wrapper's HTTP mechanism to process transactions.
-    'transport' => '\HPCloud\Transport\PHPStreamTransport',
+    //'transport' => '\HPCloud\Transport\PHPStreamTransport',
+
+    // This is the default transport while a bug persists in the 
+    // Identity Services REST service.
+    'transport' => '\HPCloud\Transport\CURLTransport',
   );
 
   /**
