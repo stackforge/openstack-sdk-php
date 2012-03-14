@@ -11,7 +11,11 @@ docs :
 	@cat ./config.doxy | sed 's/-UNSTABLE%/$(VERSION)/' | doxygen -
 
 test :
-	phpunit --color --exclude-group=deprecated $(TESTS)
+	phpunit --color --exclude-group=deprecated $(TESTS);
+
+fulltest:
+	phpunit --color --exclude-group=deprecated --bootstrap=test/bootstrap_curl.php $(TESTS);
+	phpunit --color --exclude-group=deprecated --bootstrap=test/bootstrap_phpstream.php $(TESTS)
 
 test-cdn :
 	php test/CDNTest.php
