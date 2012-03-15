@@ -745,7 +745,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @retval \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A remote object ready for use.
    */
-  public function remoteObject($name) {
+  public function proxyObject($name) {
     $url = self::objectUrl($this->url, $name);
     $cdn = self::objectUrl($this->cdnUrl, $name);
     $headers = array(
@@ -775,6 +775,13 @@ class Container implements \Countable, \IteratorAggregate {
     }
 
     return $obj;
+  }
+  /**
+   * This has been replaced with proxyObject().
+   * @deprecated
+   */
+  public function remoteObject($name) {
+    $this->proxyObject($name);
   }
 
   /**

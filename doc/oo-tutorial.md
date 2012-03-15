@@ -1,4 +1,5 @@
-# Using HPCloud-PHP
+Using HPCloud-PHP           {#oo-tutorial}
+=================
 
 HPCloud-PHP provides PHP language bindings for the HPCloud APIs. HPCloud
 is an OpenStack-based cloud service offering a wide (and ever-expanding)
@@ -8,6 +9,10 @@ In this tutorial, we will walk through the process of creating a simple
 tool that interacts with HP Cloud's Object Storage. The emphasis in this
 article is on getting started and learning the concepts, not building a
 polished product.
+
+**This tutorial focuses on the object-oriented API.** The other way to
+work with this library is through the stream wrapper. That topic is
+covered in another tutorial.
 
 ## Pre-flight Check
 
@@ -471,29 +476,30 @@ In the example above, then, one network request is issued by
 `proxyObject()`, but another is initiated when `$object->content()` is
 called.
 
+### The RemoteObject in a Nutshell
 
-==== STOPPED
+Instances of a `RemoteObject` offer the following features:
 
-### About Method Naming Conventions
+- Access to an object stored on the remote object storage
+- A proxying mechanism for lazily loading objects
+- Support for loading via CDN (advanced)
+- A stream-based API for using stream and file-based PHP functions
+- Automatic tempfile-based caching for large objects (using
+  `php://temp`).
 
-Note that in the HPCloud PHP library, accessors are nouns
-(`containers()`, `accountInfo()`) while mutators and other actions are verbal
-(`createContainer`, `setName()`). Accessors generally do not begin with
-`get`.
+`RemoteObject` instances can be updated and then passed to
+`Container::save()` to update the copy on the server, too.
 
-### Is Object Storage a Remote File System?
+## Summary
 
-In many ways, Object Storage works like a file system. It is persistent
-storage for self-contained bundles of data. That's pretty much the core
-of a file system, too. And like a file system, object storage uses a
-name as the main identifier for the data. That is, an object name plays
-approximately the same role as a file name.
+At this point we have created a very basic script that connects to
+HPCloud and works with object storage. Clearly, this only scratches the
+surface of what the HPCloud PHP library does. But hopefully this is
+enough to get you started with the library.
 
-But there is one big difference: Object Storage does not have
-directories. It can *fake it* (the slash character is a legal part of a
-file name, and Object Storage has some semantic sugar to help with
-that). But really, `foo/bar/baz.txt` is, to object storage, just a big
-long name; not a "directory path".
-
-This is not going to make a difference for our demo app here, but it is
-something to keep in mind.
+The entire library is well documented, and the documentation is
+[available online](https://github.com/hpcloud). You can also build a
+local copy by installing [doxygen](http://www.stack.nl/~dimitri/doxygen)
+(if you haven't already) and running `make docs` in the root of the
+HPCloud PHP project. This will place the generated documents in
+`docs/api/html`.
