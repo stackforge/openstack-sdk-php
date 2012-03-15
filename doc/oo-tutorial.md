@@ -1,4 +1,4 @@
-Using HPCloud-PHP           {#oo-tutorial}
+Tutorial: Using HPCloud-PHP           {#oo-tutorial}
 =================
 
 HPCloud-PHP provides PHP language bindings for the HPCloud APIs. HPCloud
@@ -38,9 +38,9 @@ The HPCloud library is composed of two parts:
 The object-oriented library makes ample use of PHP namespaces. If you've
 never seen these before, they look like this:
 
-```php
+~~~{.php}
 \HPCloud\Storage\ObjectStorage\RemoteObject
-```
+~~~
 
 The namespace above is read like this: "The RemoteObject class is part
 of the ObjectStorage package in the Storage package in the base HPCloud
@@ -51,9 +51,9 @@ symbol choice).
 For our library, we followed the recommendation of SPR-0, which means
 that the class above can be found in the file at:
 
-```
+~~~
 src/HPCloud/Storage/ObjectStorage/RemoteObject.php
-```
+~~~
 
 The pattern of matching namespace to file name should (we hope) make it
 easier for you to navigate our code.
@@ -62,6 +62,9 @@ If this namespace stuff continues to confuse you, you may want to take a
 look at [the PHP documentation](http://us3.php.net/manual/en/language.namespaces.php),
 or you may just prefer to keep on reading and learn by example. We don't
 do anything really fancy with namespaces.
+
+**In this document, we sometimes replace the backslash (\) with double
+colons (`::`) so that links are automatically generated.**
 
 ## Step 1: Getting the Library
 
@@ -76,9 +79,9 @@ For our example, we will assume that the library is accessible in the
 default include path, so the following line will include the
 `Bootstrap.php` file:
 
-```php
+~~~{.php}
 include 'HPCloud/Bootstrap.php';
-```
+~~~
 
 ## Step 2: Bootstrap the Library
 
@@ -93,23 +96,32 @@ directory, that is enough for the system to initialize itself.
 Sometimes, though, you will need to bootstrap HPCloud in your own code,
 and this is done as follows:
 
-```php
+~~~{.php}
 <?php
 require_once 'HPCloud/Bootstrap.php';
 
+use \HPCloud\Bootstrap;
+use \HPCloud\Services\IdentityServices;
+use \HPCloud\Storage\ObjectStorage;
+use \HPCloud\Storage\ObjectStorage\Object;
+
 \HPCloud\Bootstrap::useAutoloader();
 ?>
-```
+~~~
 
 The first line should be self-explanatory: We require the main
 `Bootstrap.php` file (which contains the `Bootstrap` class).
 
-The second line initializes the built-in HPCloud autoloader. What does
+After that, we declare a list of namespaced objects that we will use.
+This way we can refer to them by their short name, rather than by their
+fully qualified name.
+
+The last line initializes the built-in HPCloud autoloader. What does
 this mean? It means that this is the only `require` or `include`
 statement you need in your code. The library does the rest of the
 including for you, on demand, in a performance-sensitive way.
 
-There are some other fancy things that `\HPCloud\Bootstrap` can do for
+There are some other fancy things that HPCloud::Bootstrap can do for
 you. Most notably, you can pass configuration parameters into it. But
 for the time being, we are good to go.
 
@@ -170,7 +182,7 @@ account can access.
 With that little bit of theory behind us, we can now go about
 authenticating.
 
-```php
+~~~{.php}
 <?php
 $account = 'ADD ACCOUNT HERE';
 $key = 'ADD KEY HERE';
@@ -180,18 +192,18 @@ $endpoint = 'ADD ENDPOINT URL HERE';
 $idService = new \HPCloud\Services\IdentityServices($endpoint);
 $token = $idService->authenticateAsAccount($account, $key, $tenantId);
 ?>
-```
+~~~
 
 Assuming the variables above have been set to include valid data, this
 script can connect to HPCloud and authenticate.
 
-When we construct a new `IdentityServices` object, we must pass it the
+When we construct a new HPCloud::Services::IdentityServices object, we must pass it the
 endpoint URL for HPCloud Identity Services. Typically, that URL will
 look something like this:
 
-```
+~~~
 https://region-a.geo-1.identity.hpcloudsvc.com:35357
-```
+~~~
 
 The `authenticateAsAccount()` method will authenticate to the
 Identity Services endpoint. For convenience, it returns the
@@ -199,9 +211,9 @@ authorization token (`$token`), though we can also get the token from
 `$idService->token()`.
 
 Note that the `IdentityServices` object may throw various exceptions
-(all subclasses of `\HPCloud\Exception`) during authentication. Failed
-authentication results in an `\HPCloud\AuthorizationException`, while
-a network failure may result in an `\HPCloud\ServerException`.
+(all subclasses of HPCloud::Exception) during authentication. Failed
+authentication results in an HPCloud::Transport::AuthorizationException, while
+a network failure may result in an HPCloud::Transport::ServerException.
 
 Earlier, we talked about the service catalog. Once we've authenticated,
 we can get the service catalog from `$idService->serviceCatalog()`. It
@@ -213,7 +225,7 @@ look at Object Storage.
 
 ### IdentityServices in a Nushell
 
-Instances of `IdentityServices` are responsible for:
+Instances of HPCloud::Services::IdentityServices are responsible for:
 
 - Authentication
 - Accessing the service catalog
@@ -232,7 +244,7 @@ Your object storage can have any number of containers, and each
 container can have any number of objects.
 
 In the object model for the HPCloud PHP library, a top-level object
-called `HPCloud\Storage\ObjectStorage` provides access to the Object
+called HPCloud::Storage::ObjectStorage provides access to the Object
 Storage service. In this step, we will be working with that object.
 
 ### Getting an ObjectStorage Instance
@@ -246,15 +258,15 @@ shows the Object Storage endpoint that we have already authenticated to
 Identity Services. Earlier, we captured that value in the `$token`
 variable.
 
-Now we can get a new `\HPCloud\Storage\ObjectStorage` instance:
+Now we can get a new HPCloud::Storage::ObjectStorage instance:
 
-```php
+~~~{.php}
 <?php
 $catalog = $idService->serviceCatalog();
 
 $store = ObjectStorage::newFromServiceCatalog($catalog, $token);
 ?>
-```
+~~~
 
 First we get the service catalog (`$catalog`), and then we use the
 `ObjectStorage::newFromServiceCatalog()` static method to create the new
@@ -276,12 +288,12 @@ container.
 
 ### ObjectStorage in a Nutshell
 
-Instances of `ObjectStorage` are responsbile for:
+Instances of HPCloud::Storage::ObjectStorage are responsbile for:
 
 - Providing high-level information about the Object Storage service
 - Creating, deleting, loading, and listing Containers
 - Modifying Container ACLs
-- Attaching a CDN service object to a Container (advanced)
+- Attaching a HPCloud::Storage::CDN service object to a Container (advanced)
 
 ## Step 5: Adding a Container
 
@@ -291,16 +303,16 @@ numerous containers (and each container can have different access
 controls -- a topic we won't get into here).
 
 Containers are represented in the library by the
-`\HPCloud\Storage\ObjectStorage\Container` class. And creating a
+HPCloud::Storage::ObjectStorage::Container class. And creating a
 container is done by a method on the `ObjectStorage` object that we
 created above:
 
-```php
+~~~{.php}
 <?php
 $store->createContainer('Example');
 $container = $store->container('Example');
 ?>
-```
+~~~
 
 Recall that `$store` is the name of our `ObjectStorage` instance. In the
 first of the two lines above, we create a new containe named `Example`.
@@ -320,7 +332,7 @@ container. All of this information will be available on the `$container`
 instance.
 
 Our `$container` instance is an instance of
-`\HPCloud\Storage\ObjectStorage\Container`. This object can be used not
+HPCloud::Storage::ObjectStorage::Container. This object can be used not
 only to find out about a container, but also to get information about
 the objects in that container.
 
@@ -330,7 +342,7 @@ Now that we have a `Container`, we can add an object.
 
 (Yes, we realize the irony of that title.)
 
-A Container instance is responsible for the following:
+A HPCloud::Storage::ObjectStorage::Container instance is responsible for the following:
 
 - Accessing information about the container
 - Creating, saving, deleting, and listing objects in the container
@@ -360,7 +372,7 @@ featched the container. As we create an object, we are going to do the
 opposite: We will create a local object, and then save it to the remote
 storage. Later, we will fetch the remote object.
 
-```php
+~~~{.php}
 <?php
 $name = 'hello.txt';
 $content = 'Hello World';
@@ -369,13 +381,13 @@ $mime = 'text/plain';
 $localObject = new Object($name, $content, $mime);
 $container->save($localObject);
 ?>
-```
+~~~
 
 In the code above, we create `$localObject` with a `$name`, some
 `$content`, and a `$mime` type. Strictly speaking, only `$name` is
 required.
 
-The `\HPCloud\Storage\ObjectStorage\Object` class is used primarily to
+The HPCloud::Storage::ObjectStorage::Object class is used primarily to
 describe a locally created object. Once we have our new `Object`, we can
 save it remotely using the `save()` method on our `$container` object.
 This will push the object to the remote object storage service.
@@ -397,7 +409,7 @@ Next let's turn to loading objects from the remote object storage.
 
 ### The Object in a Nutshell
 
-The `\HPCloud\Storage\ObjectStorage\Object` instances are used for:
+The HPCloud::Storage::ObjectStorage::Object instances are used for:
 
 - Creating a local object to be stored remotely
 
@@ -414,7 +426,7 @@ the edgiest of edge cases, you would only create an instance of
 Containers not only provide the methods for saving objects, but also for
 loading objects. Thus, we can fetch the object that we just created:
 
-```php
+~~~{.php}
 <?php
 $object = $container->object('hello.txt');
 
@@ -423,10 +435,10 @@ printf("Size: %d \n", $object->contentLength());
 printf("Type: %s \n", $object->contentType());
 print $object->content() . PHP_EOL;
 ?>
-```
+~~~
 
 The `$object` variable now references an instance of a
-`\HPCloud\Storage\ObjectStorage\RemoteObject` that contains the entire
+HPCloud::Storage::ObjectStorage::RemoteObject that contains the entire
 object. `RemoteObject` represents an object that was loaded from the
 remote server. Along with providing the features of the `Object` class
 we saw earlier, it also provides numerous optimizations for working over
@@ -457,7 +469,7 @@ fetching the rest of the data until that data is actually needed.
 To fetch an object this way, we can just swap out one line in the
 example above:
 
-```php
+~~~{.php}
 <?php
 $object = $container->proxyObject('hello.txt');
 
@@ -466,7 +478,7 @@ printf("Size: %d \n", $object->contentLength());
 printf("Type: %s \n", $object->contentType());
 print $object->content() . PHP_EOL;
 ?>
-```
+~~~
 
 Instead of using `object()`, we now use `proxyObject()`. This method
 immediately loads the core data about the remote object, but defers
@@ -478,7 +490,7 @@ called.
 
 ### The RemoteObject in a Nutshell
 
-Instances of a `RemoteObject` offer the following features:
+Instances of a HPCloud::Storage::ObjectStorage::RemoteObject offer the following features:
 
 - Access to an object stored on the remote object storage
 - A proxying mechanism for lazily loading objects
@@ -503,3 +515,5 @@ local copy by installing [doxygen](http://www.stack.nl/~dimitri/doxygen)
 (if you haven't already) and running `make docs` in the root of the
 HPCloud PHP project. This will place the generated documents in
 `docs/api/html`.
+
+\see oo-tutorial-code.php
