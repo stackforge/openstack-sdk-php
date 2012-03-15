@@ -241,6 +241,10 @@
  *
  * The main class is HPCloud::Storage::ObjectStorage.
  */
+/*
+ * @package HPCloud.Storage.CDN
+ * Classes specific to CDN.
+ */
 /**
  * @package HPCloud.Transport
  * HTTP/REST/JSON classes.
