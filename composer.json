@@ -5,6 +5,7 @@
   "keywords": ["openstack","hpcloud","cloud","swift","nova"],
   "license": "MIT-like",
   "homepage": "http://hpcloud.com",
+  "version": "0.0.9",
   "authors": [
     {
       "name": "M Butcher",
