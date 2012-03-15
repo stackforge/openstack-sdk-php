@@ -30,7 +30,7 @@
  *
  * (If you are not sure what the "HPCloud Management Console" is, head over to
  * http://build.hpcloud.com. There you will find some articles and videos
- * explaining the HPCloud structure.
+ * explaining the HPCloud structure.)
  *
  * @section where_to_start Where To Start
  *
@@ -38,9 +38,12 @@
  * started with a library. It's better to know where to start. Here's
  * what we suggest:
  *
- * - Connecting and logging in is almost inevitably going to be your first
+ *- There are a few tutorials inside this documentation that will help you
+ *   get started. One explains [Stream Wrappers](@ref streams-tutorial) and
+ *   the other [the library itself](@ref oo-tutorial).
+ *- Connecting and logging in is almost inevitably going to be your first
  *   task. For that, you will want to look at IdentityServices.
- * - ObjectStorage (a.k.a. swift) is our cloud storage system. There are
+ *- ObjectStorage (a.k.a. swift) is our cloud storage system. There are
  *   two ways to use it:
  *   - You can explore the object oriented API, starting with ObjectStorage.
  *   - You can use the PHP stream wrappers to access your object storage. This
@@ -96,12 +99,12 @@
  * HPCloud ObjectStorage service without using any fancy API at all. Use the
  * normal file methods like this:
  *
- * - fopen()/fclose()
- * - fread()/fwrite()
- * - file_get_contents(), stream_get_contents()
- * - stat()/fstat()
- * - is_readable()/is_writable()
- * - And so on (http://us3.php.net/manual/en/ref.filesystem.php).
+ *- fopen()/fclose()
+ *- fread()/fwrite()
+ *- file_get_contents(), stream_get_contents()
+ *- stat()/fstat()
+ *- is_readable()/is_writable()
+ *- And so on (http://us3.php.net/manual/en/ref.filesystem.php).
  *
  * Learn more about this at HPCloud::Storage::ObjectStorage::StreamWrapper.
  *
@@ -148,10 +151,10 @@
  * ?>
  * @endcode
  *
- * -# Our classes use PHP namespaces to organize components. If you've never used
+ *-# Our classes use PHP namespaces to organize components. If you've never used
  *   them before, don't worry. They're easy to get the hang of.
- * -# The Bootstrap class handles setting up HPCloud services. Read about it at HPCloud::Bootstrap.
- * -# The IdentityServices class handles authenticating to HP, discovering services, and providing
+ *-# The Bootstrap class handles setting up HPCloud services. Read about it at HPCloud::Bootstrap.
+ *-# The IdentityServices class handles authenticating to HP, discovering services, and providing
  *   access to your account. HPCloud::Services::IdentityServices explains the details, but here are
  *   a few functions you'll want to know:
  *   - HPCloud::Services::IdentityServices::__construct() tells the object where to connect.
@@ -200,9 +203,9 @@
  * HPCloud::Storage::ObjectStorage account. There are many functions for
  * creating and modifying containers and objects, too.
  *
- * - HPCloud::Storage::ObjectStorage is where you will start.
- * - Container services are in HPCloud::Storage::ObjectStorage::Container
- * - There are two classes for objects:
+ *- HPCloud::Storage::ObjectStorage is where you will start.
+ *- Container services are in HPCloud::Storage::ObjectStorage::Container
+ *- There are two classes for objects:
  *     - HPCloud::Storage::ObjectStorage::Object is for creating new objects.
  *     - HPCloud::Storage::ObjectStorage::RemoteObject provides better network
  *     performance when reading objects.
@@ -230,9 +233,9 @@
  *
  * Services for now and the future:
  *
- * - ObjectStorage
- * - CDN caching of storage
- * - Others coming.
+ *- ObjectStorage
+ *- CDN caching of storage
+ *- Others coming.
  *
  */
 /**

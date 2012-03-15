@@ -68,7 +68,7 @@ do anything really fancy with namespaces.
 **In this document, we sometimes replace the backslash (\) with double
 colons (`::`) so that links are automatically generated.** So
 `\HPCloud\Bootstrap` may appear as HPCloud::Bootstrap. The reason for
-this is [explained elsewhere]().
+this is [explained elsewhere](@ref styleguide).
 
 ## Step 1: Getting the Library
 
