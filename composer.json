@@ -1,9 +1,9 @@
 {
-  "name": "HPCloud/HPCloud-PHP",
+  "name": "hpcloud/hpcloud-php",
   "description": "Access HPCloud and OpenStack services in PHP.",
   "type": "library",
   "keywords": ["openstack","hpcloud","cloud","swift","nova"],
-  "license": "",
+  "license": "MIT-like",
   "homepage": "http://hpcloud.com",
   "authors": [
     {
