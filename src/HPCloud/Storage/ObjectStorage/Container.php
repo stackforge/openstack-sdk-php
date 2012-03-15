@@ -781,7 +781,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @deprecated
    */
   public function remoteObject($name) {
-    $this->proxyObject($name);
+    return $this->proxyObject($name);
   }
 
   /**

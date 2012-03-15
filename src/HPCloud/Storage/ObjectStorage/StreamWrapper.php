@@ -844,13 +844,19 @@ class StreamWrapper {
     }
     // End EXPERIMENTAL section.
 
+    // Now we need to get the container. Doing a server round-trip here gives
+    // us the peace of mind that we have an actual container.
+    // XXX: Should we make it possible to get a container blindly, without the
+    // server roundtrip?
     try {
-      // Now we need to get the container. Doing a server round-trip here gives
-      // us the peace of mind that we have an actual container.
-      // XXX: Should we make it possible to get a container blindly, without the
-      // server roundtrip?
       $this->container = $this->store->container($containerName);
+    }
+    catch (\HPCloud\Transport\FileNotFoundException $e) {
+        trigger_error('Container not found.', E_USER_WARNING);
+        return FALSE;
+    }
 
+    try{
       // Now we fetch the file. Only under certain circumstances do we generate
       // an error if the file is not found.
       // FIXME: We should probably allow a context param that can be set to 
@@ -1239,8 +1245,6 @@ class StreamWrapper {
    *   the cached stat['size'] for the underlying buffer.
    */
   protected function generateStat($object, $container, $size) {
-
-
     // This is not entirely accurate. Basically, if the 
     // file is marked public, it gets 100775, and if
     // it is private, it gets 100770.
