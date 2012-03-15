@@ -12,7 +12,7 @@ polished product.
 
 **This tutorial focuses on the object-oriented API.** The other way to
 work with this library is through the stream wrapper. That topic is
-covered in another tutorial.
+covered in [another tutorial](@ref streams-tutorial).
 
 ## Pre-flight Check
 
@@ -39,7 +39,9 @@ The object-oriented library makes ample use of PHP namespaces. If you've
 never seen these before, they look like this:
 
 ~~~{.php}
+<?php
 \HPCloud\Storage\ObjectStorage\RemoteObject
+?>
 ~~~
 
 The namespace above is read like this: "The RemoteObject class is part
@@ -64,7 +66,9 @@ or you may just prefer to keep on reading and learn by example. We don't
 do anything really fancy with namespaces.
 
 **In this document, we sometimes replace the backslash (\) with double
-colons (`::`) so that links are automatically generated.**
+colons (`::`) so that links are automatically generated.** So
+`\HPCloud\Bootstrap` may appear as HPCloud::Bootstrap. The reason for
+this is [explained elsewhere]().
 
 ## Step 1: Getting the Library
 

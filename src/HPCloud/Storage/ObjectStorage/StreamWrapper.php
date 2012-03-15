@@ -1606,6 +1606,8 @@ class StreamWrapper {
 
     $ident = new \HPCloud\Services\IdentityServices($authUrl);
 
+    // Frustrated? Go burninate. http://www.homestarrunner.com/trogdor.html
+
     if (!empty($username) && !empty($password)) {
       $token = $ident->authenticateAsUser($username, $password, $tenantId);
     }
