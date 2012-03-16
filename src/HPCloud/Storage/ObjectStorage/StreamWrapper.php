@@ -1498,7 +1498,8 @@ class StreamWrapper {
     $endpoint = $this->cxt('swift_endpoint');
 
     $serviceCatalog = NULL;
-    if (isset(self::$serviceCatalogCache[$token])) {
+
+    if (!empty($token) && isset(self::$serviceCatalogCache[$token])) {
       $serviceCatalog = self::$serviceCatalogCache[$token];
     }
 
