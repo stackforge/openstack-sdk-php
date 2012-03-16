@@ -132,7 +132,7 @@ class RemoteObject extends Object {
     }
 
     $object->setContentType($headers['Content-Type']);
-    $object->contentLength = (int) $headers['Content-Length'];
+    $object->contentLength = empty($headers['Content-Length']) ? 0 : (int) $headers['Content-Length'];
     $object->etag = (string) $headers['Etag']; // ETag is now Etag.
     $object->lastModified = strtotime($headers['Last-Modified']);
 
