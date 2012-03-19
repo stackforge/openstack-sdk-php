@@ -5,3 +5,4 @@ test/settings.ini*
 .DS_Store
 doc/api
 curl-output.txt
+hpcloud-logo.png
