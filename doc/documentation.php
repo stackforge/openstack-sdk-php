@@ -131,7 +131,7 @@
  * // management console.
  * $identity = new IdentityServices('http://get.url.from.hpcloud.com');
  *
- * // You can authenticate either with username/password (IdentityServices::authenticateAsUser())
+ * // You can authenticate either with username/password (IdentityServices::authenticateAsAccount())
  * // or as an account/secret key (IdentityServices::authenticateAsAccount()). In either
  * // case you can get the info you need from the management console.
  * $account = '123456789098765';
@@ -144,7 +144,7 @@
  *
  * // Get a listing of all of the services you currently have configured on
  * // HPCloud.
- * $catalog = $itentity->serviceCatalog();
+ * $catalog = $identity->serviceCatalog();
  *
  * var_dump($catalog);
  *
@@ -158,9 +158,9 @@
  *   access to your account. HPCloud::Services::IdentityServices explains the details, but here are
  *   a few functions you'll want to know:
  *   - HPCloud::Services::IdentityServices::__construct() tells the object where to connect.
- *   - HPCloud::Services::IdentityServices::authenticateAsUser() lets you log
+ *   - HPCloud::Services::IdentityServices::authenticateAsAccount() lets you log
  *     in with username and password.
- *   - HPCloud::Services::IdentityServices::authenticateAsUser() lets you log
+ *   - HPCloud::Services::IdentityServices::authenticateAsAccount() lets you log
  *     in with account number and secret key.
  *   - HPCloud::Services::IdentityServices::serviceCatalog() tells you about
  *     the services you have activated on this account.
