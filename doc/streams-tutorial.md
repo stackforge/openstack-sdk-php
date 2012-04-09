@@ -153,7 +153,7 @@ The URL above has three important parts, in the form
 `swift://CONTAINER/OBJECT_NAME`.
 
 - *swift://*: This is the schema. This part of the URL tells PHP to pass
-  the request to the HPCloud stream wrapper. (Siwft, by the way, is the
+  the request to the HPCloud stream wrapper. (Swift, by the way, is the
   [OpenStack name for object storage](http://openstack.org/projects/storage/).
 - *Example*: This is the *container name*. In Object Storage parlance, a
   container is a place to store documents. One account can have lots of
