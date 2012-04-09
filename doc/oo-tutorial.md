@@ -164,7 +164,7 @@ network resources. And behind the scenes, account management would be
 difficult on the server side.
 
 That's where Identity Services comes in. It is a central service that
-handles all things authorization and authentication related. Rouughly,
+handles all things authorization and authentication related. Roughly,
 it works as follows:
 
 - The client sends an authentication request
@@ -319,7 +319,7 @@ $container = $store->container('Example');
 ~~~
 
 Recall that `$store` is the name of our `ObjectStorage` instance. In the
-first of the two lines above, we create a new containe named `Example`.
+first of the two lines above, we create a new container named `Example`.
 Then in the second line, we get that container.
 
 Why is this two steps? The answer is that the HPCloud PHP library mimics
@@ -372,7 +372,7 @@ with a local copy and a remote copy. If our code isn't constructed
 correctly, it is possible for these two to get out of sync.
 
 Earlier, we created a container directly on the remote side, and then
-featched the container. As we create an object, we are going to do the
+fetched the container. As we create an object, we are going to do the
 opposite: We will create a local object, and then save it to the remote
 storage. Later, we will fetch the remote object.
 
