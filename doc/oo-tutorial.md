@@ -65,7 +65,7 @@ look at [the PHP documentation](http://us3.php.net/manual/en/language.namespaces
 or you may just prefer to keep on reading and learn by example. We don't
 do anything really fancy with namespaces.
 
-**In this document, we sometimes replace the backslash (\) with double
+**In this document, we sometimes replace the backslash (\\) with double
 colons (`::`) so that links are automatically generated.** So
 `\HPCloud\Bootstrap` may appear as HPCloud::Bootstrap. The reason for
 this is [explained elsewhere](@ref styleguide).
@@ -227,7 +227,7 @@ dumping it with `var_dump()`, should you so desire.
 At this point, we have what we need from Identity Services. It's time to
 look at Object Storage.
 
-### IdentityServices in a Nushell
+### IdentityServices in a Nutshell
 
 Instances of HPCloud::Services::IdentityServices are responsible for:
 
