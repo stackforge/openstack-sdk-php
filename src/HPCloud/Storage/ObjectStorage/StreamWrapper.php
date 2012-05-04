@@ -248,6 +248,9 @@ use \HPCloud\Storage\ObjectStorage;
  *     - The container must have CDN enabled
  *     - The CDN container must be active ("cdn-enabled")
  *     - Authentication info must be accessible to the stream wrapper.
+ * - cdn_require_ssl: If this is set to FALSE, then CDN-based requests
+ *     may use plain HTTP instead of HTTPS. This will spead up CDN
+ *     fetches at the cost of security.
  *
  * @attention
  *  ADVANCED: You can also pass an HPCloud::Storage::CDN object in use_cdn instead of
@@ -830,12 +833,13 @@ class StreamWrapper {
     $cdnUrl = $this->store->cdnUrl($containerName, FALSE);
     $cdnSslUrl = $this->store->cdnUrl($containerName, TRUE);
     if (!empty($cdnUrl) && !$this->isWriting && !$this->isAppending) {
+      $requireSSL = (boolean) $this->cxt('cdn_require_ssl', TRUE);
       try {
         $newUrl = $this->store->url() . '/' . $containerName;
         $token = $this->store->token();
         $this->container = new \HPCloud\Storage\ObjectStorage\Container($containerName, $newUrl, $token);
         $this->container->useCDN($cdnUrl, $cdnSslUrl);
-        $this->obj = $this->container->object($objectName);
+        $this->obj = $this->container->object($objectName, $requireSSL);
         $this->objStream = $this->obj->stream();
 
         return TRUE;
@@ -1570,6 +1574,9 @@ class StreamWrapper {
    * When use_cdn is set to TRUE, the wrapper tries to use CDN service.
    * In such cases, we need a handle to the CDN object. This initializes
    * that handle, which can later be used to get other information.
+   *
+   * Also note that CDN's default behavior is to fetch over SSL CDN.
+   * To disable this, set 'cdn_require_ssl' to FALSE.
    */
   protected function initializeCDN($token, $catalog) {
     $cdn = $this->cxt('use_cdn', FALSE);

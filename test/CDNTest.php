@@ -115,10 +115,22 @@ $cxt = stream_context_create(array(
     'use_cdn' => TRUE,
   ),
 ));
+$cxt2 = stream_context_create(array(
+  'swift' => array(
+    //'token' => $token,
+    'tenantid' => $ini['hpcloud.identity.tenantId'],
+    'account' => $ini['hpcloud.identity.account'],
+    'key' => $ini['hpcloud.identity.secret'],
+    'endpoint' => $ini['hpcloud.identity.url'],
+    'use_cdn' => TRUE,
+    'cdn_require_ssl' => FALSE,
+  ),
+));
 
 print "***** TESTING RETURNED DATA" . PHP_EOL;
 $res = array(
   'internal'       => file_get_contents('swift://' . TEST_CONTAINER . '/CDNTest.txt', FALSE, $cxt),
+  'internalNoSSL'  => file_get_contents('swift://' . TEST_CONTAINER . '/CDNTest.txt', FALSE, $cxt2),
   'external'       => file_get_contents($copy->url()),
   'externalSslCdn' => file_get_contents($copy->url(TRUE)),
   'externalCdn'    => file_get_contents($copy->url(TRUE, FALSE)),
