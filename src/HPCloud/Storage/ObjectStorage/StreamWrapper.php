@@ -827,13 +827,14 @@ class StreamWrapper {
     // EXPERIMENTAL:
     // If we can get the resource from CDN, we do so now. Note that we try to sidestep
     // the Container creation, which saves us an HTTP request.
-    $cdnUrl = $this->store->cdnUrl($containerName);
+    $cdnUrl = $this->store->cdnUrl($containerName, FALSE);
+    $cdnSslUrl = $this->store->cdnUrl($containerName, TRUE);
     if (!empty($cdnUrl) && !$this->isWriting && !$this->isAppending) {
       try {
         $newUrl = $this->store->url() . '/' . $containerName;
         $token = $this->store->token();
         $this->container = new \HPCloud\Storage\ObjectStorage\Container($containerName, $newUrl, $token);
-        $this->container->useCDN($cdnUrl);
+        $this->container->useCDN($cdnUrl, $cdnSslUrl);
         $this->obj = $this->container->object($objectName);
         $this->objStream = $this->obj->stream();
 
