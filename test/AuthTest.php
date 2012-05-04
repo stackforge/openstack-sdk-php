@@ -95,7 +95,7 @@ else {
 }
 
 if (empty($token)) {
-  print "Authentication seemed to succeed, but no token was return." . PHP_EOL;
+  print "Authentication seemed to succeed, but no token was returned." . PHP_EOL;
   exit(1);
 }
 

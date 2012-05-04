@@ -66,12 +66,23 @@ print "***** TESTING CDN ENABLED" . PHP_EOL;
 if ($cdnData['cdn_enabled'] != 1) {
   die('Cannot test CDN: You must enable CDN on ' . $cname);
 }
-
 $container = $objstore->container($cname);
 
 print "***** TESTING CDN URL" . PHP_EOL;
+$cdnSsl = $objstore->cdnUrl($cname);
+$cdnPlain = $objstore->cdnUrl($cname, FALSE);
+if ($cdnSsl == $cdnPlain) {
+  die(sprintf("Surprise! %s matches %s\n", $cdnSsl, $cdnPlain));
+}
+print 'SSL CDN: ' . $cdnSsl. PHP_EOL;
+print 'Plain CDN: ' . $cdnPlain . PHP_EOL;
+print 'Container CDN URL: ' . $container->cdnUrl() . PHP_EOL;
 if ($container->cdnUrl() == NULL) {
   die('No CDN URL for Container ' . $cname);
+}
+
+if ($cdnSsl != $container->cdnUrl()) {
+  die(sprintf("Expected SSL CDN %s to match Container CDN %s\n", $cdnSsl, $container->cdnUrl()));
 }
 
 $o = new \HPCloud\Storage\ObjectStorage\Object('CDNTest.txt', 'TEST');
@@ -79,6 +90,14 @@ $o = new \HPCloud\Storage\ObjectStorage\Object('CDNTest.txt', 'TEST');
 $container->save($o);
 
 $copy = $container->object($o->name());
+
+print "***** TESTING OBJECT CDN URLS." . PHP_EOL;
+print "Object SSL URL: " . $copy->url() . PHP_EOL;
+print "Object CDN SSL URL: " . $copy->url(TRUE) . PHP_EOL;
+print "Object CDN URL: " . $copy->url(TRUE, FALSE) . PHP_EOL;
+if ($copy->url(TRUE) == $copy->url(TRUE, FALSE)) {
+  die(sprintf("Object SSL URL %s should not match non-SSL URL %s\n", $copy->url(TRUE), $copy->url(TRUE, FALSE)));
+}
 
 print "***** TESTING THAT CDN WAS USED." . PHP_EOL;
 if ($copy->url() == $copy->url(TRUE)) {
@@ -96,8 +115,31 @@ $cxt = stream_context_create(array(
     'use_cdn' => TRUE,
   ),
 ));
+$cxt2 = stream_context_create(array(
+  'swift' => array(
+    //'token' => $token,
+    'tenantid' => $ini['hpcloud.identity.tenantId'],
+    'account' => $ini['hpcloud.identity.account'],
+    'key' => $ini['hpcloud.identity.secret'],
+    'endpoint' => $ini['hpcloud.identity.url'],
+    'use_cdn' => TRUE,
+    'cdn_require_ssl' => FALSE,
+  ),
+));
 
 print "***** TESTING RETURNED DATA" . PHP_EOL;
-print file_get_contents('swift://' . TEST_CONTAINER . '/CDNTest.txt', FALSE, $cxt);
+$res = array(
+  'internal'       => file_get_contents('swift://' . TEST_CONTAINER . '/CDNTest.txt', FALSE, $cxt),
+  'internalNoSSL'  => file_get_contents('swift://' . TEST_CONTAINER . '/CDNTest.txt', FALSE, $cxt2),
+  'external'       => file_get_contents($copy->url()),
+  'externalSslCdn' => file_get_contents($copy->url(TRUE)),
+  'externalCdn'    => file_get_contents($copy->url(TRUE, FALSE)),
+);
+
+foreach ($res as $name => $val) {
+  if ($val != 'TEST') {
+    die(sprintf("Facility %s failed, returning '%s' instead of TEST.", $name, $val));
+  }
+}
 
 print PHP_EOL . "***** All tests passed." . PHP_EOL;

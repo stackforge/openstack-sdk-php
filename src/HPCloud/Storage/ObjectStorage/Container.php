@@ -95,6 +95,7 @@ class Container implements \Countable, \IteratorAggregate {
 
   // This is only set if CDN service is activated.
   protected $cdnUrl;
+  protected $cdnSslUrl;
 
   /**
    * Transform a metadata array into headers.
@@ -335,9 +336,12 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $url
    *   The URL to the CDN for this container.
+   * @param string $sslUrl
+   *   The SSL URL to the CDN for this container.
    */
-  public function useCDN($url) {
+  public function useCDN($url, $sslUrl) {
     $this->cdnUrl = $url;
+    $this->cdnSslUrl = $sslUrl;
   }
 
   /**
@@ -681,13 +685,18 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the object to load.
+   * @param boolean $requireSSL
+   *   If this is TRUE (the default), then SSL will always be
+   *   used. If this is FALSE, then CDN-based fetching will
+   *   use non-SSL, which is faster.
    * @retval \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A remote object with the content already stored locally.
    */
-  public function object($name) {
+  public function object($name, $requireSSL = TRUE) {
 
     $url = self::objectUrl($this->url, $name);
     $cdn = self::objectUrl($this->cdnUrl, $name);
+    $cdnSsl = self::objectUrl($this->cdnSslUrl, $name);
     $headers = array();
 
     // Auth token.
@@ -699,7 +708,9 @@ class Container implements \Countable, \IteratorAggregate {
       $response = $client->doRequest($url, 'GET', $headers);
     }
     else {
-      $response = $client->doRequest($cdn, 'GET', $headers);
+      $from = $requireSSL ? $cdnSsl : $cdn;
+      // print "Fetching object from $from\n";
+      $response = $client->doRequest($from, 'GET', $headers);
     }
 
     if ($response->status() != 200) {
@@ -710,7 +721,7 @@ class Container implements \Countable, \IteratorAggregate {
     $remoteObject->setContent($response->content());
 
     if (!empty($this->cdnUrl)) {
-      $remoteObject->useCDN($cdn);
+      $remoteObject->useCDN($cdn, $cdnSsl);
     }
 
     return $remoteObject;
@@ -748,6 +759,7 @@ class Container implements \Countable, \IteratorAggregate {
   public function proxyObject($name) {
     $url = self::objectUrl($this->url, $name);
     $cdn = self::objectUrl($this->cdnUrl, $name);
+    $cdnSsl = self::objectUrl($this->cdnSslUrl, $name);
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
@@ -759,7 +771,7 @@ class Container implements \Countable, \IteratorAggregate {
       $response = $client->doRequest($url, 'HEAD', $headers);
     }
     else {
-      $response = $client->doRequest($cdn, 'HEAD', $headers);
+      $response = $client->doRequest($cdnSsl, 'HEAD', $headers);
     }
 
     if ($response->status() != 200) {
@@ -771,7 +783,7 @@ class Container implements \Countable, \IteratorAggregate {
     $obj = RemoteObject::newFromHeaders($name, $headers, $this->token, $url);
 
     if (!empty($this->cdnUrl)) {
-      $obj->useCDN($cdn);
+      $obj->useCDN($cdn, $cdnSsl);
     }
 
     return $obj;
@@ -944,8 +956,8 @@ class Container implements \Countable, \IteratorAggregate {
     return $this->url;
   }
 
-  public function cdnUrl() {
-    return $this->cdnUrl;
+  public function cdnUrl($ssl = TRUE) {
+    return $ssl ? $this->cdnSslUrl : $this->cdnUrl;
   }
 
   /**
