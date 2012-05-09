@@ -102,7 +102,8 @@ class TestCase extends \PHPUnit_Framework_TestCase {
 
     $user = self::$settings['hpcloud.swift.account'];
     $key = self::$settings['hpcloud.swift.key'];
-    $url = self::$settings['hpcloud.swift.url'];
+    // $url = self::$settings['hpcloud.swift.url'];
+    $url = self::$settings['hpcloud.identity.url'];
 
     return \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
 
