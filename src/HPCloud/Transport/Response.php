@@ -81,7 +81,7 @@ class Response {
     switch ($code) {
 
       case '403':
-        throw new \HPCloud\Transport\ForibiddenException($err);
+        throw new \HPCloud\Transport\ForbiddenException($err);
       case '401':
         throw new \HPCloud\Transport\UnauthorizedException($err);
       case '404':
