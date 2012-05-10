@@ -260,6 +260,7 @@ class CDN {
    *     'cdn_enabled' => 1
    *     'name' => 'I♡HPCloud'
    *     'x-cdn-uri' => 'http://hcf937838.cdn.aw1.hpcloud.net'
+   *     'x-cdn-ssl-uri' => 'https://hcf937838.cdn.aw1.hpcloud.net'
    *     'ttl' => 1234
    *   ),
    *   array(
@@ -267,6 +268,7 @@ class CDN {
    *     'cdn_enabled' => 0
    *     'name' => 'HPCloud2'
    *     'x-cdn-uri' => 'http://hcf9abc38.cdn.aw1.hpcloud.net'
+   *     'x-cdn-ssl-uri' => 'https://hcf937838.cdn.aw1.hpcloud.net'
    *     'ttl' => 1234
    *   ),
    * );

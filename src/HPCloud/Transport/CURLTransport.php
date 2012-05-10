@@ -55,6 +55,26 @@ class CURLTransport implements Transporter {
 
   const HTTP_USER_AGENT_SUFFIX = ' (c93c0a) CURL/1.0';
 
+  protected $curlInst = NULL;
+  /**
+   * The curl_multi instance.
+   *
+   * By using curl_multi to wrap CURL requests, we can re-use the same
+   * connection for multiple requests. This has tremendous value for
+   * cases where several transactions occur in short order.
+   */
+  protected $multi = NULL;
+
+  /*
+  public function curl($uri) {
+    //if (empty($this->curlInst)) {
+      $this->curlInst = curl_init();
+    //}
+    curl_setopt($this->curlInst, CURLOPT_URL, $uri);
+    return $this->curlInst;
+  }
+   */
+
   public function doRequest($uri, $method = 'GET', $headers = array(), $body = NULL) {
 
     $in = NULL;
@@ -109,49 +129,6 @@ class CURLTransport implements Transporter {
     //syslog(LOG_WARNING, "Real Operation: $method $uri");
 
     //$urlParts = parse_url($uri);
-
-
-    // Write to in-mem handle backed by a temp file.
-    $out = fopen('php://temp', 'wb+');
-    $headerFile = fopen('php://temp', 'w+');
-
-    $curl = curl_init($uri);
-
-    // Set method
-    $this->determineMethod($curl, $method);
-
-    // Set the upload
-    $copy = NULL;
-
-    // If we get a string, we send the string
-    // data.
-    if (is_string($in)) {
-      curl_setopt($curl, CURLOPT_POSTFIELDS, $in);
-      if (!isset($headers['Content-Length'])) {
-        $headers['Content-Length'] = strlen($in);
-      }
-    }
-    // If we get a resource, we treat it like a stream
-    // and pass it into CURL as a file.
-    elseif (is_resource($in)) {
-      curl_setopt($curl, CURLOPT_INFILE, $in);
-
-      // Tell CURL about the content length if we know it.
-      if (!empty($headers['Content-Length'])) {
-        curl_setopt($curl, CURLOPT_INFILESIZE, $headers['Content-Length']);
-        unset($headers['Content-Length']);
-      }
-    }
-
-    // Set headers.
-    $this->setHeaders($curl, $headers);
-
-    // Get the output.
-    curl_setopt($curl, CURLOPT_FILE, $out);
-
-    // We need to capture the headers, too.
-    curl_setopt($curl, CURLOPT_WRITEHEADER, $headerFile);
-
     $opts = array(
       CURLOPT_USERAGENT => self::HTTP_USER_AGENT . self::HTTP_USER_AGENT_SUFFIX,
       // CURLOPT_RETURNTRANSFER => TRUE, // Make curl_exec return the results.
@@ -170,25 +147,82 @@ class CURLTransport implements Transporter {
       // Limit curl to only these protos.
       // CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
 
+      // (Re-)set defaults.
+      //CURLOPT_POSTFIELDS => NULL,
+      //CURLOPT_INFILE => NULL,
+      //CURLOPT_INFILESIZE => NULL,
     );
-    curl_setopt_array($curl, $opts);
+
+
+    // Write to in-mem handle backed by a temp file.
+    $out = fopen('php://temp', 'wb+');
+    $headerFile = fopen('php://temp', 'w+');
+
+    $curl = curl_init($uri);
+    //$curl = $this->curl($uri);
+
+    // Set method
+    $this->determineMethod($curl, $method);
+
+    // Set the upload
+    $copy = NULL;
+
+    // If we get a string, we send the string
+    // data.
+    if (is_string($in)) {
+      //curl_setopt($curl, CURLOPT_POSTFIELDS, $in);
+      $opts[CURLOPT_POSTFIELDS] = $in;
+      if (!isset($headers['Content-Length'])) {
+        $headers['Content-Length'] = strlen($in);
+      }
+    }
+    // If we get a resource, we treat it like a stream
+    // and pass it into CURL as a file.
+    elseif (is_resource($in)) {
+      //curl_setopt($curl, CURLOPT_INFILE, $in);
+      $opts[CURLOPT_INFILE] = $in;
+
+      // Tell CURL about the content length if we know it.
+      if (!empty($headers['Content-Length'])) {
+        //curl_setopt($curl, CURLOPT_INFILESIZE, $headers['Content-Length']);
+        $opts[CURLOPT_INFILESIZE] = $headers['Content-Length'];
+        unset($headers['Content-Length']);
+      }
+    }
+
+    // Set headers.
+    $this->setHeaders($curl, $headers);
+
+    // Get the output.
+    //curl_setopt($curl, CURLOPT_FILE, $out);
+    $opts[CURLOPT_FILE] = $out;
+
+    // We need to capture the headers, too.
+    //curl_setopt($curl, CURLOPT_WRITEHEADER, $headerFile);
+    $opts[CURLOPT_WRITEHEADER] = $headerFile;
+
 
     if (Bootstrap::hasConfig('transport.debug')) {
       $debug = Bootstrap::config('transport.debug', NULL);
-      curl_setopt($curl, CURLOPT_VERBOSE, (int) $debug);
+      //curl_setopt($curl, CURLOPT_VERBOSE, (int) $debug);
+      $opts[CURLOPT_VERBOSE] = (int) $debug;
     }
 
     if (Bootstrap::hasConfig('transport.timeout')) {
-      curl_setopt($curl, CURLOPT_TIMEOUT, (int) Bootstrap::config('transport.timeout'));
+      //curl_setopt($curl, CURLOPT_TIMEOUT, (int) Bootstrap::config('transport.timeout'));
+      $opts[CURLOPT_TIMEOUT] = (int) Bootstrap::config('transport.timeout');
     }
 
     if (Bootstrap::hasConfig('transport.ssl.verify')) {
       $validate = (boolean) Bootstrap::config('transport.ssl.verify', TRUE);
-      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $validate);
+      //curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $validate);
+      $opts[CURLOPT_SSL_VERIFYPEER] = $validate;
     }
 
 
-    $ret = curl_exec($curl);
+    // Set all of the curl opts and then execute.
+    curl_setopt_array($curl, $opts);
+    $ret = $this->execCurl($curl);//curl_exec($curl);
     $info = curl_getinfo($curl);
     $status = $info['http_code'];
 
@@ -213,12 +247,63 @@ class CURLTransport implements Transporter {
     // Now we need to build a response.
     $resp = new Response($out, $info, $responseHeaders);
 
-    curl_close($curl);
+    //curl_close($curl);
     if (is_resource($copy)) {
       fclose($copy);
     }
 
     return $resp;
+  }
+
+
+  /**
+   * Poor man's connection pooling.
+   *
+   * Instead of using curl_exec(), we use curl_multi_* to
+   * handle the processing The CURL multi library tracks connections, and
+   * basically provides connection sharing across requests. So two requests made to
+   * the same server will use the same connection (even when they are executed
+   * separately) assuming that the remote server supports this.
+   *
+   * We've noticed that this improves performance substantially, especially since
+   * SSL requests only require the SSL handshake once.
+   *
+   * @param resource $handle
+   *   A CURL handle from curl_init().
+   * @retval boolean
+   *   Returns a boolean value indicating whether or not CURL could process the
+   *   request.
+   */
+  protected function execCurl($handle) {
+    if (empty($this->multi)) {
+      $multi = curl_multi_init();
+      $this->multi = $multi;
+      // fwrite(STDOUT, "Creating MULTI handle.\n");
+    }
+    else {
+      // fwrite(STDOUT, "Reusing MULTI handle.\n");
+      $multi = $this->multi;
+    }
+    curl_multi_add_handle($multi, $handle);
+
+    $active = NULL;
+    do {
+      $ret = curl_multi_exec($multi, $active);
+    } while ($ret == CURLM_CALL_MULTI_PERFORM);
+
+    while ($active && $ret == CURLM_OK) {
+      if (curl_multi_select($multi) != -1) {
+        do {
+           $mrc = curl_multi_exec($multi, $active);
+        } while ($mrc == CURLM_CALL_MULTI_PERFORM);
+      }
+    }
+
+    curl_multi_remove_handle($multi, $handle);
+    //curl_multi_close($multi);
+
+    return TRUE;
+
   }
 
   /**

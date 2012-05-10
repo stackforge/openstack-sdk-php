@@ -68,6 +68,7 @@ class RemoteObject extends Object {
   protected $allHeaders;
 
   protected $cdnUrl;
+  protected $cdnSslUrl;
 
   /**
    * Create a new RemoteObject from JSON data.
@@ -118,8 +119,10 @@ class RemoteObject extends Object {
    *   subsequent requests. If this is set, this object may use
    *   CDN to make subsequent requests. It may also return the
    *   CDN URL when requested.
+   * @param string $cdnSslUrl
+   *   The URL to the SSL-protected CDN version of the object.
    */
-  public static function newFromHeaders($name, $headers, $token, $url, $cdnUrl = NULL) {
+  public static function newFromHeaders($name, $headers, $token, $url, $cdnUrl = NULL, $cdnSslUrl = NULL) {
     $object = new RemoteObject($name);
 
     $object->allHeaders = $headers;
@@ -153,6 +156,7 @@ class RemoteObject extends Object {
     $object->token = $token;
     $object->url = $url;
     $object->cdnUrl = $cdnUrl;
+    $object->cdnSslUrl = $cdnSslUrl;
 
     return $object;
   }
@@ -176,9 +180,12 @@ class RemoteObject extends Object {
    *
    * @param string $url
    *   The URL to this object in CDN.
+   * @param string $sslUrl
+   *   The SSL URL to this object in CDN.
    */
-  public function useCDN($url) {
+  public function useCDN($url, $sslUrl) {
     $this->cdnUrl = $url;
+    $this->cdnSslUrl = $sslUrl;
   }
 
   /**
@@ -196,6 +203,11 @@ class RemoteObject extends Object {
    *   object. See ObjectStorage::useCDN(), Container::useCDN() and
    *   RemoteObject::useCDN(). (Generally, using ObjectStorage::useCDN()
    *   is all you need to do.)
+   * @param boolean $useSSL
+   *   FOR CACHED URLS ONLY, there is an option for either SSL or non-SSL
+   *   URLs. By default, we use SSL URLs because (a) it's safer, and
+   *   (b) it mirrors non-CDN behavior. This can be turned off by setting
+   *   $useSSL to FALSE.
    * @retval string
    *   A URL to the object. The following considerations apply:
    *   - If the container is public, this URL can be loaded without
@@ -207,10 +219,10 @@ class RemoteObject extends Object {
    *   - If this object has never been saved remotely, then there will be
    *     no URL, and this will return NULL.
    */
-  public function url($cached = FALSE) {
+  public function url($cached = FALSE, $useSSL = TRUE) {
 
     if ($cached && !empty($this->cdnUrl)) {
-      return $this->cdnUrl;
+      return $useSSL ? $this->cdnSslUrl : $this->cdnUrl;
     }
     return $this->url;
   }

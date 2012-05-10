@@ -6,6 +6,7 @@ You can use this library to:
 
 * Authenticate your application to the HP Cloud.
 * Interact with Object Storage (aka Swift).
+* Interact with CDN service (Content Delivery Network).
 
 Coming soon:
 
@@ -21,17 +22,50 @@ Coming soon:
 
 * Enable the cURL extension for full protocol support.
 
+We also have support for using PHP's native HTTP stream wrapper, but it
+is not as reliable. We recommend cURL.
+
 ## Installation
 
-There are two methods for installing HPCloud-PHP. You may manually
-install, or you may use the PEAR installer.
+There are currently two methods of installation. We've been considering
+PEAR and Phar releases, but have currently limited to only Composer and
+builds because these cover our needs.
 
-## Usage
+#### Method #1:
 
-### Importing the Library
+Use [Composer](http://getcomposer.org) to download and install the
+latest version of HPCloud-PHP.
 
-The HPCloud PHP library follows the PHP 5.3 recommended practices for
-including and loading. In short: Use an autoloader.
+#### Method #2:
+
+Download a tagged release and include it in your project.
+
+
+## Features
+
+#### Identity Services
+
+Authenticate, authorize service usage, and retrieve account information.
+
+#### Object Storage
+
+Store files or other data objects in containers on your HP Cloud object
+storage instance. Create, modify and delete containers. Manage ACLs.
+Read, write, and delete objects. Expose objects in your object storage
+to other services.
+
+With full stream wrapper support, you can use built-in
+PHP functions like `file_get_contents()`, `fopen()`, and `stat()` for
+reading and writing files into object storage.
+
+#### CDN
+
+With CDN service enabled, objects in Object Storage can be pushed onto
+the HP Cloud edge server network.
+
+With this library, manage CDN integration for object storage containers,
+and manage individual objects. The library allows you to fetch cached
+objects either from object storage or from the CDN cache.
 
 #### Autoloading
 
@@ -40,47 +74,14 @@ which means that it should work with any PSR-0 autoloader. However,
 it also comes with its own autoloader for apps that don't yet make use
 of a standard autoloader.
 
-##### PSR-0 Autoloading
+#### Composer Support
 
-For any PSR-0 autoloader, just ensure that the `HPCloud` directory (in
-`src`) is available in your PHP include path. A PSR-0 autoloader can
-take it from there.
+HPCloud-PHP is available as part of the Packagist archive, which means
+you can use Composer to automatically download, install, and manage
+revisions to HPCloud-PHP from within your project.
 
-#### Using the Built-In Autoloader
+We're big fans of [Composer](http://getcomposer.org).
 
-If your project does not include its own autoloader, you can use the one
-that comes built-in. This is not a full autoloader. It's a
-special-purpose one that works only for the HPCloud source (and this is
-by design -- it's supposed to play nicely with other autoloaders).
-
-To use it, you can do the following:
-
-```php
-<?php
-require_once 'HPCloud/Bootstrap.php';
-
-\HPCloud\Bootstrap::useAutoloader();
-?>
-```
-
-This will register the autoloader as an SPL autoloader. From here,
-HPCloud classes should "just work", with no further `require` statements
-necessary.
-
-You can see this in action in `test/TestCase.php`, the base class for
-unit tests.
-
-### Authenticating
-
-As the Component Services framework is rolled out, a unified
-authentication layer will become available.
-
-Prior to that, however, each service may have its own authentication.
-
-### Working with Object Storage
-
-The central class for Object Storage is, appropriately enough,
-`\HPCloud\Storage\ObjectStorage`.
 
 ## More information
 
@@ -90,5 +91,9 @@ storage, and a host of hosted services.
 
 This library provides access to those services.
 
+The best source of documentation is the official API documentation,
+which is available at
+http://hpcloud.github.com/HPCloud-PHP/doc/api/html/index.html
+
 ----
-HPCloud-PHP is maintained by HP Cloud Services.
+HPCloud-PHP is maintained by the Developer Experience team at HP Cloud Services.

@@ -23,7 +23,7 @@ There are two ways to authenticate to Object Storage:
 For legacy swift authentication, you will need to use your Account ID
 and your secret Key, along with the URL to the Object Storage endpoint.
 If you are an existing HP Cloud customer, you can find all of this
-information on your management dashboard.
+information on your console dashboard.
 
 ### Using Stream Wrappers
 

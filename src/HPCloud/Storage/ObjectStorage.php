@@ -236,7 +236,10 @@ class ObjectStorage {
       // This is needed b/c of a bug in SOS that sometimes
       // returns disabled containers (DEVEX-1733).
       if ($item['cdn_enabled'] == 1) {
-        $buffer[$item['name']] = $item['x-cdn-uri'];
+        $buffer[$item['name']] = array(
+          'url' => $item['x-cdn-uri'],
+          'sslUrl' => $item['x-cdn-ssl-uri'],
+        );
       }
     }
     $this->cdnContainers = $buffer;
@@ -254,13 +257,17 @@ class ObjectStorage {
    *
    * @param string $containerName
    *   The name of the container.
+   * @param boolean $ssl
+   *   If this is TRUE (default), get the URL to the SSL CDN;
+   *   otherwise get the URL to the plain HTTP CDN.
    * @retval string
    *   The URL to the CDN container, or NULL if no such
    *   URL is found.
    */
-  public function cdnUrl($containerName) {
+  public function cdnUrl($containerName, $ssl = TRUE) {
     if (!empty($this->cdnContainers[$containerName])) {
-      return $this->cdnContainers[$containerName];
+      $key = $ssl ? 'sslUrl' : 'url';
+      return $this->cdnContainers[$containerName][$key];
     }
   }
 
@@ -339,7 +346,8 @@ class ObjectStorage {
       $containerList[$cname] = Container::newFromJSON($container, $this->token(), $this->url());
 
       if (!empty($this->cdnContainers[$cname])) {
-        $containerList[$cname]->useCDN($this->cdnContainers[$cname]);
+        $cdnList = $this->cdnContainers[$cname];
+        $containerList[$cname]->useCDN($cdnList['url'], $cdnList['sslUrl']);
       }
     }
 
@@ -368,7 +376,8 @@ class ObjectStorage {
       $container = Container::newFromResponse($name, $data, $this->token(), $this->url());
 
       if (isset($this->cdnContainers[$name])) {
-        $container->useCDN($this->cdnContainers[$name]);
+        $cdnList = $this->cdnContainers[$name];
+        $container->useCDN($cdnList['url'], $cdnList['sslUrl']);
       }
 
       return $container;
