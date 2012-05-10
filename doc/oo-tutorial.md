@@ -151,8 +151,8 @@ pieces of information:
 
 Before you issue a forlorn sigh, envisioning some laborious task, let us
 point out that all of this information is available in one place, Log
-into [the management console](https://manage.hpcloud.com) and go to the
-`API Keys` page. It's all there.
+into [the console](https://console.hpcloud.com) and go to the `API Keys`
+page. It's all there.
 
 ### Identity Services
 

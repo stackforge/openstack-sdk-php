@@ -75,8 +75,8 @@ namespace HPCloud\Services;
  * A list of tenants associated with this account can be obtain programatically
  * using the tenants() method on this object.
  *
- * HPCloud customers can find their tenant ID in the management console along
- * with their account ID and secret key.
+ * HPCloud customers can find their tenant ID in the console along with their
+ * account ID and secret key.
  *
  * @b EXAMPLE
  *
@@ -311,7 +311,7 @@ class IdentityServices {
    *   A password string.
    * @param string $tenantId
    *   The tenant ID for this account. This can be obtained through the
-   *   HPCloud management console.
+   *   HPCloud console.
    * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
    * @throws HPCloud::Exception
@@ -340,7 +340,7 @@ class IdentityServices {
    * used with other HPCloud services, such as Object Storage (aka Swift).
    *
    * The account ID and access key information can be found in the account
-   * section of the management console.
+   * section of the console.
    *
    * The third paramater allows you to specify a tenant ID. In order to access
    * services, this object will need a tenant ID. If none is specified, it can

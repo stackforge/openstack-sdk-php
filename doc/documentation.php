@@ -21,15 +21,14 @@
  * - account ID and secret key: For cases where you want account-wide 
  *   authentication/authorization.
  * - username/password: Typically, this is the same username/password you use
- *   to access the HPCloud management console.
+ *   to access the HPCloud console.
  * - tenant ID: This associates an account or user with a bundle of services.
- *   You can find this information in your management console.
+ *   You can find this information in your console.
  * - endpoint: You will need the URL to the HPCloud endpoint responsible for
- *   <i>authenticating users</i>. This can be found in your management
- *   console.
+ *   <i>authenticating users</i>. This can be found in your console.
  *
- * (If you are not sure what the "HPCloud Management Console" is, head over to
- * http://build.hpcloud.com. There you will find some articles and videos
+ * (If you are not sure what the "HPCloud Console" is, head over to
+ * http://docs.hpcloud.com. There you will find some articles and videos
  * explaining the HPCloud structure.)
  *
  * @section where_to_start Where To Start
@@ -56,7 +55,7 @@
  * screencasts, a knowledge base, and active community forums are
  * just a click away.
  *
- * Head over to http://build.hpcloud.com to find these and other resources.
+ * Head over to http://docs.hpcloud.com to find these and other resources.
  *
  * Or maybe you'd just like to see a couple of examples.
  *
@@ -79,7 +78,7 @@
  *
  * // Create a stream context. You can get this
  * // information (including tenant ID) from your
- * // HPCloud management console.
+ * // HPCloud console.
  * $cxt = stream_context_create(array(
  *   'username' => 'matthew.butcher@hp.com',
  *   'password' => 'secret',
@@ -128,12 +127,12 @@
  *
  * // Create a new identity service object, and tell it where to
  * // go to authenticate. This URL can be found in your HPCloud
- * // management console.
+ * // console.
  * $identity = new IdentityServices('http://get.url.from.hpcloud.com');
  *
  * // You can authenticate either with username/password (IdentityServices::authenticateAsUser())
  * // or as an account/secret key (IdentityServices::authenticateAsAccount()). In either
- * // case you can get the info you need from the management console.
+ * // case you can get the info you need from the console.
  * $account = '123456789098765';
  * $secret = 'dgasgasd';
  * $tenantId = '56545654';

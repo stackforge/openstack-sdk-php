@@ -38,8 +38,8 @@ including:
 * URL: The Endpoint URL.
 
 All four pieces of information can be found by logging into [the
-management console](https://manage.hpcloud.com) and going to the section
-called *Storage*. There should be a link on that page that says *Get
+console](https://console.hpcloud.com) and going to the section called
+*Storage*. There should be a link on that page that says *Get
 Storage API Keys*. That page displays all four pieces of required
 information.
 
@@ -91,7 +91,7 @@ hpcloud.identity.key = 9878787
 ```
 
 You will need to add all of the `hpcloud.identity` settings, and all of
-this information can be found on your management console.
+this information can be found on your console.
 
 The hpcloud.swift.account, key, and url params are no longer required
 for the basic tests, but are required if you are also running the tests

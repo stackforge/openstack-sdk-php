@@ -92,8 +92,7 @@ of information:
   looks something like this: `https://region-a.geo-1.identity.hpcloudsvc.com:35357`
 
 All four of these pieces of information can be found in the **API Keys**
-section of your [management console](https://manage.hpcloud.com)
-account.
+section of your [console](https://console.hpcloud.com) account.
 
 (Note: You can use your username and password instead of account and
 key, but you still must supply the tenant ID. Instead of supplying
