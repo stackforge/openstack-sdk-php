@@ -143,7 +143,7 @@
  *
  * // Get a listing of all of the services you currently have configured on
  * // HPCloud.
- * $catalog = $itentity->serviceCatalog();
+ * $catalog = $identity->serviceCatalog();
  *
  * var_dump($catalog);
  *
@@ -159,7 +159,7 @@
  *   - HPCloud::Services::IdentityServices::__construct() tells the object where to connect.
  *   - HPCloud::Services::IdentityServices::authenticateAsUser() lets you log
  *     in with username and password.
- *   - HPCloud::Services::IdentityServices::authenticateAsUser() lets you log
+ *   - HPCloud::Services::IdentityServices::authenticateAsAccount() lets you log
  *     in with account number and secret key.
  *   - HPCloud::Services::IdentityServices::serviceCatalog() tells you about
  *     the services you have activated on this account.
