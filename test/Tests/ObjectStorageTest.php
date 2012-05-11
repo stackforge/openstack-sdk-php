@@ -278,5 +278,6 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $data = file_get_contents($url);
     $this->assertNotEmpty($data, $url);
 
+    $store->deleteContainer($testCollection);
   }
 }

@@ -41,7 +41,7 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
 
   protected function newUrl($objectName) {
     $scheme = StreamWrapperFS::DEFAULT_SCHEME;
-    $cname   = self::$settings['hpcloud.swift.container'];
+    $cname = self::$settings['hpcloud.swift.container'];
     $cname = urlencode($cname);
 
     $objectParts = explode('/', $objectName);
@@ -171,7 +171,7 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
    * @depends testRegister
    */
   public function testOpen() {
-    $cname   = self::$settings['hpcloud.swift.container'];
+    $cname = self::$settings['hpcloud.swift.container'];
 
     // Create a fresh container.
     $this->eradicateContainer($cname);

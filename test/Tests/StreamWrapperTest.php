@@ -161,6 +161,12 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    * @depends testRegister
    */
   public function testOpenFailureWithoutContext() {
+    $cname = self::$settings['hpcloud.swift.container'];
+
+    // Create a fresh container.
+    $this->eradicateContainer($cname);
+    $this->containerFixture();
+
     $url = $this->newUrl('foo→/bar.txt');
     $ret = @fopen($url, 'r');
 
