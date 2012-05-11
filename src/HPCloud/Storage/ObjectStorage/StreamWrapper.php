@@ -1422,7 +1422,6 @@ class StreamWrapper {
     // Check to see if the value can be gotten from
     // \HPCloud\Bootstrap.
     $val = \HPCloud\Bootstrap::config($name, NULL);
-    syslog(LOG_WARNING, 'Checking Bootstrap::config for ' . $name);
     if (isset($val)) {
       return $val;
     }
