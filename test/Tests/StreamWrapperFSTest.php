@@ -595,10 +595,10 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
   // }
 
   public function testMkdir() {
-    $url = $this->newUrl('baz/');
 
-    // Because object names are pathy we should always see TRUE when creating
-    // a new directory.
+    // Object names are pathy. If no object names start with the a path we can
+    // consider mkdir passed. If object names exist we should fail mkdir.
+    $url = $this->newUrl('baz/');
     $this->assertTrue(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
 
     // Test the case for an existing directory.

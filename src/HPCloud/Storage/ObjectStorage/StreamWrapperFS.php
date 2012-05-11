@@ -185,36 +185,14 @@ class StreamWrapperFS extends StreamWrapper {
   /**
    * Fake a make a dir.
    *
-   * ObjectStorage has pathy objects, but not directories. Making a director will
-   * always pass.
+   * ObjectStorage has pathy objects not directories. If no objects with a path
+   * prefix exist we can pass creating a directory. If objects with a path
+   * prefix exist adding the directory will fail.
    */
   public function mkdir($uri, $mode, $options) {
 
-    // mkdir should return FALSE if a directory already exists. We will check if
-    // objects exists with the directory prefix and return FALSE if there are
-    // any.
-    $url = $this->parseUrl($uri);
+    return !($this->testDirectoryExists($uri));
 
-    if (empty($url['host'])) {
-      trigger_error('Container name is required.' , E_USER_WARNING);
-      return FALSE;
-    }
-
-    $this->initializeObjectStorage();
-    $container = $this->store->container($url['host']);
-
-    if (empty($url['path'])) {
-      $this->dirPrefix = '';
-    }
-    else {
-      $this->dirPrefix = $url['path'];
-    }
-
-    $sep = '/';
-
-    $dirListing = $container->objectsWithPrefix($this->dirPrefix, $sep);
-
-    return empty($dirListing);
   }
 
   /**
@@ -225,35 +203,8 @@ class StreamWrapperFS extends StreamWrapper {
    * removing the directory will fail.
    */
   public function rmdir($path, $options) {
-    $url = $this->parseUrl($path);
-
-    if (empty($url['host'])) {
-      trigger_error('Container name is required.' , E_USER_WARNING);
-      return FALSE;
-    }
-
-    try {
-      $this->initializeObjectStorage();
-      $container = $this->store->container($url['host']);
-
-      if (empty($url['path'])) {
-        $this->dirPrefix = '';
-      }
-      else {
-        $this->dirPrefix = $url['path'];
-      }
-
-      $sep = '/';
-
-
-      $dirListing = $container->objectsWithPrefix($this->dirPrefix, $sep);
-
-      return empty($dirListing);
-    }
-    catch (\HPCloud\Exception $e) {
-      trigger_error('Path could not be opened: ' . $e->getMessage(), E_USER_WARNING);
-      return FALSE;
-    }
+    
+    return !($this->testDirectoryExists($path));
 
   }
 
@@ -406,5 +357,49 @@ class StreamWrapperFS extends StreamWrapper {
   // All methods beneath this line are not part of the Stream API.
   ///////////////////////////////////////////////////////////////////
 
+  /**
+   * Test if a path prefix (directory like) esits.
+   * 
+   * ObjectStorage has pathy objects not directories. If objects exist with a
+   * path prefix we can consider that the directory exists. For example, if
+   * we have an object at foo/bar/baz.txt and test the existance of the
+   * directory foo/bar/ we sould see it.
+   * 
+   * @param  string $path
+   *   The directory path to test.
+   * @retval bool
+   *   TRUE if the directory prefix exists and FALSE otherwise.
+   */
+  protected function testDirectoryExists($path) {
+    $url = $this->parseUrl($path);
+
+    if (empty($url['host'])) {
+      trigger_error('Container name is required.' , E_USER_WARNING);
+      return FALSE;
+    }
+
+    try {
+      $this->initializeObjectStorage();
+      $container = $this->store->container($url['host']);
+
+      if (empty($url['path'])) {
+        $this->dirPrefix = '';
+      }
+      else {
+        $this->dirPrefix = $url['path'];
+      }
+
+      $sep = '/';
+
+
+      $dirListing = $container->objectsWithPrefix($this->dirPrefix, $sep);
+
+      return !empty($dirListing);
+    }
+    catch (\HPCloud\Exception $e) {
+      trigger_error('Path could not be opened: ' . $e->getMessage(), E_USER_WARNING);
+      return FALSE;
+    }
+  }
 
 }
