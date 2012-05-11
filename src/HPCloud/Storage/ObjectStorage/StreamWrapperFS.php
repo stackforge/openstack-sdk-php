@@ -217,11 +217,45 @@ class StreamWrapperFS extends StreamWrapper {
     return empty($dirListing);
   }
 
-  /*
+  /**
+   * Fake Remove a directory.
+   * 
+   * ObjectStorage has pathy objects not directories. If no objects with a path
+   * prefix exist we can pass removing it. If objects with a path prefix exist
+   * removing the directory will fail.
+   */
   public function rmdir($path, $options) {
+    $url = $this->parseUrl($path);
+
+    if (empty($url['host'])) {
+      trigger_error('Container name is required.' , E_USER_WARNING);
+      return FALSE;
+    }
+
+    try {
+      $this->initializeObjectStorage();
+      $container = $this->store->container($url['host']);
+
+      if (empty($url['path'])) {
+        $this->dirPrefix = '';
+      }
+      else {
+        $this->dirPrefix = $url['path'];
+      }
+
+      $sep = '/';
+
+
+      $dirListing = $container->objectsWithPrefix($this->dirPrefix, $sep);
+
+      return empty($dirListing);
+    }
+    catch (\HPCloud\Exception $e) {
+      trigger_error('Path could not be opened: ' . $e->getMessage(), E_USER_WARNING);
+      return FALSE;
+    }
 
   }
-   */
 
   /**
    * Perform stat()/lstat() operations.

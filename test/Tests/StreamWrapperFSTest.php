@@ -606,5 +606,17 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
     $this->assertFalse(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
   }
 
+  public function testRmdir() {
+
+    // Object names are pathy. If no object names start with the a path we can
+    // consider rmdir passed. If object names exist we should fail rmdir.
+    $url = $this->newUrl('baz/');
+    $this->assertTrue(rmdir($url, $this->basicSwiftContext()));
+
+    // Test the case for an existing directory.
+    $url = $this->newUrl('foo/');
+    $this->assertFalse(rmdir($url, $this->basicSwiftContext()));
+  }
+
 
 }
