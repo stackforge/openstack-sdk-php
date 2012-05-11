@@ -590,10 +590,21 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
   /**
    * @depends testReaddir
    */
-  // public function testIsdir($dir) {
+  public function testIsdir($dir) {
 
-  // }
+    // Object names are pathy. If objects exist starting with this path we can
+    // consider the directory to exist.
+    $url = $this->newUrl('baz/');
+    $this->assertFALSE(is_dir($url));
 
+    $url = $this->newUrl('foo/');
+    $this->assertTRUE(is_dir($url));
+
+  }
+
+  /**
+   * @depends testReaddir
+   */
   public function testMkdir() {
 
     // Object names are pathy. If no object names start with the a path we can
@@ -606,6 +617,9 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
     $this->assertFalse(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
   }
 
+  /**
+   * @depends testReaddir
+   */
   public function testRmdir() {
 
     // Object names are pathy. If no object names start with the a path we can
