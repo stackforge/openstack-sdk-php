@@ -185,10 +185,36 @@ class StreamWrapperFS extends StreamWrapper {
   /**
    * Fake a make a dir.
    *
-   * ObjectStorage has pathy objects, but not directories.
+   * ObjectStorage has pathy objects, but not directories. Making a director will
+   * always pass.
    */
   public function mkdir($uri, $mode, $options) {
-    return TRUE;
+
+    // mkdir should return FALSE if a directory already exists. We will check if
+    // objects exists with the directory prefix and return FALSE if there are
+    // any.
+    $url = $this->parseUrl($uri);
+
+    if (empty($url['host'])) {
+      trigger_error('Container name is required.' , E_USER_WARNING);
+      return FALSE;
+    }
+
+    $this->initializeObjectStorage();
+    $container = $this->store->container($url['host']);
+
+    if (empty($url['path'])) {
+      $this->dirPrefix = '';
+    }
+    else {
+      $this->dirPrefix = $url['path'];
+    }
+
+    $sep = '/';
+
+    $dirListing = $container->objectsWithPrefix($this->dirPrefix, $sep);
+
+    return empty($dirListing);
   }
 
   /*

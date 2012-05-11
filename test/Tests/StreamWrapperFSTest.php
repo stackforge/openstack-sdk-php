@@ -599,7 +599,11 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
 
     // Because object names are pathy we should always see TRUE when creating
     // a new directory.
-    $this->assertTrue(mkdir($url, $this->basicSwiftContext()));
+    $this->assertTrue(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
+
+    // Test the case for an existing directory.
+    $url = $this->newUrl('foo/');
+    $this->assertFalse(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
   }
 
 
