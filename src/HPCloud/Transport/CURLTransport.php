@@ -65,6 +65,13 @@ class CURLTransport implements Transporter {
    */
   protected $multi = NULL;
 
+  public function __destruct() {
+    // Destroy the multi handle.
+    if (!empty($this->multi)) {
+      curl_multi_close($this->multi);
+    }
+  }
+
   /*
   public function curl($uri) {
     //if (empty($this->curlInst)) {
