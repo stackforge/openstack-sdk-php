@@ -34,6 +34,9 @@ use \HPCloud\Storage\ObjectStorage\Container;
 use \HPCloud\Storage\ObjectStorage\Object;
 use \HPCloud\Storage\ObjectStorage\ACL;
 
+/**
+ * @group streamWrapper
+ */
 class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   const FNAME = 'streamTest.txt';
@@ -133,6 +136,11 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   // Canary. There are UTF-8 encoding issues in stream wrappers.
   public function testStreamContext() {
+    // Reset this in case something else left its
+    // auth token lying around.
+    \HPCloud\Bootstrap::setConfiguration(array(
+      'token' => NULL,
+    ));
     $cxt = $this->authSwiftContext();
     $array = stream_context_get_options($cxt);
 
@@ -190,10 +198,13 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     $this->assertTrue(is_resource($res));
 
+    $md = stream_get_meta_data($res);
+    $wrapper = $md['wrapper_data'];
+
     fclose($res);
 
     // Now we test the same, but re-using the auth token:
-    $cxt = $this->basicSwiftContext();
+    $cxt = $this->basicSwiftContext(array('token' => $wrapper->token()));
     $res = fopen($oUrl, 'nope', FALSE, $cxt);
 
     $this->assertTrue(is_resource($res));
