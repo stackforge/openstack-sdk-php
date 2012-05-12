@@ -67,7 +67,7 @@ class StreamWrapperFS extends StreamWrapper {
    * removing the directory will fail.
    */
   public function rmdir($path, $options) {
-    
+
     return !($this->testDirectoryExists($path));
 
   }
