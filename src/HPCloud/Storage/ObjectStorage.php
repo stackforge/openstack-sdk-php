@@ -229,6 +229,13 @@ class ObjectStorage {
    * operations occur.
    */
   public function useCDN($cdn) {
+
+    // This should not happen, but has happened when service
+    // catalog was bad.
+    if (empty($cdn)) {
+      throw new \HPCloud\Exception('Cannot use CDN: No CDN provided.');
+    }
+
     $containers = $cdn->containers(TRUE);
     $buffer = array();
 
