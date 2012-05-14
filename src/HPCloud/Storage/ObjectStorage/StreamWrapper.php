@@ -257,6 +257,9 @@ use \HPCloud\Storage\ObjectStorage;
  *  a boolean.
  *
  * @see http://us3.php.net/manual/en/class.streamwrapper.php
+ *
+ * @todo The service catalog should be cached in the context like the token so that
+ * it can be retrieved later.
  */
 class StreamWrapper {
 
@@ -689,14 +692,11 @@ class StreamWrapper {
 
     // Skip debug streams.
     if ($this->isNeverDirty) {
-      syslog(LOG_WARNING, "Never dirty. Skipping write.");
       return;
     }
 
     // Stream is dirty and needs a write.
     if ($this->isDirty) {
-      syslog(LOG_WARNING, "Marked dirty. Writing object.");
-
       $position = ftell($this->objStream);
 
       rewind($this->objStream);
@@ -704,9 +704,6 @@ class StreamWrapper {
 
       fseek($this->objStream, SEEK_SET, $position);
 
-    }
-    else {
-      syslog(LOG_WARNING, "Not dirty. Skipping write.");
     }
     $this->isDirty = FALSE;
   }
@@ -803,7 +800,10 @@ class StreamWrapper {
 
     // We set this because it is possible to bind another scheme name,
     // and we need to know that name if it's changed.
-    $this->schemeName = isset($url['scheme']) ? $url['scheme'] : self::DEFAULT_SCHEME;
+    //$this->schemeName = isset($url['scheme']) ? $url['scheme'] : self::DEFAULT_SCHEME;
+    if (isset($url['scheme'])) {
+      $this->schemeName == $url['scheme'];
+    }
 
     // Now we find out the container name. We walk a fine line here, because we don't
     // create a new container, but we don't want to incur heavy network
@@ -1422,7 +1422,6 @@ class StreamWrapper {
     // Check to see if the value can be gotten from
     // \HPCloud\Bootstrap.
     $val = \HPCloud\Bootstrap::config($name, NULL);
-    syslog(LOG_WARNING, 'Checking Bootstrap::config for ' . $name);
     if (isset($val)) {
       return $val;
     }
@@ -1535,7 +1534,7 @@ class StreamWrapper {
       $serviceCatalog = $ident->serviceCatalog();
       self::$serviceCatalogCache[$token] = $serviceCatalog;
 
-      $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $ident->token());
+      $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $token);
 
       /*
       $catalog = $ident->serviceCatalog(ObjectStorage::SERVICE_TYPE);
@@ -1553,7 +1552,7 @@ class StreamWrapper {
       $this->initializeCDN($token, $serviceCatalog);
     }
     catch (\HPCloud\Exception $e) {
-      fwrite(STDOUT, $e);
+      //fwrite(STDOUT, $e);
       throw new \HPCloud\Exception('CDN could not be initialized', 1, $e);
 
     }
@@ -1599,7 +1598,9 @@ class StreamWrapper {
       $this->cdn = \HPCloud\Storage\CDN::newFromServiceCatalog($catalog, $token);
     }
 
-    $this->store->useCDN($this->cdn);
+    if (!empty($this->cdn)) {
+      $this->store->useCDN($this->cdn);
+    }
     return TRUE;
   }
 
@@ -1626,6 +1627,8 @@ class StreamWrapper {
     else {
       throw new \HPCloud\Exception('Either username/password or account/key must be provided.');
     }
+    // Cache the service catalog.
+    self::$serviceCatalogCache[$token] = $ident->serviceCatalog();
 
     return $ident;
   }

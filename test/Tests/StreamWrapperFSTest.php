@@ -22,14 +22,14 @@ SOFTWARE.
 /**
  * @file
  *
- * Unit tests for the stream wrapper.
+ * Unit tests for the stream wrapper file systema.
  */
 namespace HPCloud\Tests\Storage\ObjectStorage;
 
 require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Storage\ObjectStorage\StreamWrapper;
+use \HPCloud\Storage\ObjectStorage\StreamWrapperFS;
 use \HPCloud\Storage\ObjectStorage\Container;
 use \HPCloud\Storage\ObjectStorage\Object;
 use \HPCloud\Storage\ObjectStorage\ACL;
@@ -37,14 +37,17 @@ use \HPCloud\Storage\ObjectStorage\ACL;
 /**
  * @group streamWrapper
  */
-class StreamWrapperTest extends \HPCloud\Tests\TestCase {
+class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
 
   const FNAME = 'streamTest.txt';
   const FTYPE = 'application/x-tuna-fish; charset=iso-8859-13';
 
+  /*public static function setUpBeforeClass() {
+  }*/
+
   protected function newUrl($objectName) {
-    $scheme = StreamWrapper::DEFAULT_SCHEME;
-    $cname   = self::$settings['hpcloud.swift.container'];
+    $scheme = StreamWrapperFS::DEFAULT_SCHEME;
+    $cname = self::$settings['hpcloud.swift.container'];
     $cname = urlencode($cname);
 
     $objectParts = explode('/', $objectName);
@@ -65,7 +68,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $cname   = self::$settings['hpcloud.swift.container'];
 
     if (empty($scheme)) {
-      $scheme = StreamWrapper::DEFAULT_SCHEME;
+      $scheme = StreamWrapperFS::DEFAULT_SCHEME;
     }
 
     if (empty(self::$ostore)) {
@@ -96,7 +99,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $baseURL = self::$settings['hpcloud.identity.url'];
 
     if (empty($scheme)) {
-      $scheme = StreamWrapper::DEFAULT_SCHEME;
+      $scheme = StreamWrapperFS::DEFAULT_SCHEME;
     }
 
     $params = $add + array(
@@ -136,15 +139,15 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
   // Canary. There are UTF-8 encoding issues in stream wrappers.
   public function testStreamContext() {
-    // Reset this in case something else left its
-    // auth token lying around.
+    // Clear old values.
     \HPCloud\Bootstrap::setConfiguration(array(
       'token' => NULL,
     ));
+
     $cxt = $this->authSwiftContext();
     $array = stream_context_get_options($cxt);
 
-    $opts = $array['swift'];
+    $opts = $array['swiftfs'];
     $endpoint = self::conf('hpcloud.identity.url');
 
     $this->assertEquals($endpoint, $opts['endpoint'], 'A UTF-8 encoding issue.');
@@ -155,26 +158,20 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    */
   public function testRegister() {
     // Canary
-    $this->assertNotEmpty(StreamWrapper::DEFAULT_SCHEME);
+    $this->assertNotEmpty(StreamWrapperFS::DEFAULT_SCHEME);
 
-    $klass = '\HPCloud\Storage\ObjectStorage\StreamWrapper';
-    stream_wrapper_register(StreamWrapper::DEFAULT_SCHEME, $klass);
+    $klass = '\HPCloud\Storage\ObjectStorage\StreamWrapperFS';
+    stream_wrapper_register(StreamWrapperFS::DEFAULT_SCHEME, $klass);
 
     $wrappers = stream_get_wrappers();
 
-    $this->assertContains(StreamWrapper::DEFAULT_SCHEME, $wrappers);
+    $this->assertContains(StreamWrapperFS::DEFAULT_SCHEME, $wrappers);
   }
 
   /**
    * @depends testRegister
    */
   public function testOpenFailureWithoutContext() {
-    $cname = self::$settings['hpcloud.swift.container'];
-
-    // Create a fresh container.
-    $this->eradicateContainer($cname);
-    $this->containerFixture();
-
     $url = $this->newUrl('foo→/bar.txt');
     $ret = @fopen($url, 'r');
 
@@ -185,7 +182,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    * @depends testRegister
    */
   public function testOpen() {
-    $cname   = self::$settings['hpcloud.swift.container'];
+    $cname = self::$settings['hpcloud.swift.container'];
 
     // Create a fresh container.
     $this->eradicateContainer($cname);
@@ -205,6 +202,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
 
     // Now we test the same, but re-using the auth token:
     $cxt = $this->basicSwiftContext(array('token' => $wrapper->token()));
+
     $res = fopen($oUrl, 'nope', FALSE, $cxt);
 
     $this->assertTrue(is_resource($res));
@@ -603,4 +601,50 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals('test3.txt', $array[0]);
 
   }
+
+  /**
+   * @depends testReaddir
+   */
+  public function testIsdir($dir) {
+
+    // Object names are pathy. If objects exist starting with this path we can
+    // consider the directory to exist.
+    $url = $this->newUrl('baz/');
+    $this->assertFALSE(is_dir($url));
+
+    $url = $this->newUrl('foo/');
+    $this->assertTRUE(is_dir($url));
+
+  }
+
+  /**
+   * @depends testReaddir
+   */
+  public function testMkdir() {
+
+    // Object names are pathy. If no object names start with the a path we can
+    // consider mkdir passed. If object names exist we should fail mkdir.
+    $url = $this->newUrl('baz/');
+    $this->assertTrue(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
+
+    // Test the case for an existing directory.
+    $url = $this->newUrl('foo/');
+    $this->assertFalse(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
+  }
+
+  /**
+   * @depends testReaddir
+   */
+  public function testRmdir() {
+
+    // Object names are pathy. If no object names start with the a path we can
+    // consider rmdir passed. If object names exist we should fail rmdir.
+    $url = $this->newUrl('baz/');
+    $this->assertTrue(rmdir($url, $this->basicSwiftContext()));
+
+    // Test the case for an existing directory.
+    $url = $this->newUrl('foo/');
+    $this->assertFalse(rmdir($url, $this->basicSwiftContext()));
+  }
+
 }

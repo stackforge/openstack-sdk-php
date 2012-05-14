@@ -149,7 +149,7 @@ class Bootstrap {
   /**
    * Register stream wrappers for HPCloud.
    *
-   * This register the ObjectStorage stream wrapper, which allows you to access
+   * This register the ObjectStorage stream wrappers, which allow you to access
    * ObjectStorage through standard file access mechanisms.
    *
    * @code
@@ -169,10 +169,17 @@ class Bootstrap {
    * @endcode
    */
   public static function useStreamWrappers() {
-    return stream_wrapper_register(
+    $swift = stream_wrapper_register(
       \HPCloud\Storage\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
       '\HPCloud\Storage\ObjectStorage\StreamWrapper'
     );
+
+    $swiftfs = stream_wrapper_register(
+      \HPCloud\Storage\ObjectStorage\StreamWrapperFS::DEFAULT_SCHEME,
+      '\HPCloud\Storage\ObjectStorage\StreamWrapperFS'
+    );
+
+    return ($swift && $swiftfs);
   }
 
   /**
