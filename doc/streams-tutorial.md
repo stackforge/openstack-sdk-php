@@ -225,7 +225,7 @@ As it was noted earlier in this tutorial, swift does not support directories.
 Instead the names of a file can be path like with a separator. For example,
 `swiftfs://Example/path/to/my_file.txt` has a name of `path/to/my_file.txt`.
 
-To enable applications to use swift in a more directlry like manner there is a
+To enable applications to use swift in a more directory like manner there is a
 second stream wrapper with a prefix `swiftfs://`. swiftfs stands for swift file
 system. It works in a similar manner to to the standard stream wrappers with a
 few key differences:
