@@ -692,14 +692,11 @@ class StreamWrapper {
 
     // Skip debug streams.
     if ($this->isNeverDirty) {
-      syslog(LOG_WARNING, "Never dirty. Skipping write.");
       return;
     }
 
     // Stream is dirty and needs a write.
     if ($this->isDirty) {
-      syslog(LOG_WARNING, "Marked dirty. Writing object.");
-
       $position = ftell($this->objStream);
 
       rewind($this->objStream);
@@ -707,9 +704,6 @@ class StreamWrapper {
 
       fseek($this->objStream, SEEK_SET, $position);
 
-    }
-    else {
-      syslog(LOG_WARNING, "Not dirty. Skipping write.");
     }
     $this->isDirty = FALSE;
   }
