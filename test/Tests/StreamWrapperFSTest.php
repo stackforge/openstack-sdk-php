@@ -647,5 +647,4 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
     $this->assertFalse(rmdir($url, $this->basicSwiftContext()));
   }
 
-
 }

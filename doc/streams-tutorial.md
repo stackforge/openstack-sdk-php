@@ -220,6 +220,28 @@ The main difference is the creation of `$cxt` using PHP's
 take a look at the [PHP documentation](http://us3.php.net/manual/en/book.stream.php)
 for streams.
 
+## Stream Wrapper As A File System
+As it was noted earlier in this tutorial, swift does not support directories.
+Instead the names of a file can be path like with a separator. For example,
+`swiftfs://Example/path/to/my_file.txt` has a name of `path/to/my_file.txt`.
+
+To enable applications to use swift in a more directlry like manner there is a
+second stream wrapper with a prefix `swiftfs://`. swiftfs stands for swift file
+system. It works in a similar manner to to the standard stream wrappers with a
+few key differences:
+
+- mkdir will return TRUE is no objects start with the directory you are trying
+    to crate. Otherwise it will return FALSE.
+- rmdir will return FALSE if any objects start with the directory prefix you are
+    trying to remove. rmdir does not allow you to remove directories with files
+    in them.
+- Running stat on a directory that is a prefix for some objects (e.g., 
+    `swiftfs://Example/path/to/`) will see this is a prefix for a file and treat
+    it as if it were a directory.
+
+To use this stream wrapper instead of the standard swift one simple replace the
+usage of `swift://` with `swiftfs://`.
+
 ## Summary
 
 This tutorial is focused on using stream wrappers to interact with your
