@@ -33,25 +33,72 @@ use \HPCloud\Services\DBaaS;
 
 class DBaaSTest extends \HPCloud\Tests\TestCase {
 
-  public function testNewFromServiceCatalog() {
+  protected function dbaas() {
+    $ident = $this->identity();
+    $dbaas = DBaaS::newFromIdentity($ident);
+
+    return $dbaas;
+  }
+
+  public function testNewFromIdentity() {
+    $ident = $this->identity();
+
+    // Canaries
+    $this->assertNotEmpty($ident->token());
+    $this->assertNotEmpty($ident->tenantName());
+    $this->assertNotEmpty($ident->serviceCatalog());
+
+    // TODO: Add Canary tp check that DBaaS is in the
+    // service catalog.
+
+    $dbaas = DBaaS::newFromIdentity($ident);
+    $this->assertInstanceOf("\HPCloud\Services\DBaaS", $dbaas);
+    $this->assertStringEndsWith($ident->tenantId(), $dbaas->url());
     $this->markTestIncomplete();
   }
 
+  public function testNewFromServiceCatalog() {
+    $ident = $this->identity();
+    $dbaas = DBaaS::newFromServiceCatalog(
+      $ident->serviceCatalog(),
+      $ident->token(),
+      $ident->tenantName()
+    );
+    $this->assertInstanceOf("\HPCloud\Services\DBaaS", $dbaas);
+    $this->assertEquals($ident->tenantName(), $dbaas->projectId());
+  }
+
   public function testConstructor() {
-    $this->markTestIncomplete();
+    $ident = $this->identity();
+    $dbaas = new DBaaS($ident->token(), self::$settings['hpcloud.dbaas.endpoint'], $ident->tenantName());
+
+    $this->assertInstanceOf("\HPCloud\Services\DBaaS", $dbaas);
+    $this->assertEquals($ident->tenantName(), $dbaas->projectId());
+  }
+
+  /**
+   * @depends testConstructor
+   */
+  public function testProjectId() {
+    $ident = $this->identity();
+    $dbaas = DBaaS::newFromIdentity($ident);
+
+    $this->assertEquals($ident->tenantName(), $dbaas->projectId());
   }
 
   /**
    * @depends testConstructor
    */
   public function testInstance() {
-    $this->markTestIncomplete();
+    $inst = $this->dbaas()->instance();
+    $this->assertInstanceOf('\HPCloud\Services\DBaaS\Instance', $inst);
   }
 
   /**
    * @depends testConstructor
    */
   public function testSnapshot() {
-    $this->markTestIncomplete();
+    $snap = $this->dbaas()->snapshot();
+    $this->assertInstanceOf('\HPCloud\Services\DBaaS\Snapshot', $snap);
   }
 }
