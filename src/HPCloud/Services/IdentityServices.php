@@ -416,6 +416,19 @@ class IdentityServices {
   }
 
   /**
+   * Get the tenant name.
+   *
+   * @retval string
+   *   The tenant name. Often this is an email
+   *   address or other alpha-numeric string.
+   */
+  public function tenantName() {
+    if (!empty($this->tokenDetails['tenant']['name'])) {
+      return $this->tokenDetails['tenant']['name'];
+    }
+  }
+
+  /**
    * Get the token details.
    *
    * This returns an associative array with several pieces of information
@@ -430,8 +443,10 @@ class IdentityServices {
    * <?php
    * array(
    *   'id' => 'auth_123abc321defef99',
-   *   'tenant_id' => '123456',
-   *   'tenant_name' => 'matt.butcher@hp.com',
+   *   'tenant' => array(
+   *     'id' => '123456',
+   *     'name' => 'matt.butcher@hp.com',
+   *   ),
    *   'expires' => '2012-01-24T12:46:01.682Z'
    * );
    * @endcode
