@@ -31,7 +31,10 @@ require_once 'test/TestCase.php';
 
 use \HPCloud\Services\DBaaS\Snapshot;
 
-class DBaaSSnapshotextends \HPCloud\Tests\TestCase {
+/**
+ * @group dbaas
+ */
+class DBaaSSnapshot extends \HPCloud\Tests\TestCase {
 
   public function testConstruct() {
   }

@@ -31,6 +31,9 @@ require_once 'test/TestCase.php';
 
 use \HPCloud\Services\DBaaS;
 
+/**
+ * @group dbaas
+ */
 class DBaaSTest extends \HPCloud\Tests\TestCase {
 
   protected function dbaas() {
@@ -70,7 +73,7 @@ class DBaaSTest extends \HPCloud\Tests\TestCase {
 
   public function testConstructor() {
     $ident = $this->identity();
-    $dbaas = new DBaaS($ident->token(), self::$settings['hpcloud.dbaas.endpoint'], $ident->tenantName());
+    $dbaas = new DBaaS($ident->token(), self::conf('hpcloud.dbaas.endpoint'), $ident->tenantName());
 
     $this->assertInstanceOf("\HPCloud\Services\DBaaS", $dbaas);
     $this->assertEquals($ident->tenantName(), $dbaas->projectId());

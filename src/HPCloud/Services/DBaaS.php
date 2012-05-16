@@ -49,7 +49,7 @@ class DBaaS {
 
   public static function newFromIdentity($identity) {
 
-    $endpoint = 'https://region-a.geo-1.dbaas-mysql.hpcloudsvc.com:443/v1.0/' . $identity->tenantId();
+    $endpoint = 'https://db-aw2az2-api0001.uswest.hpcloud.net:8779/v1.0/' . $identity->tenantId();
     $dbaas = new DBaaS($identity->token(), $endpoint, $identity->tenantName());
 
     return $dbaas;
