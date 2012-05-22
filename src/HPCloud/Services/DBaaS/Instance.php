@@ -48,7 +48,7 @@ class Instance {
     $res = $this->client->doRequest($url, 'GET', $this->headers());
 
     $json = json_decode($res->content(), TRUE);
-    return InstanceDetails::newFromJSON($json);
+    return InstanceDetails::newFromJSON($json['instance']);
   }
 
   public function listInstances() {
@@ -108,13 +108,18 @@ class Instance {
 
     $url = $this->url . '/instances';
     $postData = json_encode($json);
+    fwrite(STDOUT, "POST DATA: $postData\n");
     $length = strlen($postData);
-    $headers = $this->headers(array('Accept' => 'application/json', 'Content-length' => $length));
+    $headers = $this->headers(array(
+      'Accept' => 'application/json',
+      'Content-Length' => $length,
+      'Content-Type' => 'application/json',
+    ));
     $res = $this->client->doRequest($url, 'POST', $headers, $postData);
 
     $results = json_decode($res->content(), TRUE);
 
-    return InstanceDetails::newFromJSON($results);
+    return InstanceDetails::newFromJSON($results['instance']);
   }
 
   public function delete($instanceId) {

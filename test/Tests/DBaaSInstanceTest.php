@@ -48,12 +48,12 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
     $list = $inst->listInstances();
 
     fwrite(STDOUT, print_r($list, TRUE));
-    if (!empty($list['instances'])) {
+    if (!empty($list)) {
       $dbName = self::conf('hpcloud.dbaas.database');
-      foreach ($list['instances'] as $item) {
-        if ($item['name'] == $dbName) {
-          fprintf(STDOUT, "Deleting %s (%s)\n", $item['name'], $item['id']);
-          $inst->delete($item['id']);
+      foreach ($list as $item) {
+        if ($item->name() == $dbName) {
+          fprintf(STDOUT, "Deleting %s (%s)\n", $item->name(), $item->id());
+          $inst->delete($item->id());
         }
       }
     }
@@ -80,6 +80,8 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
     // failed run.
     $this->destroyDatabase();
 
+    //throw new \Exception("Stopped here.");
+
     $dbName = self::conf('hpcloud.dbaas.database');
 
     $details = $this->inst()->create($dbName, 'small', '3307');
@@ -94,7 +96,7 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($details->createdOn());
     $this->assertEquals($dbName, $details->name());
 
-    $dsn = sprint('mysql:host=%s;port=3307;dbname=foo;charset=utf-8', $details->hostname());
+    $dsn = sprintf('mysql:host=%s;port=3307;dbname=foo;charset=utf-8', $details->hostname());
 
     $this->assertEquals($dsn, $details->dsn('foo', 'utf-8'));
 
@@ -169,7 +171,7 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
     $match = 0;
     $dbName = self::conf('hpcloud.dbaas.database');
 
-    foreach ($instances['instances'] as $server) {
+    foreach ($instances as $server) {
       $this->assertInstanceOf('\HPCloud\Services\DBaaS\InstanceDetails', $server);
       $this->assertNotEmpty($server->id());
       if ($server->name() == $dbName) {
