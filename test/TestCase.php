@@ -70,7 +70,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
       self::$settings += parse_ini_file('test/settings.ini');
     }
     else {
-      throw new Exception('Could not access test/settings.ini');
+      throw new \Exception('Could not access test/settings.ini');
     }
 
 
