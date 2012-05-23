@@ -47,16 +47,38 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
     $inst = $this->inst();
     $list = $inst->listInstances();
 
-    fwrite(STDOUT, print_r($list, TRUE));
+    //fwrite(STDOUT, print_r($list, TRUE));
     if (!empty($list)) {
       $dbName = self::conf('hpcloud.dbaas.database');
       foreach ($list as $item) {
         if ($item->name() == $dbName) {
-          fprintf(STDOUT, "Deleting %s (%s)\n", $item->name(), $item->id());
+          // fprintf(STDOUT, "Deleting %s (%s)\n", $item->name(), $item->id());
           $inst->delete($item->id());
         }
       }
     }
+
+  }
+
+  public function waitUntilRunning($inst, &$details, $verbose = FALSE, $max = 15, $sleep = 5) {
+    if ($details->isRunning()) {
+      return TRUE;
+    }
+
+    for ($i = 0; $i < $max; ++$i) {
+
+      if ($verbose) fwrite(STDOUT, '⌛');
+      //fprintf(STDOUT, "Status: %s\n", $details->status());
+
+      sleep($sleep);
+      $details = $inst->describe($details->id());
+
+      if ($details->isRunning()) {
+        return TRUE;
+      }
+    }
+
+    throw \Exception(sprintf("Instance did not start after %d attempts (%d seconds)", $max, $max * $sleep));
 
   }
 
@@ -84,7 +106,7 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
 
     $dbName = self::conf('hpcloud.dbaas.database');
 
-    $details = $this->inst()->create($dbName, 'small', '3307');
+    $details = $this->inst()->create($dbName, 'small');
 
     $this->assertInstanceOf('\HPCloud\Services\DBaaS\InstanceDetails', $details);
 
@@ -92,11 +114,10 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($details->password());
     $this->assertNotEmpty($details->id());
     $this->assertNotEmpty($details->hostname());
-    $this->assertNotEmpty($details->port());
     $this->assertNotEmpty($details->createdOn());
     $this->assertEquals($dbName, $details->name());
 
-    $dsn = sprintf('mysql:host=%s;port=3307;dbname=foo;charset=utf-8', $details->hostname());
+    $dsn = sprintf('mysql:host=%s;port=3306;dbname=foo;charset=utf-8', $details->hostname());
 
     $this->assertEquals($dsn, $details->dsn('foo', 'utf-8'));
 
@@ -104,20 +125,22 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
       'name' => $details->username(),
       'pass' => $details->password(),
     );
-    $this->dbId = $details->id();
-    $this->created = $details->createdOn();
+    //$db->id() = $details->id();
+    //$this->created = $details->createdOn();
+
+    return $details;
   }
 
   /**
    * @depends testCreate
    */
-  public function testDescribe() {
+  public function testDescribe($db) {
     $dbName = self::conf('hpcloud.dbaas.database');
 
     // Canary.
-    $this->assertNotEmpty($this->dbId);
+    $this->assertNotEmpty($db->id());
 
-    $details = $this->inst()->describe($this->dbId);
+    $details = $this->inst()->describe($db->id());
     $this->assertInstanceOf('\HPCloud\Services\DBaaS\InstanceDetails', $details);
 
     $this->assertEmpty($details->username());
@@ -126,7 +149,7 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($details->hostname());
     $this->assertNotEmpty($details->createdOn());
 
-    $this->assertEquals($this->dbId, $details->id());
+    $this->assertEquals($db->id(), $details->id());
     $this->assertEquals($dbName, $details->name());
 
   }
@@ -134,39 +157,30 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
   /**
    * @depends testCreate
    */
-  public function testRestart() {
+  public function testRestart($db) {
     // Canary.
-    $this->assertNotEmpty($this->dbId);
+    $this->assertNotEmpty($db->id());
 
-    $this->inst()->restart($this->dbId);
-    sleep(5);
-    $details = $this->inst()->details($this->dbId);
+    $inst = $this->inst();
 
-    $this->assertEquals($this->created, $details->createdOn());
+    $this->waitUntilRunning($inst, $db, TRUE);
+
+    $inst->restart($db->id());
+    $this->waitUntilRunning($inst, $db, TRUE);
+
+    $details = $this->inst()->describe($db->id());
+
+    $this->assertEquals($db->createdOn(), $details->createdOn());
   }
 
   /**
    * @depends testCreate
    */
-  public function testResetPassword() {
-    $pass = $this->credentials['pass'];
-    $this->assertNotEmpty($pass);
-
-    $newPass = $this->inst()->resetPassword($this->dbId);
-
-    $this->assertNotEmpty($newPass);
-    $this->assertNotEquals($pass, $newPass);
-  }
-
-  /**
-   * @depends testCreate
-   */
-  public function testListInstances() {
+  public function testListInstances($db) {
 
     $instances = $this->inst()->listInstances();
 
     $this->assertNotEmpty($instances);
-    $this->assertGreaterThan(0, count($instances['instances']));
 
     $match = 0;
     $dbName = self::conf('hpcloud.dbaas.database');
@@ -179,28 +193,22 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
       }
     }
     $this->assertEquals(1, $match);
+
+    return $db;
   }
 
   /**
    * @depends testListInstances
    */
-  public function testIsItAllWorthIt() {
+  public function testIsItAllWorthIt($db) {
     $inst = $this->inst();
 
-    $maxAttempts = 5;
-    for($i = 0; $i < $maxAttempts; ++$i) {
-      $details = $inst->describe($this->dbId);
-
-      if ($details->status == 'ready') {
-        $dsn = $details->dsn();
-        break;
-      }
-
-    }
+    $this->waitUntilRunning($inst, $db, TRUE);
+    $dsn = $db->dsn();
 
     $this->assertNotEmpty($dsn);
 
-    $conn = new PDO($dsn, $this->credentials['user'], $this->credentials['pass']);
+    $conn = new \PDO($dsn, $db->username(), $db->password());
 
     $affected = $conn->execute('SELECT 1');
 
@@ -208,19 +216,33 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
 
     unset($conn);
   }
+  /**
+   * @depends testCreate
+   */
+  public function testResetPassword($db) {
+    $pass = $db->password();
+    $this->assertNotEmpty($pass);
+
+    $newPass = $this->inst()->resetPassword($db->id());
+
+    $this->assertNotEmpty($newPass);
+    $this->assertNotEquals($pass, $newPass);
+  }
+
 
   /**
    * @depends testCreate
    */
-  public function testDelete() {
+  public function testDelete($db) {
     $match = 0;
     $dbName = self::conf('hpcloud.dbaas.database');
 
     $inst = $this->inst();
 
-    $inst->delete($this->dbId);
+    $inst->delete($db->id());
 
-    foreach ($instances['instances'] as $server) {
+    $list = $inst->listInstances();
+    foreach ($list as $server) {
       if ($server->name() == $dbName) {
         ++$match;
       }

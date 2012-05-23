@@ -35,14 +35,13 @@ class InstanceDetails {
   protected $created;
   protected $status;
   protected $hostname;
-  protected $port;
 
   protected $username;
   protected $password;
 
   public function newFromJSON($json) {
 
-    fwrite(STDOUT, json_encode($json));
+    // fwrite(STDOUT, json_encode($json));
 
     $o = new InstanceDetails($json['name'], $json['id']);
     $o->links = $json['links'];
@@ -50,7 +49,6 @@ class InstanceDetails {
     $o->status = $json['status'];
     if (!empty($json['hostname'])) {
       $o->hostname = $json['hostname'];
-      $o->port= !empty($json['port']) ? $json['port'] : '3306';
     }
 
     if (!empty($json['credential']['username'])) {
@@ -108,6 +106,7 @@ class InstanceDetails {
    * Known status messages:
    *- running: Instance is fully operational.
    *- building: Instance is being created.
+   *- restarting: Instance has been restarted, and is still coming online.
    *
    * @retval string
    *   A short status message.
@@ -117,7 +116,24 @@ class InstanceDetails {
   }
 
   /**
+   * Check whether the present instance is running.
+   *
+   * This is a convenience function for determining whether a remote
+   * instance reports itself to be running. It is equivalent to
+   * checking that status() returns 'running'.
+   *
+   * @retval boolean
+   *   TRUE if this is running, FALSE otherwise.
+   */
+  public function isRunning() {
+    return strcasecmp($this->status(), 'running') == 0;
+  }
+
+  /**
    * Get the hostname.
+   *
+   * Note that the port is always 3306, the MySQL default. Only the hostname
+   * is returned.
    *
    * @attention
    * In version 1.0 of the DBaaS protocol, this is ONLY available immediately
@@ -130,17 +146,6 @@ class InstanceDetails {
    */
   public function hostname() {
     return $this->hostname;
-  }
-
-  /**
-   * The port number of the MySQL server.
-   *
-   * @retval integer
-   *   The port number. If this is empty, the
-   *   default (3306) should be assumed.
-   */
-  public function port() {
-    return $this->port;
   }
 
   /**
@@ -200,11 +205,6 @@ class InstanceDetails {
    *
    * A convenience function for PDO.
    *
-   * @attention
-   *   This may only be available immediately after the creation of
-   *   the database. The current version of DBaaS does not return
-   *   hostname and port in subsequent queries.
-   *
    * @see http://us3.php.net/manual/en/ref.pdo-mysql.connection.php
    *
    * @param string $dbName
@@ -221,7 +221,7 @@ class InstanceDetails {
    *   need to change?
    */
   public function dsn($dbName = NULL, $charset = NULL) {
-    $dsn = sprintf('mysql:host=%s;port=%s', $this->hostname(), $this->port());
+    $dsn = sprintf('mysql:host=%s;port=3306', $this->hostname());
     if (!empty($dbName)) {
       $dsn .= ';dbname=' . $dbName;
     }

@@ -76,17 +76,14 @@ class Instance {
    *   The name of the database.
    * @param string $flavor
    *   The string flavor name. Known values are:
-   *- small
    *- medium
-   * @param int $port
-   *   If this is not specified, the default is used.
    * @param array $typeSpec
-   *   A typespec array.
+   *   A typespec array. Currently, only 'mysql', '5.5' is supported.
    * @retval object HPCloud::Services::DBaaS::InstanceDetails
    *   The details of creation, including login and password info.
    * @see http://api-docs.hpcloud.com/hpcloud-dbaas/1.0/content/instance-create.html
    */
-  public function create($name, $flavor = 'medium', $port = NULL, $typeSpec = NULL) {
+  public function create($name, $flavor = 'medium', $typeSpec = NULL) {
     // Set type spec. As of the initial release of DBaaS, the only support
     // type is mysql 5.5.
     if (empty($typeSpec)) {
@@ -102,13 +99,9 @@ class Instance {
         'dbtype' => $typeSpec,
       ),
     );
-    if (isset($port)) {
-      $json['instance']['port'] = $port;
-    }
-
     $url = $this->url . '/instances';
     $postData = json_encode($json);
-    fwrite(STDOUT, "POST DATA: $postData\n");
+    //fwrite(STDOUT, "POST DATA: $postData\n");
     $length = strlen($postData);
     $headers = $this->headers(array(
       'Accept' => 'application/json',
