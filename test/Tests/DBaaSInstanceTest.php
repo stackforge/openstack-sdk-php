@@ -208,11 +208,19 @@ class DBaaSInstanceTest extends \HPCloud\Tests\TestCase {
 
     $this->assertNotEmpty($dsn);
 
-    $conn = new \PDO($dsn, $db->username(), $db->password());
+    try {
+      $conn = new \PDO($dsn, $db->username(), $db->password());
+    }
+    catch (\PDOException $e) {
+      throw new \Exception("Could not connect. "
+        . " This is normal if unit tests are not run on HP Cloud Compute instances. Exception: "
+        . $e->getMessage()
+      );
+    }
 
     $affected = $conn->execute('SELECT 1');
 
-    $this->assertEquals(0, $affected);
+    $this->assertEquals(0, $affected, "Connect and run a SELECT.");
 
     unset($conn);
   }
