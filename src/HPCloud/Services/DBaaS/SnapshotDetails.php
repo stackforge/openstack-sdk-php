@@ -27,5 +27,88 @@ SOFTWARE.
 
 namespace HPCloud\Services\DBaaS;
 
+/**
+ * Details about a DBaaS snapshot.
+ * Instances of this class are returned from DBaaS during creation
+ * and listing operations.
+ */
 class SnapshotDetails {
+  protected $id;
+  protected $instanceId;
+  protected $created;
+  protected $status;
+  protected $links;
+
+  public static function newFromJSON($json) {
+    $o = new SnapshotDetails($json['id'], $json['instanceId']);
+    $o->created = $json['created'];
+    $o->status = $json['status'];
+    $o->links = $json['links'];
+
+    return $o;
+  }
+  public function __construct($id, $instanceId) {
+    $this->id = $id;
+    $this->instanceId = $instanceId;
+  }
+  /**
+   * The ID of the snapshot.
+   *
+   * @retval string
+   *   The ID.
+   */
+  public function id() {
+    return $this->id;
+  }
+  /**
+   * The ID of the database instance.
+   *
+   * This returns the ID of the database instance of which this
+   * is a snapshot.
+   *
+   * @retval string
+   *   The database instance ID.
+   */
+  public function instanceId() {
+    return $this->instanceId;
+  }
+  /**
+   * The data upon which this snapshot was created.
+   *
+   * @retval string
+   *   An ISO data string representing the date and time
+   *   that this snapshot was created.
+   */
+  public function createdOn() {
+    return $this->created;
+  }
+  /**
+   * The status of the snapshot.
+   *
+   * One of:
+   *- building: Snapshot is being built.
+   *- available: Snapshot can be used.
+   *
+   * @retval string
+   *   A string indicating the state of the snapshot.
+   */
+  public function status() {
+    return $this->status;
+  }
+
+  /**
+   * The links for this snapshot.
+   *
+   * See HPCloud::Services::DBaaS::InstanceDetails::links().
+   *
+   * @attention
+   *   The data returned from this may be in flux during the beta release
+   *   of this product.
+   * @retval array
+   *   An array of links. Typically, at least an URL to the snapshot should
+   *   be provided.
+   */
+  public function links() {
+    return $this->links;
+  }
 }

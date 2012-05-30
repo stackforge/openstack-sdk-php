@@ -27,28 +27,102 @@ SOFTWARE.
 
 namespace HPCloud\Services\DBaaS;
 
+use \HPCloud\Services\DBaaS\SnapshotDetails;
+
 class Snapshot {
 
   protected $token;
   protected $projectId;
   protected $url;
+  protected $client;
 
   public function __construct($token, $projectId, $endpoint) {
     $this->token = $token;
     $this->projectId = $projectId;
     $this->url = $endpoint;
+    $this->client = \HPCloud\Transport::instance();
   }
 
   public function listSnapshots($instanceId = NULL) {
+    $url = $this->url . '/snapshots';
+    if (!empty($instanceId)) {
+      $url .= '?instanceId=' . rawurlencode($instanceId);
+    }
+    $headers = $this->headers();
+    $retval = $resp = $this->client->doRequest($url, 'GET', $headers);
+
+    $json = json_decode($retval, TRUE);
+    fwrite(STDOUT, print_r($json, TRUE));
+    $list = array();
+    foreach ($json['snapshots'] as $item) {
+      $list[] = SnapshotDetails::newFromJSON($item);
+    }
+
+    return $list;
   }
 
   public function create($instanceId, $name) {
+    $url = $this->url . '/snapshots';
+    $create = array(
+      'snapshot' => array(
+        'instanceId' => $instanceId,
+        'name' => $name,
+      )
+    );
+
+    $json = json_encode($create);
+    fwrite(STDOUT, $json);
+    $resp = $this->client->doRequest($url, 'POST', $this->headers(), $json);
+
+    $data = json_decode($resp, TRUE);
+
+    return SnapshotDetails::newFromJSON($data['snapshot']);
   }
 
+  /**
+   * Given a snapshot ID, delete the snapshot.
+   *
+   * @param string $snapshotId
+   *   The snapshot ID for the snapshot that should
+   *   be deleted.
+   * @retval boolean
+   *   Returns boolean TRUE on success. Throws one of the 
+   *   HPCloud::Exception instances on failure.
+   * @throws HPCloud::Exception
+   *   One of the Transport class of exceptions.
+   */
   public function delete($snapshotId) {
+    $url = sprintf('%s/snapshot/%s', $this->url, $snapshotId);
+    $this->client->doRequest($url, 'DELETE', $this->headers());
+
+    return TRUE;
   }
 
-  public function fetch($snapshotId) {
+  /**
+   * Get the details for a particular snapshot.
+   *
+   * @param string $snapshotId
+   *   The snapshot ID.
+   *
+   * @retval object HPCloud::Services::DBaaS::SnapshotDetails
+   *   The details object.
+   */
+  public function describe($snapshotId) {
+    $url = sprintf('%s/snapshot/%s', $this->url, $snapshotId);
+    $res = $this->client->doRequest($url, 'GET', $this->headers());
+
+    $json = parse_json($res->content(), TRUE);
+
+    return SnapshotDetails::newFromJSON($json['snapshots']);
+  }
+
+  protected function headers($merge = array()) {
+    return $merge + array(
+      'Accept' => 'application/json',
+      'Content-Type' => 'application/json',
+      'X-Auth-Token' => $this->token,
+      'x-Auth-Project-Id' => $this->projectId,
+    );
   }
 
 }
