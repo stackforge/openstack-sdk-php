@@ -166,15 +166,16 @@ class Response {
     $out = '';
 
     // This should always be set... but...
+    /*
     if (isset($this->metadata['unread_bytes'])) {
       $bytes = (int) $this->metadata['unread_bytes'];
       if ($bytes == 0 && $this->header('Content-Length', 0) > 0) {
+        fwrite(STDOUT, print_r($this->metadata, TRUE));
         throw new \HPCloud\Exception(sprintf(
           'Content length %d doesn\'t match byte count %d.',
           $this->header('Content-Length', 0),
           $bytes
         ));
-        throw new \Exception(print_r($this->metadata, TRUE));
       }
       $out = fread($this->handle, $bytes);
       //$out = stream_get_contents($this->handle);
@@ -186,6 +187,25 @@ class Response {
         $out .= fread($this->handle, 8192);
       }
     }
+     */
+
+    // XXX: The addition of the Content-Length check is a workaround
+    // for an issue with using PHP Stream Wrappers to communicate with
+    // Identity Service. Apparently, the remote does not provide
+    // an EOF marker, and PHP is too dumb to truncate at Content-Length,
+    // so we have to do it manually.
+    $max = $this->header('Content-Length', NULL);
+    if (isset($this->metadata['unread_bytes']) && isset($max)) {
+      while (!feof($this->handle) && strlen($out) < $max) {
+        $out .= fread($this->handle, 8192);
+      }
+    }
+    else {
+      while (!feof($this->handle)) {
+        $out .= fread($this->handle, 8192);
+      }
+    }
+
 
     // Should we close or rewind?
     // Cannot rewind PHP HTTP streams.
