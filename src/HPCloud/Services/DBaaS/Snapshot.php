@@ -52,7 +52,6 @@ class Snapshot {
     $retval = $resp = $this->client->doRequest($url, 'GET', $headers);
 
     $json = json_decode($retval, TRUE);
-    fwrite(STDOUT, print_r($json, TRUE));
     $list = array();
     foreach ($json['snapshots'] as $item) {
       $list[] = SnapshotDetails::newFromJSON($item);
@@ -71,7 +70,6 @@ class Snapshot {
     );
 
     $json = json_encode($create);
-    fwrite(STDOUT, $json);
     $resp = $this->client->doRequest($url, 'POST', $this->headers(), $json);
 
     $data = json_decode($resp, TRUE);
@@ -92,7 +90,7 @@ class Snapshot {
    *   One of the Transport class of exceptions.
    */
   public function delete($snapshotId) {
-    $url = sprintf('%s/snapshot/%s', $this->url, $snapshotId);
+    $url = sprintf('%s/snapshots/%s', $this->url, $snapshotId);
     $this->client->doRequest($url, 'DELETE', $this->headers());
 
     return TRUE;
@@ -108,12 +106,12 @@ class Snapshot {
    *   The details object.
    */
   public function describe($snapshotId) {
-    $url = sprintf('%s/snapshot/%s', $this->url, $snapshotId);
+    $url = sprintf('%s/snapshots/%s', $this->url, $snapshotId);
     $res = $this->client->doRequest($url, 'GET', $this->headers());
 
-    $json = parse_json($res->content(), TRUE);
+    $json = json_decode($res->content(), TRUE);
 
-    return SnapshotDetails::newFromJSON($json['snapshots']);
+    return SnapshotDetails::newFromJSON($json['snapshot']);
   }
 
   protected function headers($merge = array()) {

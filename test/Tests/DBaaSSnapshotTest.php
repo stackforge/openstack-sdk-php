@@ -50,6 +50,7 @@ class DBaaSSnapshot extends DBaaSTestCase {
     $this->assertNotEmpty($dbname);
 
     $this->destroyDatabase();
+    //$this->destroySnapshots();
 
     $dbaas = $this->dbaas();
     $inst = $dbaas->instance();
@@ -64,20 +65,23 @@ class DBaaSSnapshot extends DBaaSTestCase {
     $snap = $dbaas->snapshot();
     $this->assertInstanceOf('\HPCloud\Services\DBaaS\Snapshot', $snap);
 
-    $name = $id . '-SNAPSHOT';
+    $name = $id . self::SNAPSHOT_SUFFIX;
 
     $snap->listSnapshots();
 
     $details = $snap->create($id, $name);
     $this->assertInstanceOf('\HPCloud\Services\DBaaS\SnapshotDetails', $details);
 
-    $this->waitUntilSnapshotReady($snap, $details, TRUE);
+    //$this->waitUntilSnapshotReady($snap, $details, TRUE);
 
     $this->assertNotEmpty($details->id());
     $this->assertNotEmpty($details->instanceId());
-    $this->assertNotEmpty($details->status());
+    //$this->assertNotEmpty($details->status());
     $this->assertNotEmpty($details->createdOn());
-    $this->assertIsArray($details->links());
+    $this->assertNotEmpty($details->links());
+    $links = $details->links();
+    $this->assertEquals('self', $links[0]['rel']);
+    $this->assertNotEmpty($links[0]['href']);
 
     return $details;
   }
@@ -106,7 +110,6 @@ class DBaaSSnapshot extends DBaaSTestCase {
   /**
    * @depends testCreate
    */
-  /*
   public function testDescribe($info) {
     $snap = $this->dbaas()->snapshot();
 
@@ -115,7 +118,6 @@ class DBaaSSnapshot extends DBaaSTestCase {
     $this->assertEquals($info->id(), $details->id());
     $this->assertEquals($info->instanceId(), $details->instanceId());
   }
-   */
 
   /**
    * @depends testCreate
@@ -124,7 +126,7 @@ class DBaaSSnapshot extends DBaaSTestCase {
     $snap = $this->dbaas()->snapshot();
 
     // Test listing all
-    $all = $snap->listSnapshpts();
+    $all = $snap->listSnapshots();
     $this->assertNotEmpty($all);
 
     $found;
@@ -138,7 +140,7 @@ class DBaaSSnapshot extends DBaaSTestCase {
 
 
     // Test listing just for specific instance ID.
-    $all = $snap->listSnapshpts($info->instanceId());
+    $all = $snap->listSnapshots($info->instanceId());
     $this->assertEquals(1, count($all));
 
     $found = NULL;
@@ -149,7 +151,7 @@ class DBaaSSnapshot extends DBaaSTestCase {
     }
 
     $this->assertInstanceOf('\HPCloud\Services\DBaaS\SnapshotDetails', $found);
-    $this->assertEqual($item->id(), $found->id());
+    $this->assertEquals($item->id(), $found->id());
   }
 
   /**

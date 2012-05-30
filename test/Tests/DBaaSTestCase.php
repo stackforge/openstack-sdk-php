@@ -16,6 +16,8 @@ use \HPCloud\Services\DBaaS\Snapshot;
  * @group dbaas
  */
 abstract class DBaaSTestCase extends \HPCloud\Tests\TestCase {
+  const SNAPSHOT_SUFFIX = '-SNAPSHOT';
+
   public function dbaas() {
     $ident = $this->identity();
     $dbaas = DBaaS::newFromIdentity($ident);
@@ -40,7 +42,21 @@ abstract class DBaaSTestCase extends \HPCloud\Tests\TestCase {
         }
       }
     }
+  }
 
+  public function destroySnapshots() {
+    $dbaas = $this->dbaas();
+    $snap = $dbaas->snapshot();
+
+    $list = $snap->listSnapshots();
+    if (!empty($list)) {
+      foreach ($list as $item) {
+        //if (strrpos($item->name(), self::SNAPSHOT_SUFFIX) !== FALSE) {
+          fprintf(STDOUT, "Deleteing snapshot %s\n", $item->id());
+          $snap->delete($item->id());
+        //}
+      }
+    }
   }
 
   public function waitUntilRunning($inst, &$details, $verbose = FALSE, $max = 15, $sleep = 5) {
