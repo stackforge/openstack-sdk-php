@@ -86,27 +86,6 @@ class DBaaSSnapshot extends DBaaSTestCase {
     return $details;
   }
 
-  protected function waitUntilSnapshotReady($snap, &$details, $verbose = FALSE, $max = 15, $sleep = 5) {
-    if ($details->status() == 'running') {
-      return TRUE;
-    }
-    for ($i = 0; $i < $max; ++$i) {
-
-      if ($verbose) fwrite(STDOUT, '⌛');
-      fprintf(STDOUT, "Status: %s\n", $details->status());
-
-      sleep($sleep);
-      $list= $snap->listSnapshots($details->instanceId());
-      $details = $list[0];
-
-      if ($details->status() == 'running') {
-        return TRUE;
-      }
-    }
-
-    throw \Exception(sprintf("Instance did not start after %d attempts (%d seconds)", $max, $max * $sleep));
-  }
-
   /**
    * @depends testCreate
    */
