@@ -42,7 +42,6 @@ class SnapshotDetails {
   public static function newFromJSON($json) {
     $o = new SnapshotDetails($json['id'], $json['instanceId']);
     $o->created = $json['created'];
-    //$o->status = $json['status'];
     $o->links = $json['links'];
 
     return $o;
@@ -82,20 +81,6 @@ class SnapshotDetails {
   public function createdOn() {
     return $this->created;
   }
-  /**
-   * The status of the snapshot.
-   *
-   * One of:
-   *- building: Snapshot is being built.
-   *- available: Snapshot can be used.
-   *
-   * @retval string
-   *   A string indicating the state of the snapshot.
-   *//*
-  public function status() {
-    return $this->status;
-  }*/
-
   /**
    * The links for this snapshot.
    *
