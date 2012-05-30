@@ -89,6 +89,8 @@ class InstanceDetails {
   /**
    * Get a string expressing the creation time.
    *
+   * This may only be set during CREATE or DESCRIBE results.
+   *
    * @retval string
    *   A string indicating the creation time.
    *   Format is in ISO date format.
@@ -137,7 +139,7 @@ class InstanceDetails {
    *
    * @attention
    * In version 1.0 of the DBaaS protocol, this is ONLY available immediately
-   * after creation.
+   * after creation or from the results of an Instance::describe() call.
    *
    * This returns the DNS name of the host (or possibly an IP address).
    *
