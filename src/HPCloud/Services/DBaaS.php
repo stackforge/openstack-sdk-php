@@ -30,6 +30,45 @@ namespace HPCloud\Services;
 use \HPCloud\Services\DBaaS\Instance;
 use \HPCloud\Services\DBaaS\Snapshot;
 
+/**
+ * Database As A Service.
+ *
+ * This package provides access to HP Cloud's Database As A Service (DBaaS)
+ * service.
+ *
+ * ## About DBaaS
+ *
+ * DBaaS is a service for creating and managing database instances and
+ * snapshots (backups) of that service. It is not a data access layer.
+ * That is, SQL is not proxied through this service. Rather, once a
+ * database instance is set up, apps may connect directly to that service
+ * using built-in drivers. See, for example,
+ * HPCloud::Services::DBaaS::Instance::dsn(), which returns the PDO DSN for
+ * connecting to a MySQL database.
+ *
+ * To create and manage new database servers, you will work with
+ * HPCloud::Services::DBaaS::instance().
+ *
+ * To take snapshots of an existing database server (which is recommended
+ * at regular intervals), you will work with 
+ * HPCloud::Services::DBaaS::snapshot().
+ *
+ * ## Authentication to the Service
+ *
+ * To authenticate to the service, you will use IdentityServices. Note,
+ * however, that DBaaS requires a Tenant Name (not Tenant ID). After
+ * authentication, this will attempt to retrieve the name from IdentityServices.
+ *
+ * ## Authentication to an Instance
+ *
+ * Upon creating a new database instance, this library will return login
+ * credentials (username and password) from
+ * HPCloud::Services::DBaaS::Instance::create(). <i>This is the only time
+ * that credentials are returned</i>. Make note of them.
+ *
+ * Those credentials can then be used to connect to the database instance,
+ * and create new databases, users, and tables.
+ */
 class DBaaS {
 
   /**
