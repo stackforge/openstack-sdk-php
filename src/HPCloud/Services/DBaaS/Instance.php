@@ -29,7 +29,7 @@ namespace HPCloud\Services\DBaaS;
 
 use \HPCloud\Transport;
 
-class Instance {
+class Instance extends Operations {
 
   protected $token;
   protected $projectId;
@@ -143,10 +143,12 @@ class Instance {
     return $json->password;
   }
 
+  /*
   protected function headers($add = array()) {
     return $add + array(
       'X-Auth-Token' => $this->token,
       'X-Auth-Project-Id' => $this->projectId,
     );
   }
+   */
 }

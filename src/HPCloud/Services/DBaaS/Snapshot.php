@@ -29,7 +29,7 @@ namespace HPCloud\Services\DBaaS;
 
 use \HPCloud\Services\DBaaS\SnapshotDetails;
 
-class Snapshot {
+class Snapshot extends Operations {
 
   protected $token;
   protected $projectId;
@@ -114,13 +114,5 @@ class Snapshot {
     return SnapshotDetails::newFromJSON($json['snapshot']);
   }
 
-  protected function headers($merge = array()) {
-    return $merge + array(
-      'Accept' => 'application/json',
-      'Content-Type' => 'application/json',
-      'X-Auth-Token' => $this->token,
-      'x-Auth-Project-Id' => $this->projectId,
-    );
-  }
 
 }
