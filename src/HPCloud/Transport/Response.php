@@ -165,30 +165,6 @@ class Response {
   public function content() {
     $out = '';
 
-    // This should always be set... but...
-    /*
-    if (isset($this->metadata['unread_bytes'])) {
-      $bytes = (int) $this->metadata['unread_bytes'];
-      if ($bytes == 0 && $this->header('Content-Length', 0) > 0) {
-        fwrite(STDOUT, print_r($this->metadata, TRUE));
-        throw new \HPCloud\Exception(sprintf(
-          'Content length %d doesn\'t match byte count %d.',
-          $this->header('Content-Length', 0),
-          $bytes
-        ));
-      }
-      $out = fread($this->handle, $bytes);
-      //$out = stream_get_contents($this->handle);
-    }
-    // XXX: In cases of large files, isn't this the safer default?
-    else {
-      $out = '';
-      while (!feof($this->handle)) {
-        $out .= fread($this->handle, 8192);
-      }
-    }
-     */
-
     // XXX: The addition of the Content-Length check is a workaround
     // for an issue with using PHP Stream Wrappers to communicate with
     // Identity Service. Apparently, the remote does not provide
