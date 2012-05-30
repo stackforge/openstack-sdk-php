@@ -29,6 +29,22 @@ namespace HPCloud\Services\DBaaS;
 
 use \HPCloud\Services\DBaaS\SnapshotDetails;
 
+/**
+ * Manage snapshots.
+ *
+ * A snapshot is an image (a backup) of a particular database taken at a
+ * particular point in time. They can be used by HP Cloud Services to restore
+ * a database instance to a particular point in time.
+ *
+ * Snapshotscan be created and deleted. Information about the snapshots can
+ * be retrieved either as lists of snapshots or as individual snapshot details.
+ *
+ * Generally, Snapshot objects should be created through the
+ * HPCloud::Services::DBaaS::snapshot() factory, and not created directly.
+ *
+ * Any operation that goes to the remote server may throw one of the
+ * HPCloud::Exception exceptions.
+ */
 class Snapshot extends Operations {
 
   protected $token;
@@ -43,6 +59,16 @@ class Snapshot extends Operations {
     $this->client = \HPCloud\Transport::instance();
   }
 
+  /**
+   * Get a list of snapshot details.
+   *
+   * @param string $instanceId
+   *   An optional database instance ID. If set, only snapshots for
+   *   the given instance will be returned.
+   * @retval array
+   *   An array of HPCloud::Services::DBaaS::SnapshotDetails
+   *   instances.
+   */
   public function listSnapshots($instanceId = NULL) {
     $url = $this->url . '/snapshots';
     if (!empty($instanceId)) {
@@ -60,6 +86,26 @@ class Snapshot extends Operations {
     return $list;
   }
 
+  /**
+   * Create a new snapshot of a given instance.
+   *
+   * Given the ID of a database instance and a
+   * mnemonic name for the snapshot, take a snapshot of
+   * the given database.
+   *
+   * Note that subsequent references to this snapshot must
+   * be made by snapshot ID, not by `$name`.
+   *
+   * @param string $instanceId
+   *   The instance ID for the database to snapshot.
+   * @param string $name
+   *   A human-readable name for the snapshot. Internally,
+   *   a snapshot ID will be used to reference this
+   *   snapshot.
+   * @retval object HPCloud::Services::DBaaS::SnapshotDetails
+   *   A snapshot details object containing information about
+   *   the snapshot.
+   */
   public function create($instanceId, $name) {
     $url = $this->url . '/snapshots';
     $create = array(
