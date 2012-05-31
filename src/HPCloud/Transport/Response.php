@@ -177,11 +177,12 @@ class Response {
       }
     }
     else {
-      while (!feof($this->handle)) {
-        $out .= fread($this->handle, 8192);
-      }
+      // XXX: This works fine with CURL, but will not
+      // work with PHP HTTP Stream Wrapper b/c the
+      // wrapper has a bug that will cause this to
+      // hang.
+      $out = stream_get_contents($this->handle);
     }
-
 
     // Should we close or rewind?
     // Cannot rewind PHP HTTP streams.
