@@ -84,6 +84,10 @@ class PHPStreamTransport implements Transporter {
     }
 
     $metadata = stream_get_meta_data($res);
+    if (\HPCloud\Bootstrap::hasConfig('transport.debug')) {
+      fwrite(STDOUT, implode(PHP_EOL, $metadata['wrapper_data']));
+      fprintf(STDOUT, "\nWaiting to read %d bytes.\n", $metadata['unread_bytes']);
+    }
 
     $response = new Response($res, $metadata);
 
@@ -217,7 +221,6 @@ class PHPStreamTransport implements Transporter {
    * stream context. This builds the context.
    */
   protected function buildStreamContext($method, $headers, $body) {
-
     // Construct the stream options.
     $config = array(
       'http' => array(
@@ -239,13 +242,55 @@ class PHPStreamTransport implements Transporter {
     // Set the params. (Currently there is only one.)
     $params = array();
     if (!empty($this->notificationCallback)) {
-      $params['notification_callback'] = $this->notificationCallback;
+      $params['notification'] = $this->notificationCallback;
+    }
+    // Enable debugging:
+    elseif (\HPCloud\Bootstrap::hasConfig('transport.debug')) {
+      fwrite(STDOUT, "Sending debug messages to STDOUT\n");
+      $params['notification'] = array($this, 'printNotifications');
     }
 
     // Build the context.
     $context = stream_context_create($config, $params);
 
     return $context;
+  }
+
+  public function printNotifications($code, $severity, $msg, $msgcode, $bytes, $len) {
+    static $filesize = 'Unknown';
+
+    switch ($code) {
+      case STREAM_NOTIFY_RESOLVE:
+        fprintf(STDOUT, "Resolved. %s\n", $msg);
+        break;
+      case STREAM_NOTIFY_FAILURE:
+        fprintf(STDOUT, "socket-level failure: %s\n", $msg);
+        break;
+      case STREAM_NOTIFY_COMPLETED:
+        fprintf(STDOUT, "Transaction complete. %s\n", $msg);
+        break;
+      //case STREAM_NOTIFY_REDIRECT:
+      //  fprintf(STDOUT, "Redirect... %s\n", $msg);
+      //  break;
+      case STREAM_NOTIFY_CONNECT:
+        fprintf(STDOUT, "Connect... %s\n", $msg);
+        break;
+      case STREAM_NOTIFY_FILE_SIZE_IS:
+        fprintf(STDOUT, "Content-length: %d\n", $len);
+        $filesize = $len;
+        break;
+      case STREAM_NOTIFY_MIME_TYPE_IS:
+        fprintf(STDOUT, "Content-Type: %s\n", $msg);
+        break;
+      case STREAM_NOTIFY_PROGRESS:
+        fwrite(STDOUT, $msg . PHP_EOL);
+        fprintf(STDOUT, "%d bytes of %s\n", $bytes, $filesize);
+        break;
+      default:
+        fprintf(STDOUT, "Code: %d, Message: %s\n", $code, $msg);
+        break;
+    }
+
   }
 
 }

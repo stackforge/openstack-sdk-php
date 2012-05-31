@@ -32,7 +32,7 @@ require_once 'test/TestCase.php';
 use \HPCloud\Transport;
 use \HPCloud\Transport\CURLTransport;
 
-class ObjectTest extends \HPCloud\Tests\TestCase {
+class CURLTransportTest extends \HPCloud\Tests\TestCase {
 
   public static function tearDownAfterClass() {
     $transport = NULL;
