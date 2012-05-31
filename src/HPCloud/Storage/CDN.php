@@ -139,6 +139,28 @@ class CDN {
   protected $token;
 
   /**
+   * Create a new instance from an IdentityServices object.
+   *
+   * This builds a new CDN instance form an authenticated
+   * IdentityServices object.
+   *
+   * In the service catalog, this selects the first service entry
+   * for CDN. At this time, that is sufficient.
+   *
+   * @param HPCloud::Services::IdentityServices $identity
+   *   The identity to use.
+   * @retval object
+   *   A CDN object or FALSE if no CDN services could be found
+   *   in the catalog.
+   */
+  public static function newFromIdentity($identity) {
+    $tok = $identity->token();
+    $cat = $identity->serviceCatalog();
+
+    return self::newFromServiceCatalog($cat, $tok);
+  }
+
+  /**
    * Create a new CDN object based on a service catalog.
    *
    * The IdentityServices class contains a service catalog, which tracks all

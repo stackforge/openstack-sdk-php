@@ -81,6 +81,18 @@ class CDNTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
+   * @depends testConstructor
+   */
+  public function testNewFromIdentity() {
+    $ident = $this->identity();
+    $cdn = CDN::newFromIdentity($ident);
+
+    $this->assertInstanceOf('\HPCloud\Storage\CDN', $cdn);
+
+    return $cdn;
+  }
+
+  /**
    * @depends testNewFromServiceCatalog
    */
   public function testEnable($cdn) {

@@ -145,19 +145,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     if ($reset || empty(self::$ostore)) {
       $ident = $this->identity($reset);
 
-      $services = $ident->serviceCatalog(\HPCloud\Storage\ObjectStorage::SERVICE_TYPE);
-
-      if (empty($services)) {
-        throw new \Exception('No object-store service found.');
-      }
-
-      /*
-      //$serviceURL = $services[0]['endpoints'][0]['adminURL'];
-      $serviceURL = $services[0]['endpoints'][0]['publicURL'];
-
-      $objStore = new \HPCloud\Storage\ObjectStorage($ident->token(), $serviceURL);
-       */
-      $objStore = \HPCloud\Storage\ObjectStorage::newFromServiceCatalog($services, $ident->token());
+      $objStore = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
 
       self::$ostore = $objStore;
 

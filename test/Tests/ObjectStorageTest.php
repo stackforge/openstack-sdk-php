@@ -77,7 +77,17 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
   }
 
   public function testNewFromServiceCatalog() {
-    $ostore = $this->objectStore();
+    $ident = $this->identity();
+    $tok = $ident->token();
+    $cat = $ident->serviceCatalog();
+    $ostore = \HPCloud\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok);
+    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $this->assertTrue(strlen($ostore->token()) > 0);
+  }
+
+  public function testNewFromIdnetity() {
+    $ident = $this->identity();
+    $ostore = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
     $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
