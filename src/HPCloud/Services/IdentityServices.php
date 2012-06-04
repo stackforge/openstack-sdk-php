@@ -288,17 +288,20 @@ class IdentityServices {
   }
 
   /**
-   * Authenticate to Identity Services with username, password, and tenant ID.
+   * Authenticate to Identity Services with username, password, and either 
+   * tenant ID or tenant Name.
    *
    * Given an HPCloud username and password, authenticate to Identity Services.
    * Identity Services will then issue a token that can be used to access other
    * HPCloud services.
    *
    * If a tenant ID is provided, this will also associate the user with the
-   * given tenant ID.
+   * given tenant ID. If a tenant Name is provided, this will associate the user
+   * with the given tenant Name. Only the tenant ID or tenant Name needs to be
+   * given, not both.
    *
-   * If no tenant ID is given, it will likely be necessary to rescope() the
-   * request (See also tenants()).
+   * If no tenant ID or tenant Name is given, it will likely be necessary to
+   * rescope() the request (See also tenants()).
    *
    * Other authentication methods:
    *
@@ -312,13 +315,16 @@ class IdentityServices {
    * @param string $tenantId
    *   The tenant ID for this account. This can be obtained through the
    *   HPCloud console.
+   * @param string $tenantName
+   *   The tenant Name for this account. This can be obtained through the
+   *   HPCloud console.
    * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
    * @throws HPCloud::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
-  public function authenticateAsUser($username, $password, $tenantId = NULL) {
+  public function authenticateAsUser($username, $password, $tenantId = NULL, $tenantName = NULL) {
     $ops = array(
       'passwordCredentials' => array(
         'username' => $username,
@@ -330,6 +336,12 @@ class IdentityServices {
     if (!empty($tenantId)) {
       $ops['tenantId'] = $tenantId;
     }
+
+    // If a tenant name is provided, add it to the auth array.
+    if (!empty($tenantName)) {
+      $ops['tenantName'] = $tenantName;
+    }
+
     return $this->authenticate($ops);
   }
   /**
@@ -342,10 +354,11 @@ class IdentityServices {
    * The account ID and access key information can be found in the account
    * section of the console.
    *
-   * The third paramater allows you to specify a tenant ID. In order to access
-   * services, this object will need a tenant ID. If none is specified, it can
-   * be set later using rescope(). The tenants() method can be used to get a
-   * list of all available tenant IDs for this token.
+   * The third and fourth paramaters allow you to specify a tenant ID or 
+   * tenantName. In order to access services, this object will need a tenant ID
+   * or tenant name. If none is specified, it can be set later using rescope().
+   * The tenants() method can be used to get a list of all available tenant IDs
+   * for this token.
    *
    * Other authentication methods:
    *
@@ -361,6 +374,9 @@ class IdentityServices {
    * @param string $tenantId
    *   A valid tenant ID. This will be used to associate a tenant's services
    *   with this token.
+   * @param string $tenantName
+   *   The tenant Name for this account. This can be obtained through the
+   *   HPCloud console.
    * @retval string
    *   The auth token.
    * @throws HPCloud::Transport::AuthorizationException
@@ -369,7 +385,7 @@ class IdentityServices {
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
-  public function authenticateAsAccount($account, $key, $tenantId = NULL) {
+  public function authenticateAsAccount($account, $key, $tenantId = NULL, $tenantName = NULL) {
     $ops = array(
       'apiAccessKeyCredentials' => array(
         'accessKey' => $account,
@@ -380,6 +396,10 @@ class IdentityServices {
     if (!empty($tenantId)) {
       $ops['tenantId'] = $tenantId;
     }
+    if (!empty($tenantName)) {
+      $ops['tenantName'] = $tenantName;
+    }
+
     return $this->authenticate($ops);
   }
 
@@ -412,6 +432,24 @@ class IdentityServices {
   public function tenantId() {
     if (!empty($this->tokenDetails['tenant']['id'])) {
       return $this->tokenDetails['tenant']['id'];
+    }
+  }
+
+  /**
+   * Get the tenant name associated with this token.
+   *
+   * If this token has a tenant name, the name will be returned. Otherwise, this
+   * will return NULL.
+   *
+   * This will not be populated until after an authentication method has been
+   * run.
+   *
+   * @retval string
+   *   The tenant name if available, or NULL.
+   */
+  public function tenantName() {
+    if (!empty($this->tokenDetails['tenant']['name'])) {
+      return $this->tokenDetails['tenant']['name'];
     }
   }
 
@@ -623,6 +661,13 @@ class IdentityServices {
   }
 
   /**
+   * @see HPCloud::Services::IdentityServices::rescopeUsingTenantId()
+   */
+  public function rescope($tenantId) {
+    return $this->rescopeUsingTenantId($tenantId);
+  }
+
+    /**
    * Rescope the authentication token to a different tenant.
    *
    * Note that this will rebuild the service catalog and user information for
@@ -652,12 +697,69 @@ class IdentityServices {
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
-  public function rescope($tenantId) {
+  public function rescopeUsingTenantId($tenantId) {
     $url = $this->url() . '/tokens';
     $token = $this->token();
     $data = array(
       'auth' => array(
         'tenantId' => $tenantId,
+        'token' => array(
+          'id' => $token,
+        ),
+      ),
+    );
+    $body = json_encode($data);
+
+    $headers = array(
+      'Accept' => self::ACCEPT_TYPE,
+      'Content-Type' => 'application/json',
+      'Content-Length' => strlen($body),
+      //'X-Auth-Token' => $token,
+    );
+
+    $client = \HPCloud\Transport::instance();
+    $response = $client->doRequest($url, 'POST', $headers, $body);
+    $this->handleResponse($response);
+
+    return $this->token();
+  }
+
+  /**
+   * Rescope the authentication token to a different tenant.
+   *
+   * Note that this will rebuild the service catalog and user information for
+   * the current object, since this information is sensitive to tenant info.
+   *
+   * An authentication token can be in one of two states:
+   *
+   * - unscoped: It has no associated tenant ID.
+   * - scoped: It has a tenant ID, and can thus access that tenant's services.
+   *
+   * This method allows you to do any of the following:
+   *
+   * - Begin with an unscoped token, and assign it a tenant ID.
+   * - Change a token from one tenant ID to another (re-scoping).
+   * - Remove the tenant ID from a scoped token (unscoping).
+   *
+   * @param string $tenantName
+   *   The tenant name that this present token should be bound to. If this is the
+   *   empty string (`''`), the present token will be "unscoped" and its tenant
+   *   name will be removed.
+   *
+   * @retval string
+   *   The authentication token.
+   * @throws HPCloud::Transport::AuthorizationException
+   *   If authentication failed.
+   * @throws HPCloud::Exception
+   *   For abnormal network conditions. The message will give an indication as
+   *   to the underlying problem.
+   */
+  public function rescopeUsingTenantName($tenantName) {
+    $url = $this->url() . '/tokens';
+    $token = $this->token();
+    $data = array(
+      'auth' => array(
+        'tenantName' => $tenantName,
         'token' => array(
           'id' => $token,
         ),
