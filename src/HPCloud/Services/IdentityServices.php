@@ -484,6 +484,31 @@ class IdentityServices {
   }
 
   /**
+   * Check whether the current identity has an expired token.
+   *
+   * This does not perform a round-trip to the server. Instead, it compares the
+   * machine's local timestamp with the server's expiration time stamp. A
+   * mis-configured machine timestamp could give spurious results.
+   *
+   * @retval boolean
+   *   This will return FALSE if there is a current token and it has
+   *   not yet expired (according to the date info). In all other cases
+   *   it returns TRUE.
+   */
+  public function isExpired() {
+    $details = $this->tokenDetails();
+
+    if (empty($details['expires'])) {
+      return TRUE;
+    }
+
+    $currentDateTime = new \DateTime('now');
+    $expireDateTime = new \DateTime($details['expires']);
+
+    return $currentDateTime > $expireDateTime;
+  }
+
+  /**
    * Get the service catalog, optionaly filtering by type.
    *
    * This returns the service catalog (largely unprocessed) that

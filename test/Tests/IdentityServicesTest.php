@@ -173,6 +173,16 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
   /**
    * @depends testAuthenticateAsAccount
    */
+  public function testIsExpired($service) {
+    $this->assertFalse($service->isExpired());
+
+    $service2 = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $this->assertTrue($service2->isExpired());
+  }
+
+  /**
+   * @depends testAuthenticateAsAccount
+   */
   public function testTenantName() {
     $account = self::conf('hpcloud.identity.account');
     $secret = self::conf('hpcloud.identity.secret');
