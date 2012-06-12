@@ -347,17 +347,23 @@ class Bootstrap {
         throw new Exception('Unable to authenticate. No endpoint supplied.');
       }
 
+      // Neither user nor account can be an empty string, so we need
+      // to do more checking than self::hasConfig(), which returns TRUE
+      // if an item exists and is an empty string.
+      $user = self::config('username', NULL);
+      $account = self::config('account', NULL);
+
       // Check if we have a username/password
-      if (self::hasConfig('username') && self::hasConfig('password')) {
+      if (!empty($user) && self::hasConfig('password')) {
         $is = new IdentityServices(self::config('endpoint'));
-        $is->authenticateAsUser(self::config('username'), self::config('password'), self::config('tenantid', NULL));
+        $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', NULL));
         self::$identity = $is;
       }
 
       // Otherwise we go with access/secret keys
-      elseif (self::hasConfig('account') && self::hasConfig('key')) {
+      elseif (!empty($account) && self::hasConfig('secret')) {
         $is = new IdentityServices(self::config('endpoint'));
-        $is->authenticateAsAccount(self::config('account'), self::config('key'), self::config('tenantid', NULL));
+        $is->authenticateAsAccount($account, self::config('secret'), self::config('tenantid', NULL));
         self::$identity = $is;
       }
 
