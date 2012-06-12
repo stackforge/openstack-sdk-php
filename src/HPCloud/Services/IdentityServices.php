@@ -122,9 +122,14 @@ namespace HPCloud\Services;
  * - tenants()
  * - rescope()
  *
+ * <b>Serializing</b>
+ *
+ * IdentityServices has been intentionally built to serialize well.
+ * This allows implementors to cache IdentityServices objects rather
+ * than make repeated requests for identity information.
  *
  */
-class IdentityServices {
+class IdentityServices /*implements Serializable*/ {
   /**
    * The version of the API currently supported.
    */
@@ -170,6 +175,8 @@ class IdentityServices {
    * The service catalog.
    */
   protected $catalog = array();
+
+  protected $userDetails;
 
   /**
    * Build a new IdentityServices object.
@@ -687,6 +694,7 @@ class IdentityServices {
 
   /**
    * @see HPCloud::Services::IdentityServices::rescopeUsingTenantId()
+   * @deprecated
    */
   public function rescope($tenantId) {
     return $this->rescopeUsingTenantId($tenantId);
@@ -823,5 +831,25 @@ class IdentityServices {
     $this->userDetails = $json['access']['user'];
     $this->serviceCatalog = $json['access']['serviceCatalog'];
   }
+
+  /* Not necessary.
+  public function serialize() {
+    $data = array(
+      'tokenDetails' => $this->tokenDetails,
+      'userDetails' => $this->userDetails,
+      'serviceCatalog' => $this->serviceCatalog,
+      'endpoint' => $this->endpoint,
+    );
+    return serialize($data);
+  }
+
+  public function unserialize($data) {
+    $vals = unserialize($data);
+    $this->tokenDetails = $vals['tokenDetails'];
+    $this->userDetails = $vals['userDetails'];
+    $this->serviceCatalog = $vals['serviceCatalog'];
+    $this->endpoint = $vals['endpoint'];
+  }
+   */
 
 }

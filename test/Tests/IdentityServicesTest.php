@@ -315,6 +315,33 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
+   * @depends testAuthenticateAsAccount
+   * @group serialize
+   */
+  public function testSerialization($service) {
+
+    $ser = serialize($service);
+
+    $this->assertNotEmpty($ser);
+
+    $again = unserialize($ser);
+
+    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $again);
+
+    $this->assertEquals($service->tenantId(), $again->tenantId());
+    $this->assertEquals($service->serviceCatalog(), $again->serviceCatalog());
+    $this->assertEquals($service->tokenDetails(), $again->tokenDetails());
+    $this->assertEquals($service->user(), $again->user());
+    $this->assertFalse($again->isExpired());
+
+    $tenantId = $again->tenantId();
+
+    $newTok = $again->rescopeUsingTenantId($tenantId);
+
+    $this->assertNotEmpty($newTok);
+  }
+
+  /**
    * @group tenant
    */
   public function testTenants() {
