@@ -133,7 +133,7 @@ class Bootstrap {
 
   /**
    * An identity services object created from the global settings.
-   * @var [type]
+   * @var object HPCloud::Services::IdentityServices
    */
   public static $identity = NULL;
 
@@ -340,18 +340,7 @@ class Bootstrap {
   public static function identity($force = FALSE) {
 
     // If we already have an identity make sure the token is not expired.
-    $expired = FALSE;
-    if (!is_null(self::$identity)) {
-      // Make sure the token we have is not expired.
-      $tokenDetails = self::$identity->tokenDetails();
-      $tokenExpires = new \DateTime($tokenDetails['expires']);
-      $currentDateTime = new \DateTime('now');
-      if ($currentDateTime > $tokenExpires) {
-        $expired = TRUE;
-      }
-    }
-
-    if (is_null(self::$identity) || $expired || $force) {
+    if ($force || is_null(self::$identity) || self::$identity->isExpired()) {
 
       // Make sure we have an endpoint to use
       if (!self::hasConfig('endpoint')) {
@@ -364,7 +353,7 @@ class Bootstrap {
         $is->authenticateAsUser(self::config('username'), self::config('password'), self::config('tenantid', NULL));
         self::$identity = $is;
       }
-      
+
       // Otherwise we go with access/secret keys
       elseif (self::hasConfig('account') && self::hasConfig('key')) {
         $is = new IdentityServices(self::config('endpoint'));
