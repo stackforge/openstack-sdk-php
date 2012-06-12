@@ -30,6 +30,7 @@ require_once 'src/HPCloud/Bootstrap.php';
 require_once 'test/TestCase.php';
 
 use \HPCloud\Services\IdentityServices;
+use \HPCloud\Bootstrap;
 
 
 class IdentityServicesTest extends \HPCloud\Tests\TestCase {
@@ -334,5 +335,45 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $catalog = $service->serviceCatalog();
     $this->assertEquals(1, count($catalog));
 
+  }
+
+  /**
+   * Test the bootstrap identity factory.
+   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
+   */
+  function testBootstrap() {
+
+    // Test authenticating as a user.
+    $settings = array(
+      'username' => self::conf('hpcloud.identity.username'),
+      'password' => self::conf('hpcloud.identity.password'),
+      'endpoint' => self::conf('hpcloud.identity.url'),
+      'tenantid' => self::conf('hpcloud.identity.tenantId'),
+    );
+    Bootstrap::setConfiguration($settings);
+
+    $is = Bootstrap::identity(TRUE);
+    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
+
+    // Test authenticating as an account.
+    $settings = array(
+      'account' => self::conf('hpcloud.identity.account'),
+      'key' => self::conf('hpcloud.identity.secret'),
+      'endpoint' => self::conf('hpcloud.identity.url'),
+      'tenantid' => self::conf('hpcloud.identity.tenantId'),
+    );
+    Bootstrap::setConfiguration($settings);
+
+    $is = Bootstrap::identity(TRUE);
+    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
+
+    // Test getting a second instance from the cache.
+    $is2 = Bootstrap::identity();
+    $this->assertEquals($is, $is2);
+
+    // Test that forcing a refresh does so.
+    $is2 = Bootstrap::identity(TRUE);
+    $this->assertNotEquals($is, $is2);
   }
 }
