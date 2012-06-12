@@ -173,6 +173,38 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
   /**
    * @depends testAuthenticateAsAccount
    */
+  public function testTenantName() {
+    $account = self::conf('hpcloud.identity.account');
+    $secret = self::conf('hpcloud.identity.secret');
+    $user = self::conf('hpcloud.identity.username');
+    $pass = self::conf('hpcloud.identity.password');
+    $tenantName = self::conf('hpcloud.identity.tenantName');
+
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $this->assertNull($service->tenantName());
+
+    $service->authenticateAsUser($user, $pass);
+    $this->assertEmpty($service->tenantName());
+
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $ret = $service->authenticateAsUser($user, $pass, NULL, $tenantName);
+    $this->assertNotEmpty($service->tenantName());
+
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $this->assertNull($service->tenantName());
+
+    $service->authenticateAsAccount($account, $secret);
+    $this->assertEmpty($service->tenantName());
+
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $ret = $service->authenticateAsAccount($account, $secret, NULL, $tenantName);
+    $this->assertNotEmpty($service->tenantName());
+    $this->assertEquals($tenantName, $service->tenantName());
+  }
+
+  /**
+   * @depends testAuthenticateAsAccount
+   */
   public function testTenantId() {
     $user = self::conf('hpcloud.identity.username');
     $pass = self::conf('hpcloud.identity.password');
@@ -320,10 +352,50 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $catalog = $service->serviceCatalog();
     $this->assertEquals(1, count($catalog));
 
-    $service->rescope($tenantId);
+    $service->rescopeUsingTenantId($tenantId);
 
     $details = $service->tokenDetails();
     $this->assertEquals($tenantId, $details['tenant']['id']);
+
+    $catalog = $service->serviceCatalog();
+    $this->assertGreaterThan(1, count($catalog));
+
+    // Test unscoping
+    $service->rescopeUsingTenantId('');
+    $details = $service->tokenDetails();
+    $this->assertEmpty($details['tenant']);
+    $catalog = $service->serviceCatalog();
+    $this->assertEquals(1, count($catalog));
+
+  }
+
+  /**
+   * @group tenant
+   * @depends testTenants
+   */
+  function testRescopeByTenantName() {
+    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $user = self::conf('hpcloud.identity.username');
+    $pass = self::conf('hpcloud.identity.password');
+    $tenantName = self::conf('hpcloud.identity.tenantName');
+
+    // Authenticate without a tenant ID.
+    $token = $service->authenticateAsUser($user, $pass);
+
+    $this->assertNotEmpty($token);
+
+    $details = $service->tokenDetails();
+    $this->assertEmpty($details['tenant']);
+
+    // With no tenant ID, there should be only
+    // one entry in the catalog.
+    $catalog = $service->serviceCatalog();
+    $this->assertEquals(1, count($catalog));
+
+    $service->rescopeUsingTenantName($tenantName);
+
+    $details = $service->tokenDetails();
+    $this->assertEquals($tenantName, $details['tenant']['name']);
 
     $catalog = $service->serviceCatalog();
     $this->assertGreaterThan(1, count($catalog));
