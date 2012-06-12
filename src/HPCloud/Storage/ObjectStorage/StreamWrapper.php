@@ -108,7 +108,8 @@ use \HPCloud\Storage\ObjectStorage;
  *   array('swift' => array(
  *     'account' => ACCOUNT_NUMBER,
  *     'key' => SECRET_KEY,
- *     'tenantId' => TENANT_ID
+ *     'tenantid' => TENANT_ID,
+ *     'tenantname' => TENANT_NAME, // Optional instead of tenantid.
  *     'endpoint' => AUTH_ENDPOINT_URL,
  *   )
  *  )
@@ -218,9 +219,12 @@ use \HPCloud\Storage\ObjectStorage;
  * -# User login: username, password, tenantid, endpoint
  * -# Existing (valid) token: token, swift_endpoint
  *
+ * @attention
+ *   As of 1.0.0-beta6, you may use `tenantname` instead of `tenantid`.
+ *
  * The third method (token) can be used when the application has already
- * authenticated. In this case, a token has been generated and assigneet 
- * to an account and tenant ID.
+ * authenticated. In this case, a token has been generated and assigned
+ * to an account and tenant.
  *
  * The following parameters may be set either in the stream context
  * or through HPCloud::Bootstrap::setConfiguration():
@@ -230,10 +234,10 @@ use \HPCloud\Storage\ObjectStorage;
  *     option.
  * - swift_endpoint: The URL to the swift instance. This is only necessary if
  *     'token' is set. Otherwise it is ignored.
- * - username: A username. MUST be accompanied by 'password' and 'tenantid'.
- * - password: A password. MUST be accompanied by 'username' and 'tenantid'.
- * - account: An account ID. MUST be accompanied by a 'key' and 'tenantid'.
- * - key: A secret key. MUST be accompanied by an 'account' and 'tenantid'.
+ * - username: A username. MUST be accompanied by 'password' and 'tenantid' (or 'tenantname').
+ * - password: A password. MUST be accompanied by 'username' and 'tenantid' (or 'tenantname').
+ * - account: An account ID. MUST be accompanied by a 'key' and 'tenantid' (or 'tenantname').
+ * - key: A secret key. MUST be accompanied by an 'account' and 'tenantid' (or 'tenantname').
  * - endpoint: The URL to the authentication endpoint. Necessary if you are not
  *     using a 'token' and 'swift_endpoint'.
  * - use_swift_auth: If this is set to TRUE, it will force the app to use
@@ -251,6 +255,10 @@ use \HPCloud\Storage\ObjectStorage;
  * - cdn_require_ssl: If this is set to FALSE, then CDN-based requests
  *     may use plain HTTP instead of HTTPS. This will spead up CDN
  *     fetches at the cost of security.
+ * - tenantid: The tenant ID for the services you will use. (An account may
+ *     have multiple tenancies associated.)
+ * - tenantname: The tenant name for the services you will use. You may use
+ *     this in lieu of tenant ID.
  *
  * @attention
  *  ADVANCED: You can also pass an HPCloud::Storage::CDN object in use_cdn instead of
@@ -533,7 +541,8 @@ class StreamWrapper {
    * @code
    * <?php
    * Bootstrap::setConfiguration(array(
-   *   'tenantid' => '1234',
+   *   'tenantname' => 'foo@example.com',
+   *   // 'tenantid' => '1234', // You can use this instead of tenantname
    *   'account' => '1234',
    *   'secret' => '4321',
    *   'endpoint' => 'https://auth.example.com',
@@ -947,7 +956,7 @@ class StreamWrapper {
    * @code
    * <?php
    * $cxt = stream_context_create(array(
-   *   'tenantid' => '12345',
+   *   'tenantname' => 'me@example.com',
    *   'username' => 'me@example.com',
    *   'password' => 'secret',
    *   'endpoint' => 'https://auth.example.com',
@@ -1475,10 +1484,10 @@ class StreamWrapper {
    *     option.
    * - swift_endpoint: The URL to the swift instance. This is only necessary if
    *     'token' is set. Otherwise it is ignored.
-   * - username: A username. MUST be accompanied by 'password' and 'tenantid'.
-   * - password: A password. MUST be accompanied by 'username' and 'tenantid'.
-   * - account: An account ID. MUST be accompanied by a 'key' and 'tenantid'.
-   * - key: A secret key. MUST be accompanied by an 'account' and 'tenantid'.
+   * - username: A username. MUST be accompanied by 'password' and 'tenantname'.
+   * - password: A password. MUST be accompanied by 'username' and 'tenantname'.
+   * - account: An account ID. MUST be accompanied by a 'key' and 'tenantname'.
+   * - key: A secret key. MUST be accompanied by an 'account' and 'tenantname'.
    * - endpoint: The URL to the authentication endpoint. Necessary if you are not
    *     using a 'token' and 'swift_endpoint'.
    * - use_swift_auth: If this is set to TRUE, it will force the app to use
@@ -1498,6 +1507,7 @@ class StreamWrapper {
     $key = $this->cxt('key');
 
     $tenantId = $this->cxt('tenantid');
+    $tenantName = $this->cxt('tenantname');
     $authUrl = $this->cxt('endpoint');
     $endpoint = $this->cxt('swift_endpoint');
 
@@ -1522,8 +1532,11 @@ class StreamWrapper {
 
     }
     // If we get here and tenant ID is not set, we can't get a container.
-    elseif (empty($tenantId) || empty($authUrl)) {
-      throw new \HPCloud\Exception('Tenant ID (tenantid) and endpoint are required.');
+    elseif (empty($tenantId) && empty($tenantName)) {
+      throw new \HPCloud\Exception('Either Tenant ID (tenantid) or Tenant Name (tenantname) is required.');
+    }
+    elseif (empty($authUrl)) {
+      throw new \HPCloud\Exception('An Identity Service Endpoint (endpoint) is required.');
     }
     // Try to authenticate and get a new token.
     else {
@@ -1612,6 +1625,7 @@ class StreamWrapper {
     $key = $this->cxt('key');
 
     $tenantId = $this->cxt('tenantid');
+    $tenantName = $this->cxt('tenantname');
     $authUrl = $this->cxt('endpoint');
 
     $ident = new \HPCloud\Services\IdentityServices($authUrl);
@@ -1619,10 +1633,10 @@ class StreamWrapper {
     // Frustrated? Go burninate. http://www.homestarrunner.com/trogdor.html
 
     if (!empty($username) && !empty($password)) {
-      $token = $ident->authenticateAsUser($username, $password, $tenantId);
+      $token = $ident->authenticateAsUser($username, $password, $tenantId, $tenantName);
     }
     elseif (!empty($account) && !empty($key)) {
-      $token = $ident->authenticateAsAccount($account, $key, $tenantId);
+      $token = $ident->authenticateAsAccount($account, $key, $tenantId, $tenantName);
     }
     else {
       throw new \HPCloud\Exception('Either username/password or account/key must be provided.');

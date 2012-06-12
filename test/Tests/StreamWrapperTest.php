@@ -126,7 +126,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
       'account' => self::$settings['hpcloud.identity.account'],
       'key'     => self::$settings['hpcloud.identity.secret'],
       'endpoint' => self::$settings['hpcloud.identity.url'],
-      'tenantit' => self::$settings['hpcloud.identity.tenantId'],
+      'tenantid' => self::$settings['hpcloud.identity.tenantId'],
       'token' => $this->objectStore()->token(),
       'swift_endpoint' => $this->objectStore()->url(),
     );
