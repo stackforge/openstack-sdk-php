@@ -356,14 +356,14 @@ class Bootstrap {
       // Check if we have a username/password
       if (!empty($user) && self::hasConfig('password')) {
         $is = new IdentityServices(self::config('endpoint'));
-        $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', NULL));
+        $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', NULL), self::config('tenantname', NULL));
         self::$identity = $is;
       }
 
       // Otherwise we go with access/secret keys
       elseif (!empty($account) && self::hasConfig('secret')) {
         $is = new IdentityServices(self::config('endpoint'));
-        $is->authenticateAsAccount($account, self::config('secret'), self::config('tenantid', NULL));
+        $is->authenticateAsAccount($account, self::config('secret'), self::config('tenantid', NULL), self::config('tenantname', NULL));
         self::$identity = $is;
       }
 

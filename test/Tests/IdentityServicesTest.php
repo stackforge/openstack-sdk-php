@@ -453,6 +453,12 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    */
   function testBootstrap() {
 
+    // We need to save the config settings and reset the bootstrap to this.
+    // It does not remove the old settings. The means the identity fall through
+    // for different settings may not happen because of ordering. So, we cache
+    // and reset back to the default for each test.
+    $reset = Bootstrap::$config;
+
     // Test authenticating as a user.
     $settings = array(
       'username' => self::conf('hpcloud.identity.username'),
@@ -465,10 +471,12 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $is = Bootstrap::identity(TRUE);
     $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
 
+    Bootstrap::$config = $reset;
+
     // Test authenticating as an account.
     $settings = array(
       'account' => self::conf('hpcloud.identity.account'),
-      'key' => self::conf('hpcloud.identity.secret'),
+      'secret' => self::conf('hpcloud.identity.secret'),
       'endpoint' => self::conf('hpcloud.identity.url'),
       'tenantid' => self::conf('hpcloud.identity.tenantId'),
     );
@@ -484,5 +492,30 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     // Test that forcing a refresh does so.
     $is2 = Bootstrap::identity(TRUE);
     $this->assertNotEquals($is, $is2);
+
+    Bootstrap::$config = $reset;
+
+    // Test with tenant name
+    $settings = array(
+      'account' => self::conf('hpcloud.identity.account'),
+      'secret' => self::conf('hpcloud.identity.secret'),
+      'endpoint' => self::conf('hpcloud.identity.url'),
+      'tenantname' => self::conf('hpcloud.identity.tenantName'),
+    );
+    Bootstrap::setConfiguration($settings);
+
+    $is = Bootstrap::identity(TRUE);
+    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
+
+    $settings = array(
+      'username' => self::conf('hpcloud.identity.username'),
+      'password' => self::conf('hpcloud.identity.password'),
+      'endpoint' => self::conf('hpcloud.identity.url'),
+      'tenantname' => self::conf('hpcloud.identity.tenantName'),
+    );
+    Bootstrap::setConfiguration($settings);
+
+    $is = Bootstrap::identity(TRUE);
+    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
   }
 }
