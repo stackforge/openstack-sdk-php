@@ -26,7 +26,8 @@ SOFTWARE.
  * You can run the test with `php test/AuthTest.php username key`.
  */
 
-require_once 'src/HPCloud/Bootstrap.php';
+$base = dirname(__DIR__);
+require_once $base . '/src/HPCloud/Bootstrap.php';
 
 use \HPCloud\Storage\ObjectStorage;
 use \HPCloud\Services\IdentityServices;
