@@ -274,6 +274,14 @@ class RemoteObject extends Object {
     return $this->allHeaders;
   }
 
+  public function additionalHeaders() {
+    // Any additional headers will be set. Note that $this->headers will contain
+    // some headers that are NOT additional. But we do not know which headers are
+    // additional and which are from Swift because Swift does not commit to using
+    // a specific set of headers.
+    return parent::additionalHeaders() + $this->headers;
+  }
+
   /**
    * Get the content of this object.
    *
