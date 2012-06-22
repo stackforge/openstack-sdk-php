@@ -296,8 +296,22 @@ class RemoteObject extends Object {
   }
 
   /**
-   * Given an array of keys, remove the headers.
+   * Given an array of header names.
    *
+   * This will remove the given headers from the existing headers.
+   * Both additional headers and the original headers from the
+   * server are affected here.
+   *
+   * Note that you cannot remove metadata through this mechanism,
+   * as it is managed using the metadata() methods.
+   *
+   * @attention
+   *   Many headers are generated automatically, such as
+   *   Content-Type and Content-Length. Removing these
+   *   will simply result in their being regenerated.
+   *
+   * @param array $keys
+   *   The header names to be removed.
    */
   public function removeHeaders($keys) {
     foreach ($keys as $key) {
