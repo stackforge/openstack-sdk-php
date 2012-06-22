@@ -125,7 +125,8 @@ class RemoteObject extends Object {
   public static function newFromHeaders($name, $headers, $token, $url, $cdnUrl = NULL, $cdnSslUrl = NULL) {
     $object = new RemoteObject($name);
 
-    $object->allHeaders = $headers;
+    //$object->allHeaders = $headers;
+    $object->setHeaders($headers);
 
     //throw new \Exception(print_r($headers, TRUE));
 
@@ -259,6 +260,16 @@ class RemoteObject extends Object {
     return $this->metadata;
   }
 
+  public function setHeaders($headers) {
+    $this->allHeaders = array();
+
+    foreach ($headers as $name => $value) {
+      if (strpos($name, Container::METADATA_HEADER_PREFIX) !== 0) {
+        $this->allHeaders[$name] = $value;
+      }
+    }
+  }
+
   /**
    * Get the HTTP headers sent by the server.
    *
@@ -279,7 +290,20 @@ class RemoteObject extends Object {
     // some headers that are NOT additional. But we do not know which headers are
     // additional and which are from Swift because Swift does not commit to using
     // a specific set of headers.
-    return parent::additionalHeaders() + $this->headers;
+    $additionalHeaders = parent::additionalHeaders() + $this->headers;
+
+    return $additionalHeaders;
+  }
+
+  /**
+   * Given an array of keys, remove the headers.
+   *
+   */
+  public function removeHeaders($keys) {
+    foreach ($keys as $key) {
+      unset($this->allHeaders[$key]);
+      unset($this->additionalHeaders[$key]);
+    }
   }
 
   /**
