@@ -150,7 +150,7 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     $headers = $obj->headers();
     $this->assertTrue(count($headers) > 1);
 
-    fwrite(STDOUT, print_r($headers, TRUE));
+    //fwrite(STDOUT, print_r($headers, TRUE));
 
     $this->assertNotEmpty($headers['Date']);
 
