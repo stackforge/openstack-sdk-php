@@ -125,7 +125,8 @@ class RemoteObject extends Object {
   public static function newFromHeaders($name, $headers, $token, $url, $cdnUrl = NULL, $cdnSslUrl = NULL) {
     $object = new RemoteObject($name);
 
-    $object->allHeaders = $headers;
+    //$object->allHeaders = $headers;
+    $object->setHeaders($headers);
 
     //throw new \Exception(print_r($headers, TRUE));
 
@@ -259,6 +260,16 @@ class RemoteObject extends Object {
     return $this->metadata;
   }
 
+  public function setHeaders($headers) {
+    $this->allHeaders = array();
+
+    foreach ($headers as $name => $value) {
+      if (strpos($name, Container::METADATA_HEADER_PREFIX) !== 0) {
+        $this->allHeaders[$name] = $value;
+      }
+    }
+  }
+
   /**
    * Get the HTTP headers sent by the server.
    *
@@ -272,6 +283,41 @@ class RemoteObject extends Object {
    */
   public function headers() {
     return $this->allHeaders;
+  }
+
+  public function additionalHeaders() {
+    // Any additional headers will be set. Note that $this->headers will contain
+    // some headers that are NOT additional. But we do not know which headers are
+    // additional and which are from Swift because Swift does not commit to using
+    // a specific set of headers.
+    $additionalHeaders = parent::additionalHeaders() + $this->headers;
+
+    return $additionalHeaders;
+  }
+
+  /**
+   * Given an array of header names.
+   *
+   * This will remove the given headers from the existing headers.
+   * Both additional headers and the original headers from the
+   * server are affected here.
+   *
+   * Note that you cannot remove metadata through this mechanism,
+   * as it is managed using the metadata() methods.
+   *
+   * @attention
+   *   Many headers are generated automatically, such as
+   *   Content-Type and Content-Length. Removing these
+   *   will simply result in their being regenerated.
+   *
+   * @param array $keys
+   *   The header names to be removed.
+   */
+  public function removeHeaders($keys) {
+    foreach ($keys as $key) {
+      unset($this->allHeaders[$key]);
+      unset($this->additionalHeaders[$key]);
+    }
   }
 
   /**

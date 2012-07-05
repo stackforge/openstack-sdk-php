@@ -53,6 +53,10 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     $object->setMetadata(array(self::FMETA_NAME => self::FMETA_VALUE));
     $object->setDisposition(self::FDISPOSITION);
     $object->setEncoding(self::FENCODING);
+    $object->setAdditionalHeaders(array(
+      'Access-Control-Allow-Origin' => 'http://example.com',
+      'Access-control-allow-origin' => 'http://example.com',
+    ));
 
     // Need some headers that Swift actually stores and returns. This
     // one does not seem to be returned ever.
@@ -145,6 +149,15 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
   public function testHeaders($obj) {
     $headers = $obj->headers();
     $this->assertTrue(count($headers) > 1);
+
+    fwrite(STDOUT, print_r($headers, TRUE));
+
+    $this->assertNotEmpty($headers['Date']);
+
+    $obj->removeHeaders(array('Date'));
+
+    $headers = $obj->headers();
+    $this->assertFalse(isset($headers['Date']));
 
     // Swift doesn't return CORS headers even though it is supposed to.
     //$this->assertEquals(self::FCORS_VALUE, $headers[self::FCORS_NAME]);
