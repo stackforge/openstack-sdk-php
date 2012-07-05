@@ -58,6 +58,10 @@ class InstanceDetails {
       $o->password = $json['credential']['password'];
     }
 
+    if (!empty($json['name'])) {
+      $o->name = $json['name'];
+    }
+
     return $o;
   }
 
@@ -138,8 +142,8 @@ class InstanceDetails {
    * is returned.
    *
    * @attention
-   * In version 1.0 of the DBaaS protocol, this is ONLY available immediately
-   * after creation or from the results of an Instance::describe() call.
+   * In version 1.0 of the DBaaS protocol, this is ONLY available after the
+   * DB instance has been brought all the way up.
    *
    * This returns the DNS name of the host (or possibly an IP address).
    *

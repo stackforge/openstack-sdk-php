@@ -68,7 +68,8 @@ class DBaaSInstanceTest extends DBaaSTestCase {
     $this->assertNotEmpty($details->username());
     $this->assertNotEmpty($details->password());
     $this->assertNotEmpty($details->id());
-    $this->assertNotEmpty($details->hostname());
+    // This is now no longer returned from a create().
+    //$this->assertNotEmpty($details->hostname());
     $this->assertNotEmpty($details->createdOn());
     $this->assertEquals($dbName, $details->name());
 
@@ -101,7 +102,8 @@ class DBaaSInstanceTest extends DBaaSTestCase {
     $this->assertEmpty($details->username());
     $this->assertEmpty($details->password());
 
-    $this->assertNotEmpty($details->hostname());
+    // This is no longer available until after the server is up.
+    //$this->assertNotEmpty($details->hostname());
     $this->assertNotEmpty($details->createdOn());
 
     $this->assertEquals($db->id(), $details->id());
