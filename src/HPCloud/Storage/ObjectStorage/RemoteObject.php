@@ -65,7 +65,7 @@ class RemoteObject extends Object {
    * serve as a good indicator that the object does not have all
    * attributes set.
    */
-  protected $allHeaders;
+  protected $allHeaders = array();
 
   protected $cdnUrl;
   protected $cdnSslUrl;
@@ -285,14 +285,39 @@ class RemoteObject extends Object {
     return $this->allHeaders;
   }
 
-  public function additionalHeaders() {
+  public function additionalHeaders($mergeAll = FALSE) {
     // Any additional headers will be set. Note that $this->headers will contain
     // some headers that are NOT additional. But we do not know which headers are
     // additional and which are from Swift because Swift does not commit to using
     // a specific set of headers.
-    $additionalHeaders = parent::additionalHeaders() + $this->headers;
+    if ($mergeAll) {
+      $additionalHeaders = parent::additionalHeaders() + $this->allHeaders;
+      $this->filterHeaders($additionalHeaders);
+    }
+    else {
+      $additionalHeaders = parent::additionalHeaders();
+    }
 
     return $additionalHeaders;
+  }
+
+  protected $reservedHeaders = array(
+    'etag' => TRUE, 'content-length' => TRUE, 
+    'x-auth-token' => TRUE,
+    'transfer-encoding' => TRUE,
+    'x-trans-id' => TRUE,
+  );
+  public function filterHeaders(&$headers) {
+    $unset = array();
+    foreach ($headers as $name => $value) {
+      $lower = strtolower($name);
+      if (isset($this->reservedHeaders[$lower])) {
+        $unset[] = $name;
+      }
+    }
+    foreach ($unset as $u) {
+      unset($headers[$u]);
+    }
   }
 
   /**
