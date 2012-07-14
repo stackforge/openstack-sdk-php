@@ -513,7 +513,7 @@ class Container implements \Countable, \IteratorAggregate {
 
     if (empty($file)) {
       // Now build up the rest of the headers:
-      $headers['ETag'] = $obj->eTag();
+      $headers['Etag'] = $obj->eTag();
 
       // If chunked, we set transfer encoding; else
       // we set the content length.
@@ -541,7 +541,7 @@ class Container implements \Countable, \IteratorAggregate {
       $hash = hash_init('md5');
       hash_update_stream($hash, $file);
       $etag = hash_final($hash);
-      $headers['ETag'] = $etag;
+      $headers['Etag'] = $etag;
 
       // Not sure if this is necessary:
       rewind($file);
