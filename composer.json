@@ -3,7 +3,7 @@
   "description": "Access HPCloud and OpenStack services in PHP.",
   "type": "library",
   "keywords": ["openstack","hpcloud","cloud","swift","nova"],
-  "license": "MIT-like",
+  "license": "MIT",
   "homepage": "http://hpcloud.com",
   "authors": [
     {
