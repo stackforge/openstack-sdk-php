@@ -148,7 +148,7 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public static function objectUrl($base, $oname) {
     if (strpos($oname, '/') === FALSE) {
-      return $base . '/' . $oname;
+      return $base . '/' . rawurlencode($oname);
     }
 
     $oParts = explode('/', $oname);
