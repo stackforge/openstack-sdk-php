@@ -7,6 +7,7 @@ You can use this library to:
 * Authenticate your application to the HP Cloud.
 * Interact with Object Storage (aka Swift).
 * Interact with CDN service (Content Delivery Network).
+* Interact with our relational database (DBaaS and MySQL compatible)
 
 Coming soon:
 
@@ -24,6 +25,10 @@ Coming soon:
 
 We also have support for using PHP's native HTTP stream wrapper, but it
 is not as reliable. We recommend cURL.
+
+## Warnings
+
+The API for services in beta (e.g., DBaaS) should be considered beta as well.
 
 ## Installation
 
