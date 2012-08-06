@@ -59,7 +59,7 @@ abstract class DBaaSTestCase extends \HPCloud\Tests\TestCase {
     }
   }
 
-  public function waitUntilRunning($inst, &$details, $verbose = FALSE, $max = 15, $sleep = 5) {
+  public function waitUntilRunning($inst, &$details, $verbose = FALSE, $max = 30, $sleep = 5) {
     if ($details->isRunning()) {
       return TRUE;
     }
@@ -77,7 +77,7 @@ abstract class DBaaSTestCase extends \HPCloud\Tests\TestCase {
       }
     }
 
-    throw \Exception(sprintf("Instance did not start after %d attempts (%d seconds)", $max, $max * $sleep));
+    throw new \Exception(sprintf("Instance did not start after %d attempts (%d seconds)", $max, $max * $sleep));
 
   }
 }
