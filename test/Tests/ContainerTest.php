@@ -190,6 +190,14 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     // Overwrite the copy:
     $object->setContent('HI');
     $this->assertEquals('HI', $object->content());
+
+    // Make sure this throws a 404.
+    try {
+      $foo = $container->object('no/such');
+    }
+    catch (\HPCloud\Exception $e) {
+      $this->assertInstanceOf('\HPCloud\Transport\FileNotFoundException', $e);
+    }
   }
 
   /**

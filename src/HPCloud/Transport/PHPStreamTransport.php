@@ -75,7 +75,11 @@ class PHPStreamTransport implements Transporter {
       $err = error_get_last();
 
       if (empty($err['message'])) {
-        throw new \HPCloud\Exception("An unknown exception occurred while sending a request.");
+        // FIXME: Under certain circumstances, all this really means is that
+        // there is a 404. So we pretend that it's always a 404.
+        // throw new \HPCloud\Exception("An unknown exception occurred while sending a request.");
+        $msg = "File not found, perhaps due to a network failure.";
+        throw new \HPCloud\Transport\FileNotFoundException($msg);
       }
       $this->guessError($err['message'], $uri, $method);
 
