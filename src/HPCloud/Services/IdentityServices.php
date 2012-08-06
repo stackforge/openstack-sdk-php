@@ -209,7 +209,7 @@ class IdentityServices /*implements Serializable*/ {
     $parts = parse_url($url);
 
     if (!empty($parts['path'])) {
-      $this->endpoint = $url;
+      $this->endpoint = rtrim($url, '/');
     }
     else {
       $this->endpoint = rtrim($url, '/') . '/v' . self::API_VERSION;

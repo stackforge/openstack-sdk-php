@@ -53,7 +53,9 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $endpoint = self::conf('hpcloud.identity.url');
     $service = new IdentityServices($endpoint);
 
-    $this->assertStringStartsWith($endpoint, $service->url());
+    // If there is a trailing / we remove that from the endpoint. Our calls add
+    // the / back where appropriate.
+    $this->assertStringStartsWith(rtrim($endpoint, '/'), $service->url());
 
     return $service;
   }
