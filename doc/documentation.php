@@ -171,12 +171,16 @@
  *
  * @code
  * <?php
+ * // The explicit way:
  * // Find out where our ObjectStorage instance lives:
- * $storageList = $identity->serviceCatalog('object-storage');
- * $objectStorageUrl = storageList[0]['endpoints'][0]['publicURL'];
+ * // $storageList = $identity->serviceCatalog('object-storage');
+ * // $objectStorageUrl = storageList[0]['endpoints'][0]['publicURL'];
  *
  * // Create a new ObjectStorage instance:
- * $objectStore = new \HPCloud\Storage\ObjectStorage($token, $objectStorageUrl);
+ * // $objectStore = new \HPCloud\Storage\ObjectStorage($token, $objectStorageUrl);
+ *
+ * // Or let ObjectStorage figure out which instance to use:
+ * $objectStore = \HPCloud\Storage\ObjectStorage::newFromIdentity($identity);
  *
  * // List containers:
  * print_r($objectStore->containers());

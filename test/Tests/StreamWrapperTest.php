@@ -42,6 +42,46 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
   const FNAME = 'streamTest.txt';
   const FTYPE = 'application/x-tuna-fish; charset=iso-8859-13';
 
+  /**
+   * Cleaning up the test container so we can reuse it for other tests.
+   */
+  public static function tearDownAfterClass() {
+
+    // First we get an identity
+    $user = self::conf('hpcloud.identity.username');
+    $pass = self::conf('hpcloud.identity.password');
+    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $url = self::conf('hpcloud.identity.url');
+
+    $ident = new \HPCloud\Services\IdentityServices($url);
+
+    $token = $ident->authenticateAsUser($user, $pass, $tenantId);
+
+    // Then we need to get an instance of storage
+    $store = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
+
+
+    // Delete the container and all the contents.
+    $cname = self::$settings['hpcloud.swift.container'];
+    
+    try {
+      $container = $store->container($cname);
+    }
+    // The container was never created.
+    catch (\HPCloud\Transport\FileNotFoundException $e) {
+      return;
+    }
+
+    foreach ($container as $object) {
+      try {
+        $container->delete($object->name());
+      }
+      catch (\Exception $e) {}
+    }
+
+    $store->deleteContainer($cname);
+  }
+
   protected function newUrl($objectName) {
     $scheme = StreamWrapper::DEFAULT_SCHEME;
     $cname   = self::$settings['hpcloud.swift.container'];
@@ -126,7 +166,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
       'account' => self::$settings['hpcloud.identity.account'],
       'key'     => self::$settings['hpcloud.identity.secret'],
       'endpoint' => self::$settings['hpcloud.identity.url'],
-      'tenantit' => self::$settings['hpcloud.identity.tenantId'],
+      'tenantid' => self::$settings['hpcloud.identity.tenantId'],
       'token' => $this->objectStore()->token(),
       'swift_endpoint' => $this->objectStore()->url(),
     );

@@ -269,6 +269,9 @@ Now we can get a new HPCloud::Storage::ObjectStorage instance:
 $catalog = $idService->serviceCatalog();
 
 $store = ObjectStorage::newFromServiceCatalog($catalog, $token);
+
+// UPDATE: As of Beta 6, you can use newFromIdentity():
+// $store = ObjectStorage::newFromIdentity($idService);
 ?>
 ~~~
 

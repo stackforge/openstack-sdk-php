@@ -131,4 +131,24 @@ class ObjectTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals('Leibniz', $got['Gottfried']);
 
   }
+
+  public function testAdditionalHeaders() {
+    $o = $this->basicObjectFixture();
+
+    $extra = array(
+      'a' => 'b',
+      'aaa' => 'bbb',
+      'ccc' => 'bbb',
+    );
+    $o->setAdditionalHeaders($extra);
+
+    $got = $o->additionalHeaders();
+    $this->assertEquals(3, count($got));
+
+    $o->removeHeaders(array('ccc'));
+
+
+    $got = $o->additionalHeaders();
+    $this->assertEquals(2, count($got));
+  }
 }

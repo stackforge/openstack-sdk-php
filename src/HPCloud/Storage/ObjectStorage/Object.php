@@ -452,6 +452,28 @@ class Object {
   }
 
   /**
+   * Remove headers.
+   *
+   * This takes an array of header names, and removes
+   * any matching headers. Typically, only headers set
+   * by setAdditionalHeaders() are removed from an Object.
+   * (RemoteObject works differently).
+   *
+   * @attention
+   *   Many headers are generated automatically, such as
+   *   Content-Type and Content-Length. Removing these
+   *   will simply result in their being regenerated.
+   *
+   * @param array $keys
+   *   The header names to be removed.
+   */
+  public function removeHeaders($keys) {
+    foreach ($keys as $k) {
+      unset($this->additionalHeaders[$k]);
+    }
+  }
+
+  /**
    * This object should be transmitted in chunks.
    *
    * Indicates whether or not this object should be transmitted as

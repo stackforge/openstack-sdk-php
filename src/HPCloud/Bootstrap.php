@@ -29,6 +29,9 @@ SOFTWARE.
 
 namespace HPCloud;
 
+use HPCloud\Services\IdentityServices;
+use HPCloud\Exception;
+
 /**
  * Bootstrapping services.
  *
@@ -127,6 +130,12 @@ class Bootstrap {
     // Identity Services REST service.
     'transport' => '\HPCloud\Transport\CURLTransport',
   );
+
+  /**
+   * An identity services object created from the global settings.
+   * @var object HPCloud::Services::IdentityServices
+   */
+  public static $identity = NULL;
 
   /**
    * Add the autoloader to PHP's autoloader list.
@@ -312,5 +321,57 @@ class Bootstrap {
    */
   public static function hasConfig($name) {
     return isset(self::$config[$name]);
+  }
+
+  /**
+   * Get a HPCloud::Services::IdentityService object from the bootstrap config.
+   *
+   * A factory helper function that uses the bootstrap configuration to create
+   * a ready to use HPCloud::Services::IdentityService object.
+   *
+   * @param bool $force
+   *   Whether to force the generation of a new object even if one is already
+   *   cached.
+   * @retval HPCloud::Services::IdentityService
+   *   An authenticated ready to use HPCloud::Services::IdentityService object.
+   * @throws HPCloud::Exception
+   *   When the needed configuration to authenticate is not available.
+   */
+  public static function identity($force = FALSE) {
+
+    // If we already have an identity make sure the token is not expired.
+    if ($force || is_null(self::$identity) || self::$identity->isExpired()) {
+
+      // Make sure we have an endpoint to use
+      if (!self::hasConfig('endpoint')) {
+        throw new Exception('Unable to authenticate. No endpoint supplied.');
+      }
+
+      // Neither user nor account can be an empty string, so we need
+      // to do more checking than self::hasConfig(), which returns TRUE
+      // if an item exists and is an empty string.
+      $user = self::config('username', NULL);
+      $account = self::config('account', NULL);
+
+      // Check if we have a username/password
+      if (!empty($user) && self::hasConfig('password')) {
+        $is = new IdentityServices(self::config('endpoint'));
+        $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', NULL), self::config('tenantname', NULL));
+        self::$identity = $is;
+      }
+
+      // Otherwise we go with access/secret keys
+      elseif (!empty($account) && self::hasConfig('secret')) {
+        $is = new IdentityServices(self::config('endpoint'));
+        $is->authenticateAsAccount($account, self::config('secret'), self::config('tenantid', NULL), self::config('tenantname', NULL));
+        self::$identity = $is;
+      }
+
+      else {
+        throw new Exception('Unable to authenticate. No account credentials supplied.');
+      }
+    }
+
+    return self::$identity;
   }
 }

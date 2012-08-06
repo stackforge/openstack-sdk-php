@@ -164,6 +164,24 @@ class ObjectStorage {
   }
 
   /**
+   * Given an IdentityServices instance, create an ObjectStorage instance.
+   *
+   * This constructs a new ObjectStorage from an authenticated instance
+   * of an HPCloud::Services::IdentityServices object.
+   *
+   * @param HPCloud::Services::IdentityServices $identity
+   *   An identity services object that already has a valid token and a
+   *   service catalog.
+   * @retval object ObjectStorage
+   *   A new ObjectStorage instance.
+   */
+  public static function newFromIdentity($identity) {
+    $cat = $identity->serviceCatalog();
+    $tok = $identity->token();
+    return self::newFromServiceCatalog($cat, $tok);
+  }
+
+  /**
    * Given a service catalog and an token, create an ObjectStorage instance.
    *
    * The IdentityServices object contains a service catalog listing all of the
