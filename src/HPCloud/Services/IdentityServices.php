@@ -268,11 +268,10 @@ class IdentityServices /*implements Serializable*/ {
    *   to the underlying problem.
    */
   public function authenticate(array $ops) {
-    $url = $this->url() . '/tokens';
+    $url = $this->url() . 'tokens';
     $envelope = array(
       'auth' => $ops,
     );
-
 
     $body = json_encode($envelope);
 
@@ -731,7 +730,7 @@ class IdentityServices /*implements Serializable*/ {
    *   to the underlying problem.
    */
   public function rescopeUsingTenantId($tenantId) {
-    $url = $this->url() . '/tokens';
+    $url = $this->url() . 'tokens';
     $token = $this->token();
     $data = array(
       'auth' => array(
@@ -788,7 +787,7 @@ class IdentityServices /*implements Serializable*/ {
    *   to the underlying problem.
    */
   public function rescopeUsingTenantName($tenantName) {
-    $url = $this->url() . '/tokens';
+    $url = $this->url() . 'tokens';
     $token = $this->token();
     $data = array(
       'auth' => array(
