@@ -99,6 +99,8 @@ class DBaaSInstanceTest extends DBaaSTestCase {
     $details = $this->inst()->describe($db->id());
     $this->assertInstanceOf('\HPCloud\Services\DBaaS\InstanceDetails', $details);
 
+    $db->setHostname($details->hostname());
+
     $this->assertEmpty($details->username());
     $this->assertEmpty($details->password());
 
@@ -175,7 +177,7 @@ class DBaaSInstanceTest extends DBaaSTestCase {
       );
     }
 
-    $affected = $conn->execute('SELECT 1');
+    $affected = $conn->exec('SELECT 1');
 
     $this->assertEquals(0, $affected, "Connect and run a SELECT.");
 

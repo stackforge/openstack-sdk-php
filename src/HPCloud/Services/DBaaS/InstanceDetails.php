@@ -41,7 +41,7 @@ class InstanceDetails {
 
   public function newFromJSON($json) {
 
-    // fwrite(STDOUT, json_encode($json));
+    //fwrite(STDOUT, json_encode($json));
 
     $o = new InstanceDetails($json['name'], $json['id']);
     $o->links = $json['links'];
@@ -155,6 +155,22 @@ class InstanceDetails {
   }
 
   /**
+   * Set the hostname.
+   *
+   * @param string $hostname
+   *   The hostname for this server.
+   *
+   * @retval HPCloud::Services::DBaaS::InstanceDetails
+   * @return \HPCloud\Services\DBaaS\InstanceDetails
+   *   $this so the method can be used in chaining.
+   */
+  public function setHostname($hostname) {
+    $this->hostname = $hostname;
+
+    return $this;
+  }
+
+  /**
    * The username field, if available.
    *
    * @attention
@@ -166,6 +182,23 @@ class InstanceDetails {
   public function username() {
     return $this->username;
   }
+
+  /**
+   * Set the username.
+   *
+   * @param string $username
+   *   The username for this server.
+   *
+   * @retval HPCloud::Services::DBaaS::InstanceDetails
+   * @return \HPCloud\Services\DBaaS\InstanceDetails
+   *   $this so the method can be used in chaining.
+   */
+  public function setUsername($username) {
+    $this->username = $username;
+
+    return $this;
+  }
+
   /**
    * The password field, if available.
    *
@@ -180,6 +213,23 @@ class InstanceDetails {
   public function password() {
     return $this->password;
   }
+
+  /**
+   * Set the password.
+   *
+   * @param string $password
+   *   The password for this server.
+   *
+   * @retval HPCloud::Services::DBaaS::InstanceDetails
+   * @return \HPCloud\Services\DBaaS\InstanceDetails
+   *   $this so the method can be used in chaining.
+   */
+  public function setPassword($password) {
+    $this->password = $password;
+
+    return $this;
+  }
+
   /**
    * An array of links about this database.
    *
@@ -238,6 +288,5 @@ class InstanceDetails {
     return $dsn;
 
   }
-
 
 }

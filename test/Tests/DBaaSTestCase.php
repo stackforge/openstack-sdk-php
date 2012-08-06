@@ -59,10 +59,13 @@ abstract class DBaaSTestCase extends \HPCloud\Tests\TestCase {
     }
   }
 
-  public function waitUntilRunning($inst, &$details, $verbose = FALSE, $max = 30, $sleep = 5) {
+  public function waitUntilRunning($inst, &$details, $verbose = FALSE, $max = 120, $sleep = 5) {
     if ($details->isRunning()) {
       return TRUE;
     }
+
+    $username = $details->username();
+    $password = $details->password();
 
     for ($i = 0; $i < $max; ++$i) {
 
@@ -71,6 +74,8 @@ abstract class DBaaSTestCase extends \HPCloud\Tests\TestCase {
 
       sleep($sleep);
       $details = $inst->describe($details->id());
+      $details->setPassword($password)
+        ->setUsername($username);
 
       if ($details->isRunning()) {
         return TRUE;
