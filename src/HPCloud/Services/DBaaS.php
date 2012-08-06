@@ -71,6 +71,10 @@ use \HPCloud\Services\DBaaS\Snapshot;
  */
 class DBaaS {
 
+  const SERVICE_TYPE = 'hpext:dbaas';
+
+  const API_VERSION = '1';
+
   /**
    * The auth token for the current session.
    */
@@ -88,23 +92,20 @@ class DBaaS {
 
   public static function newFromIdentity($identity) {
 
-    $endpoint = 'https://db-aw2az2-api0001.uswest.hpcloud.net:8779/v1.0/' . $identity->tenantId();
-    $dbaas = new DBaaS($identity->token(), $endpoint, $identity->tenantName());
+    $catalog = $identity->serviceCatalog();
 
-    return $dbaas;
-    /*
-    return self::newFromServiceCatalog(
-      $identity->serviceCatalog(),
-      $identity->token(),
-      $identity->tenantName()
-    );
-     */
-  }
+    $c = count($catalog);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
+        foreach ($catalog[$i]['endpoints'] as $endpoint) {
+          if (isset($endpoint['publicURL'])) {
+            $dbaas = new DBaaS($identity->token(), $endpoint['publicURL'] . '/' . $identity->tenantId(), $identity->tenantName());
 
-  public static function newFromServiceCatalog($catalog, $token, $projectId) {
-    // FIXME: Temporary until DBaaS lands in the service catalog.
-    $endpoint = 'https://region-a.geo-1.dbaas-mysql.hpcloudsvc.com:443/v1.0/';
-    return new DBaaS($token, $endpoint, $projectId);
+            return $dbaas;
+          }
+        }
+      }
+    }
   }
 
   /**

@@ -57,18 +57,7 @@ class DBaaSTest extends \HPCloud\Tests\TestCase {
     $dbaas = DBaaS::newFromIdentity($ident);
     $this->assertInstanceOf("\HPCloud\Services\DBaaS", $dbaas);
     $this->assertStringEndsWith($ident->tenantId(), $dbaas->url());
-    $this->markTestIncomplete();
-  }
-
-  public function testNewFromServiceCatalog() {
-    $ident = $this->identity();
-    $dbaas = DBaaS::newFromServiceCatalog(
-      $ident->serviceCatalog(),
-      $ident->token(),
-      $ident->tenantName()
-    );
-    $this->assertInstanceOf("\HPCloud\Services\DBaaS", $dbaas);
-    $this->assertEquals($ident->tenantName(), $dbaas->projectId());
+    // $this->markTestIncomplete();
   }
 
   public function testConstructor() {
