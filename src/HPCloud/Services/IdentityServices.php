@@ -323,7 +323,7 @@ class IdentityServices /*implements Serializable*/ {
    *   HPCloud console.
    * @param string $tenantName
    *   The tenant Name for this account. This can be obtained through the
-   *   HPCloud console.
+   *   HPCloud console. NOTE: This is currently unused.
    * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
    * @throws HPCloud::Exception
@@ -343,10 +343,12 @@ class IdentityServices /*implements Serializable*/ {
       $ops['tenantId'] = $tenantId;
     }
 
+    // Not currently working.
     // If a tenant name is provided, add it to the auth array.
-    if (!empty($tenantName)) {
-      $ops['tenantName'] = $tenantName;
-    }
+    //if (!empty($tenantName)) {
+    //  $ops['tenantName'] = $tenantName;
+    //}
+
 
     return $this->authenticate($ops);
   }
@@ -402,9 +404,9 @@ class IdentityServices /*implements Serializable*/ {
     if (!empty($tenantId)) {
       $ops['tenantId'] = $tenantId;
     }
-    if (!empty($tenantName)) {
-      $ops['tenantName'] = $tenantName;
-    }
+    //if (!empty($tenantName)) {
+    //  $ops['tenantName'] = $tenantName;
+    //}
 
     return $this->authenticate($ops);
   }
