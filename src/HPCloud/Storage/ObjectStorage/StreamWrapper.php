@@ -1320,6 +1320,10 @@ class StreamWrapper {
    *
    * @param string $mode
    *   The mode string, e.g. `r+` or `wb`.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::StreamWrapper
+   * @return \HPCloud\Storage\ObjectStorage\StreamWrapper
+   *   $this so the method can be used in chaining.
    */
   protected function setMode($mode) {
     $mode = strtolower($mode);
@@ -1391,6 +1395,7 @@ class StreamWrapper {
 
     }
 
+    return $this;
   }
 
   /**

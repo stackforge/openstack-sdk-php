@@ -268,6 +268,8 @@ class RemoteObject extends Object {
         $this->allHeaders[$name] = $value;
       }
     }
+
+    return $this;
   }
 
   /**
@@ -478,9 +480,14 @@ class RemoteObject extends Object {
    * @param boolean $enabled
    *   If this is TRUE, caching will be enabled. If this is FALSE,
    *   caching will be disabled.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this so the method can be used in chaining.
    */
   public function setCaching($enabled) {
     $this->caching = $enabled;
+    return $this;
   }
 
   /**
@@ -518,9 +525,14 @@ class RemoteObject extends Object {
    *   If this is TRUE, content verification is performed. The content
    *   is hashed and checked against a server-supplied MD5 hashcode. If
    *   this is FALSE, no checking is done.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this so the method can be used in chaining.
    */
   public function setContentVerification($enabled) {
     $this->contentVerification = $enabled;
+    return $this;
   }
 
   /**

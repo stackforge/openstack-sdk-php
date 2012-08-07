@@ -389,5 +389,7 @@ class CURLTransport implements Transporter {
     }
 
     curl_setopt($curl, CURLOPT_HTTPHEADER, $buffer);
+
+    return $this;
   }
 }

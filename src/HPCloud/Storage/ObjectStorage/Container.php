@@ -412,9 +412,15 @@ class Container implements \Countable, \IteratorAggregate {
    * Names can be no longer than 128 characters, and values can be no
    * more than 256. UTF-8 or ASCII characters are allowed, though ASCII
    * seems to be preferred.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Container
+   * @return \HPCloud\Storage\ObjectStorage\Container
+   *   $this so the method can be used in chaining.
    */
   public function setMetadata($metadata) {
     $this->metadata = $metadata;
+
+    return $this;
   }
 
   /**

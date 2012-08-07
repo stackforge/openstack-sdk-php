@@ -147,9 +147,14 @@ class Object {
    *
    * @param array $array
    *   An associative array of metadata names to values.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setMetadata(array $array) {
     $this->metadata = $array;
+    
     return $this;
   }
 
@@ -178,6 +183,10 @@ class Object {
    *
    * @param string $name
    *   A file or object name.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setName($name) {
     $this->name = $name;
@@ -223,6 +232,10 @@ class Object {
    *
    * @param string $type
    *   A valid content type.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setContentType($type) {
     $this->contentType = $type;
@@ -261,6 +274,10 @@ class Object {
    * @param string $type
    *   The content type (MIME type). This can be set here for
    *   convenience, or you can call setContentType() directly.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setContent($content, $type = NULL) {
     $this->content = $content;
@@ -348,9 +365,15 @@ class Object {
    *
    * @param string $encoding
    *   A valid encoding type.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setEncoding($encoding) {
     $this->contentEncoding = $encoding;
+
+    return $this;
   }
 
   /**
@@ -386,9 +409,15 @@ class Object {
    * @param string $disposition
    *   A valid disposition declaration. These are defined in various
    *   HTTP specifications.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setDisposition($disposition) {
     $this->contentDisposition = $disposition;
+
+    return $this;
   }
 
   /**
@@ -436,9 +465,14 @@ class Object {
    *   An associative array where each name is an HTTP header name, and
    *   each value is the HTTP header value. No encoding or escaping is
    *   done.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setAdditionalHeaders($headers) {
     $this->additionalHeaders = $headers;
+    return $this;
   }
 
   /**
