@@ -293,8 +293,8 @@ class PHPStreamTransport implements Transporter {
         $out = sprintf("Content-Type: %s\n", $msg);
         break;
       case STREAM_NOTIFY_PROGRESS:
-        fwrite($msg . PHP_EOL);
-        $out = sprintf("%d bytes of %s\n", $bytes, $filesize);
+        $out = sprintf($msg . PHP_EOL);
+        $out .= sprintf("%d bytes of %s\n", $bytes, $filesize);
         break;
       default:
         $out = sprintf("Code: %d, Message: %s\n", $code, $msg);
