@@ -72,6 +72,7 @@ class Transport {
    * @endcode
    *
    * @retval HPCloud::Transport::Transporter
+   * @return \HPCloud\Transport\Transporter
    *   An initialized transporter.
    */
   public static function instance() {

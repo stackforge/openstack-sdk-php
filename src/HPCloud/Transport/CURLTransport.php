@@ -278,6 +278,7 @@ class CURLTransport implements Transporter {
    * @param resource $handle
    *   A CURL handle from curl_init().
    * @retval boolean
+   * @return boolean
    *   Returns a boolean value indicating whether or not CURL could process the
    *   request.
    */
@@ -322,6 +323,7 @@ class CURLTransport implements Transporter {
    * @param resource $file
    *   A file pointer to the file that has the headers.
    * @retval array
+   * @return array
    *   An array of headers, one header per line.
    */
   protected function fetchHeaders($file) {

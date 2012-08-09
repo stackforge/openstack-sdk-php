@@ -285,6 +285,7 @@ class Bootstrap {
    * @param mixed $default
    *   The default value to return if the name is not found.
    * @retval mixed
+   * @return mixed
    *   The value, if found; or the default, if set; or NULL.
    */
   public static function config($name = NULL, $default = NULL) {
@@ -315,6 +316,7 @@ class Bootstrap {
    * @param string $name
    *   The name of the item to check for.
    * @retval boolean
+   * @return boolean
    *   TRUE if the named option is set, FALSE otherwise. Note that the value may
    *   be falsey (FALSE, 0, etc.), but if the value is NULL, this will return
    *   false.
@@ -333,6 +335,7 @@ class Bootstrap {
    *   Whether to force the generation of a new object even if one is already
    *   cached.
    * @retval HPCloud::Services::IdentityService
+   * @return \HPCloud\Services\:IdentityService
    *   An authenticated ready to use HPCloud::Services::IdentityService object.
    * @throws HPCloud::Exception
    *   When the needed configuration to authenticate is not available.

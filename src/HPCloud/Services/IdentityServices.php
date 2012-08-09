@@ -223,6 +223,7 @@ class IdentityServices /*implements Serializable*/ {
    * URL to the one passed into the constructor.
    *
    * @retval string
+   * @return string
    *   The complete URL to the identity services endpoint.
    */
   public function url() {
@@ -258,6 +259,7 @@ class IdentityServices /*implements Serializable*/ {
    *   An associative array of authentication operations and their respective
    *   parameters.
    * @retval string
+   * @return string
    *   The token. This is returned for simplicity. The full response is used
    *   to populate this object's service catalog, etc. The token is also
    *   retrievable with token().
@@ -383,6 +385,7 @@ class IdentityServices /*implements Serializable*/ {
    *   The tenant Name for this account. This can be obtained through the
    *   HPCloud console.
    * @retval string
+   * @return string
    *   The auth token.
    * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
@@ -416,6 +419,7 @@ class IdentityServices /*implements Serializable*/ {
    * methods has been run.
    *
    * @retval string
+   * @return string
    *   The token ID to be used in subsequent calls.
    */
   public function token() {
@@ -432,6 +436,7 @@ class IdentityServices /*implements Serializable*/ {
    * run.
    *
    * @retval string
+   * @return string
    *   The tenant ID if available, or NULL.
    */
   public function tenantId() {
@@ -450,6 +455,7 @@ class IdentityServices /*implements Serializable*/ {
    * run.
    *
    * @retval string
+   * @return string
    *   The tenant name if available, or NULL.
    */
   public function tenantName() {
@@ -484,6 +490,7 @@ class IdentityServices /*implements Serializable*/ {
    * This will not be populated until after authentication has been done.
    *
    * @retval array
+   * @return array
    *   An associative array of details.
    */
   public function tokenDetails() {
@@ -498,6 +505,7 @@ class IdentityServices /*implements Serializable*/ {
    * mis-configured machine timestamp could give spurious results.
    *
    * @retval boolean
+   * @return boolean
    *   This will return FALSE if there is a current token and it has
    *   not yet expired (according to the date info). In all other cases
    *   it returns TRUE.
@@ -581,6 +589,7 @@ class IdentityServices /*implements Serializable*/ {
    * @todo Paging on the service catalog is not yet implemented.
    *
    * @retval array
+   * @return array
    *   An associative array representing
    *   the service catalog.
    */
@@ -628,6 +637,7 @@ class IdentityServices /*implements Serializable*/ {
    * This will not have data until after authentication has been done.
    *
    * @retval array
+   * @return array
    *   An associative array, as described above.
    */
   public function user() {
@@ -661,6 +671,7 @@ class IdentityServices /*implements Serializable*/ {
    * Note that this method invokes a new request against the remote server.
    *
    * @retval array
+   * @return array
    *   An indexed array of tenant info. Each entry will be an associative
    *   array containing tenant details.
    * @throws HPCloud::Transport::AuthorizationException
@@ -723,6 +734,7 @@ class IdentityServices /*implements Serializable*/ {
    *   ID will be removed.
    *
    * @retval string
+   * @return string
    *   The authentication token.
    * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.
@@ -780,6 +792,7 @@ class IdentityServices /*implements Serializable*/ {
    *   name will be removed.
    *
    * @retval string
+   * @return string
    *   The authentication token.
    * @throws HPCloud::Transport::AuthorizationException
    *   If authentication failed.

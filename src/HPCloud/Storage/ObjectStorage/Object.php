@@ -164,6 +164,7 @@ class Object {
    * This returns an associative array of all metadata for this object.
    *
    * @retval array
+   * @return array
    *   An associative array of metadata. This may be empty.
    */
   public function metadata() {
@@ -200,6 +201,7 @@ class Object {
    * using setName(), this will return the latest (overwritten) name.
    *
    * @retval string
+   * @return string
    *   The name of the object.
    */
   public function name() {
@@ -248,6 +250,7 @@ class Object {
    * This returns the currently set content type.
    *
    * @retval string
+   * @return string
    *   The content type, including any additional options.
    */
   public function contentType() {
@@ -306,6 +309,7 @@ class Object {
    * returns the entire contents of an object.
    *
    * @retval string
+   * @return string
    *   The content of the file.
    */
   public function content() {
@@ -323,7 +327,8 @@ class Object {
    * When extending this class, you should make sure to calculate the
    * content length appropriately.
    *
-   * return int
+   * @retval int
+   * @return int
    *   The length of the content, in bytes.
    */
   public function contentLength() {
@@ -341,6 +346,7 @@ class Object {
    * the entire object's content (but not the metadata or name).
    *
    * @retval string
+   * @return string
    *   An MD5 value as a string of 32 hex digits (0-9a-f).
    */
   public function eTag() {
@@ -383,6 +389,7 @@ class Object {
    * See setEncoding() for more information.
    *
    * @retval string
+   * @return string
    *   The encoding type.
    */
   public function encoding() {
@@ -426,6 +433,7 @@ class Object {
    * See setDisposition() for discussion.
    *
    * @retval string
+   * @return string
    *   The disposition string, or NULL if none is set.
    */
   public function disposition() {
@@ -524,6 +532,7 @@ class Object {
    * if this returns TRUE, contentLength() is ignored.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE to recommend chunked transfer, FALSE otherwise.
    */
   public function isChunked() {

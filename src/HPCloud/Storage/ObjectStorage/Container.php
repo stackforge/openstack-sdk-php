@@ -110,6 +110,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $prefix
    *   A prefix for the metadata headers.
    * @retval array
+   * @return array
    *   An array of headers.
    * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e635
    * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e700
@@ -143,6 +144,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $oname
    *   The name of the object.
    * @retval string
+   * @return string
    *   The URL to the object. Characters that need escaping will be escaped,
    *   while slash characters are not. Thus, the URL will look pathy.
    */
@@ -179,6 +181,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $prefix
    *   The prefix on metadata headers.
    * @retval array
+   * @return array
    *   An associative array of name/value attribute pairs.
    */
   public static function extractHeaderAttributes($headers, $prefix = NULL) {
@@ -252,7 +255,8 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $url
    *   The base URL. The container name is automatically appended to
    *   this at construction time.
-   * @retval Container
+   * @retval HPCloud::Storage::ObjectStorage::Container
+   * @return \HPCloud\Storage\ObjectStorage\Container
    *   The Container object, initialized and ready for use.
    */
   public static function newFromResponse($name, $response, $token, $url) {
@@ -348,6 +352,7 @@ class Container implements \Countable, \IteratorAggregate {
    * Get the name of this container.
    *
    * @retval string
+   * @return string
    *   The name of the container.
    */
   public function name() {
@@ -358,6 +363,7 @@ class Container implements \Countable, \IteratorAggregate {
    * Get the number of bytes in this container.
    *
    * @retval int
+   * @return int
    *   The number of bytes in this container.
    */
   public function bytes() {
@@ -383,6 +389,7 @@ class Container implements \Countable, \IteratorAggregate {
    * directly does.
    *
    * @retval array
+   * @return array
    *   An array of metadata name/value pairs.
    */
   public function metadata() {
@@ -436,6 +443,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @endcode
    *
    * @retval int
+   * @return int
    *   The number of items in this container.
    */
   public function count() {
@@ -458,6 +466,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   An optional file argument that, if set, will be treated as the
    *   contents of the object.
    * @retval boolean
+   * @return boolean
    *   TRUE if the object was saved.
    * @throws HPCloud::Transport::LengthRequiredException
    *   if the Content-Length could not be determined and chunked
@@ -577,6 +586,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   The object to update.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if the metadata was updated.
    *
    * @throws HPCloud::Transport::FileNotFoundException
@@ -695,7 +705,8 @@ class Container implements \Countable, \IteratorAggregate {
    *   If this is TRUE (the default), then SSL will always be
    *   used. If this is FALSE, then CDN-based fetching will
    *   use non-SSL, which is faster.
-   * @retval \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A remote object with the content already stored locally.
    */
   public function object($name, $requireSSL = TRUE) {
@@ -759,7 +770,8 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the object to fetch.
-   * @retval \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A remote object ready for use.
    */
   public function proxyObject($name) {
@@ -830,6 +842,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
    * @retval array
+   * @return array
    *   List of RemoteObject or Subdir instances.
    */
   public function objects($limit = NULL, $marker = NULL) {
@@ -891,6 +904,7 @@ class Container implements \Countable, \IteratorAggregate {
    *   The name of the object to start with. The query will begin with
    *   the next object AFTER this one.
    * @retval array
+   * @return array
    *   List of RemoteObject or Subdir instances.
    */
   public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $marker = NULL) {
@@ -956,6 +970,7 @@ class Container implements \Countable, \IteratorAggregate {
    * ObjectStorage::createContainer()) will be accessible by this URL.
    *
    * @retval string
+   * @return string
    *   The URL.
    */
   public function url() {
@@ -981,6 +996,7 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @todo Determine how to get the ACL from JSON data.
    * @retval \HPCloud\Storage\ObjectStorage\ACL
+   * @return HPCloud::Storage::ObjectStorage::ACL
    *   An ACL, or NULL if the ACL could not be retrieved.
    */
   public function acl() {
@@ -1117,6 +1133,7 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $name
    *   The name of the object to remove.
    * @retval boolean
+   * @return boolean
    *   TRUE if the file was deleted, FALSE if no such file is found.
    */
   public function delete($name) {

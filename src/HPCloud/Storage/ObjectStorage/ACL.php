@@ -152,6 +152,7 @@ class ACL {
    * - READ to any host, with container listings.
    *
    * @retval HPCloud::Storage::ObjectStorage::ACL
+   * @return \HPCloud\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makePublic() {
@@ -172,6 +173,7 @@ class ACL {
    * with no permissions as a private object.
    *
    * @retval HPCloud::Storage::ObjectStorage::ACL
+   * @return \HPCloud\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makeNonPublic() {
@@ -194,7 +196,8 @@ class ACL {
    *
    * @param array $headers
    *   An associative array of headers.
-   * @retval ACL
+   * @retval HPCloud::Storage::ObjectStorage::ACL
+   * @return \HPCloud\Storage\ObjectStorage\ACL
    *   A new ACL.
    */
   public static function newFromHeaders($headers) {
@@ -242,6 +245,7 @@ class ACL {
    * @param string $rule
    *   The string rule to parse.
    * @retval array
+   * @return array
    *   The rule as an array.
    */
   public static function parseRule($perm, $rule) {
@@ -392,6 +396,7 @@ class ACL {
    * Get the rules array for this ACL.
    *
    * @retval array
+   * @return array
    *   An array of associative arrays of rules.
    */
   public function rules() {
@@ -496,6 +501,7 @@ class ACL {
    * at all.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if this is private (non-public), FALSE if
    *   any permissions are granted via this ACL.
    */
@@ -544,6 +550,7 @@ class ACL {
    * a pretty string.
    *
    * @retval string
+   * @return string
    *   The ACL represented as a string.
    */
   public function __toString() {

@@ -172,7 +172,8 @@ class ObjectStorage {
    * @param HPCloud::Services::IdentityServices $identity
    *   An identity services object that already has a valid token and a
    *   service catalog.
-   * @retval object ObjectStorage
+   * @retval HPCloud::Storage::ObjectStorage
+   * @return \HPCloud\Storage\ObjectStorage
    *   A new ObjectStorage instance.
    */
   public static function newFromIdentity($identity) {
@@ -196,7 +197,8 @@ class ObjectStorage {
    *   just ObjectStorage::SERVICE_TYPE.
    * @param string $authToken
    *   The auth token returned by IdentityServices.
-   * @retval object ObjectStorage
+   * @retval HPCloud::Storage::ObjectStorage
+   * @return \HPCloud\Storage\ObjectStorage
    *   A new ObjectStorage instance.
    */
   public static function newFromServiceCatalog($catalog, $authToken) {
@@ -286,6 +288,7 @@ class ObjectStorage {
    *   If this is TRUE (default), get the URL to the SSL CDN;
    *   otherwise get the URL to the plain HTTP CDN.
    * @retval string
+   * @return string
    *   The URL to the CDN container, or NULL if no such
    *   URL is found.
    */
@@ -300,6 +303,7 @@ class ObjectStorage {
    * Get the authentication token.
    *
    * @retval string
+   * @return string
    *   The authentication token.
    */
   public function token() {
@@ -310,6 +314,7 @@ class ObjectStorage {
    * Get the URL endpoint.
    *
    * @retval string
+   * @return string
    *   The URL that is the endpoint for this service.
    */
   public function url() {
@@ -346,6 +351,7 @@ class ObjectStorage {
    *   The name of the last object seen. Used when paging.
    *
    * @retval array
+   * @return array
    *   An associative array of containers, where the key is the
    *   container's name and the value is an
    *   HPCloud::Storage::ObjectStorage::Container object. Results are
@@ -387,6 +393,7 @@ class ObjectStorage {
    * @param string $name
    *   The name of the container to load.
    * @retval HPCloud::Storage::ObjectStorage::Container
+   * @return \HPCloud\Storage\ObjectStorage\Container
    *   A container.
    * @throws HPCloud::Transport::FileNotFoundException
    *   if the named container is not found on the remote server.
@@ -422,6 +429,7 @@ class ObjectStorage {
    * @param string $name
    *   The name of the container to test.
    * @retval boolean
+   * @return boolean
    *   TRUE if the container exists, FALSE if it does not.
    * @throws HPCloud::Exception
    *   If an unexpected network error occurs.
@@ -495,6 +503,7 @@ class ObjectStorage {
    * @param array $metadata
    *   An associative array of metadata to attach to the container.
    * @retval boolean
+   * @return boolean
    *   TRUE if the container was created, FALSE if the container was not
    *   created because it already exists.
    */
@@ -558,6 +567,7 @@ class ObjectStorage {
    *   An ACL. To make the container publically readable, use
    *   ACL::makePublic().
    * @retval boolean
+   * @return boolean
    *   TRUE if the cointainer was created, FALSE otherwise.
    */
   public function changeContainerACL($name, ACL $acl) {
@@ -579,6 +589,7 @@ class ObjectStorage {
    * @param string $name
    *   The name of the container.
    * @retval boolean
+   * @return boolean
    *   TRUE if the container was deleted, FALSE if the container was not
    *   found (and hence, was not deleted).
    * @throws HPCloud::Storage::ObjectStorage::ContainerNotEmptyException
@@ -625,6 +636,7 @@ class ObjectStorage {
    * - The number of containers (`count`).
    *
    * @retval array
+   * @return array
    *  An associative array of account info. Typical keys are:
    *  - bytes: Bytes consumed by existing content.
    *  - containers: Number of containers.

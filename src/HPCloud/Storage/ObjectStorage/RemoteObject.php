@@ -210,6 +210,7 @@ class RemoteObject extends Object {
    *   (b) it mirrors non-CDN behavior. This can be turned off by setting
    *   $useSSL to FALSE.
    * @retval string
+   * @return string
    *   A URL to the object. The following considerations apply:
    *   - If the container is public, this URL can be loaded without
    *     authentication. You can, for example, pass the URL to a browser
@@ -281,6 +282,7 @@ class RemoteObject extends Object {
    * were sent from the server.
    *
    * @retval array
+   * @return array
    *   An associative array of header names and values.
    */
   public function headers() {
@@ -363,6 +365,7 @@ class RemoteObject extends Object {
    * Be wary of using this method with large files.
    *
    * @retval string
+   * @return string
    *   The contents of the file as a string.
    * @throws \HPCloud\Transport\FileNotFoundException
    *   when the requested content cannot be located on the remote
@@ -429,6 +432,7 @@ class RemoteObject extends Object {
    *   and the content will be refreshed from the server. Any
    *   local changes to the object will be discarded.
    * @retval resource
+   * @return resource
    *   A handle to the stream, which is already opened and positioned at
    *   the beginning of the stream.
    */
@@ -497,6 +501,7 @@ class RemoteObject extends Object {
    * its contents, not whether anything is actually cached.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if caching is enabled, FALSE otherwise.
    */
   public function isCaching() {
@@ -544,6 +549,7 @@ class RemoteObject extends Object {
    * supplied ETag hash.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if this is verifying, FALSE otherwise.
    */
   public function isVerifyingContent() {
@@ -622,7 +628,8 @@ class RemoteObject extends Object {
    *   cause the remote host to return the object in the response body.
    *   The response body is not handled, though. If this is set to
    *   FALSE, a HEAD request is sent, and no body is returned.
-   * @retval \HPCloud\Transport\Response
+   * @retval HPCloud::Transport::Response
+   * @return \HPCloud\Transport\Response
    *   containing the object metadata and (depending on the
    *   $fetchContent flag) optionally the data.
    */

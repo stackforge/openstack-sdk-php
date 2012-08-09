@@ -149,7 +149,9 @@ class CDN {
    *
    * @param HPCloud::Services::IdentityServices $identity
    *   The identity to use.
-   * @retval object
+   * @retval boolean
+   * @retval HPCloud::Storage::CDN
+   * @return \HPCloud\Storage\CDN|boolean
    *   A CDN object or FALSE if no CDN services could be found
    *   in the catalog.
    */
@@ -195,7 +197,9 @@ class CDN {
    *   A service catalog; see HPCloud::Services::IdentityServices::serviceCatalog().
    * @param string $token
    *   The token.
-   * @retval object
+   * @retval boolean
+   * @retval HPCloud::Storage::CDN
+   * @return boolean|\HPCloud\Storage\CDN
    *   A CDN object or FALSE if no CDN services could be found
    *   in the catalog.
    */
@@ -305,6 +309,7 @@ class CDN {
    *   If this is set to TRUE, then only containers that are
    *   CDN-enabled will be returned.
    * @retval array
+   * @return array
    *   An indexed array of associative arrays. The format of each
    *   associative array is explained on container().
    * @throws HPCloud::Exception
@@ -357,6 +362,7 @@ class CDN {
    * @param string $name
    *   The name of the container to fetch.
    * @retval array
+   * @return array
    *   An associative array in the exact format as in containers.
    */
   public function container($name) {
@@ -412,6 +418,7 @@ class CDN {
    *   If this is passed, then its value will be set to TRUE if the
    *   container was created in the CDN, or FALSE if the container
    *   already existed in CDN.
+   * @retval string
    * @return string
    *   TRUE if the container was created, FALSE if the container was already
    *   added to the CDN (and thus nothing happened).
@@ -450,6 +457,7 @@ class CDN {
    * @param array $attrs
    *   An associative array of attributes.
    * @retval boolean
+   * @return boolean
    *   TRUE if the update was successful.
    * @throws HPCloud::Exception
    *   Possibly throws one of the HTTP exceptions.
@@ -509,6 +517,7 @@ class CDN {
    * @param string $name
    *   The name of the container whose cache should be suspended.
    * @retval boolean
+   * @return boolean
    *   TRUE if the container is disabled.
    * @throws HPCloud::Exception
    *   HTTP exceptions may be thrown if an error occurs.
@@ -535,6 +544,7 @@ class CDN {
    * @param string $name
    *   The Container name.
    * @retval boolean
+   * @return boolean
    *   TRUE if the container was successfully deleted,
    *   FALSE if the container was not removed, but no
    *   error occurred.
