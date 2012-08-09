@@ -247,6 +247,10 @@ class ObjectStorage {
    * objects in CDN can be older than objects in Swift itself. For that
    * reason, CDN should not be used when a combination of read and write
    * operations occur.
+   *
+   * @retval HPCloud::Storage::ObjectStorage
+   * @return \HPCloud\Storage\ObjectStorage
+   *   $this for current object so the method can be used in chaining.
    */
   public function useCDN($cdn) {
 
@@ -270,6 +274,8 @@ class ObjectStorage {
       }
     }
     $this->cdnContainers = $buffer;
+
+    return $this;
   }
 
   public function hasCDN() {

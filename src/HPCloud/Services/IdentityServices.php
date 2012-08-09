@@ -835,6 +835,10 @@ class IdentityServices /*implements Serializable*/ {
    *
    * @param object $response HPCloud::Transport::Response
    *   A response object.
+   *
+   * @retval HPCloud::Services::IdentityServices
+   * @return \HPCloud\Services\IdentityServices
+   *   $this for the current object so it can be used in chaining.
    */
   protected function handleResponse($response) {
     $json = json_decode($response->content(), TRUE);
@@ -843,6 +847,8 @@ class IdentityServices /*implements Serializable*/ {
     $this->tokenDetails = $json['access']['token'];
     $this->userDetails = $json['access']['user'];
     $this->serviceCatalog = $json['access']['serviceCatalog'];
+
+    return $this;
   }
 
   /* Not necessary.

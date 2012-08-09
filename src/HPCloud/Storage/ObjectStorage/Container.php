@@ -214,6 +214,10 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $url
    *   The base URL. The container name is automatically appended to 
    *   this at construction time.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Comtainer
+   * @return \HPCloud\Storage\ObjectStorage\Container
+   *   A new container object.
    */
   public static function newFromJSON($jsonArray, $token, $url) {
     $container = new Container($jsonArray['name']);
@@ -1011,6 +1015,9 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * Not all containers come fully instantiated. This method is sometimes
    * called to "fill in" missing fields.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Comtainer
+   * @return \HPCloud\Storage\ObjectStorage\Container
    */
   protected function loadExtraData() {
 
@@ -1039,6 +1046,7 @@ class Container implements \Countable, \IteratorAggregate {
     $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
     $this->setMetadata(Container::extractHeaderAttributes($response->headers(), $prefix));
 
+    return $this;
   }
 
   /**

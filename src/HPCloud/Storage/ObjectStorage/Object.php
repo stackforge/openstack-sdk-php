@@ -508,11 +508,17 @@ class Object {
    *
    * @param array $keys
    *   The header names to be removed.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this for the current object so it can be used in chaining methods.
    */
   public function removeHeaders($keys) {
     foreach ($keys as $k) {
       unset($this->additionalHeaders[$k]);
     }
+
+    return $this;
   }
 
   /**
