@@ -9,6 +9,10 @@
     {
       "name": "M Butcher",
       "email": "matthew.butcher@hp.com"
+    },
+    {
+      "name": "Matt Farina",
+      "email": "matthew.farina@hp.com"
     }
   ],
   "require": {
