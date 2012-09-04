@@ -99,7 +99,7 @@ class DBaaS {
       if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
           if (isset($endpoint['publicURL'])) {
-            $dbaas = new DBaaS($identity->token(), $endpoint['publicURL'] . '/' . $identity->tenantId(), $identity->tenantName());
+            $dbaas = new DBaaS($identity->token(), $endpoint['publicURL'], $identity->tenantName());
 
             return $dbaas;
           }
