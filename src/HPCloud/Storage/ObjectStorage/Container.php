@@ -636,7 +636,7 @@ class Container implements \Countable, \IteratorAggregate {
     $sourceUrl = self::objectUrl($this->url, $obj->name());
 
     if (empty($newName)) {
-      throw new \HPCloud\Expcetion("An object name is required to copy the object.");
+      throw new \HPCloud\Exception("An object name is required to copy the object.");
     }
 
     // Figure out what container we store in.
