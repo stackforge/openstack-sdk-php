@@ -407,6 +407,7 @@ class StreamWrapper {
    * @param int $options
    *   Unused.
    * @retval boolean
+   * @return boolean
    *   TRUE if the directory is opened, FALSE otherwise.
    */
   public function dir_opendir($path, $options) {
@@ -462,6 +463,7 @@ class StreamWrapper {
    * @endcode
    *
    * @retval string
+   * @return string
    *   The name of the resource or FALSE when the directory has no more
    *   entries.
    */
@@ -562,6 +564,7 @@ class StreamWrapper {
    * @param string $path_to
    *   A swift URL to another path.
    * @retval boolean
+   * @return boolean
    *   TRUE on success, FALSE otherwise.
    */
   public function rename($path_from, $path_to) {
@@ -609,6 +612,7 @@ class StreamWrapper {
    * side effects.
    *
    * @retval resource
+   * @return resource
    *   this returns the underlying stream.
    */
   public function stream_cast($cast_as) {
@@ -662,6 +666,7 @@ class StreamWrapper {
    * See stream_seek().
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if it has reached the end, FALSE otherwise.
    */
   public function stream_eof() {
@@ -969,6 +974,7 @@ class StreamWrapper {
    * @param int $count
    *   The number of bytes to read (usually 8192).
    * @retval string
+   * @return string
    *   The data read.
    */
   public function stream_read($count) {
@@ -1034,6 +1040,7 @@ class StreamWrapper {
    * etc.) through HPCloud::Bootstrap::setConfiguration().
    *
    * @retval array
+   * @return array
    *   The stats array.
    */
   public function stream_stat() {
@@ -1052,6 +1059,7 @@ class StreamWrapper {
    * See ftell() and fseek().
    *
    * @retval int
+   * @return int
    *   The current position in the stream.
    */
   public function stream_tell() {
@@ -1068,6 +1076,7 @@ class StreamWrapper {
    * @param string $data
    *   Data to write to the stream.
    * @retval int
+   * @return int
    *   The number of bytes written. 0 indicates and error.
    */
   public function stream_write($data) {
@@ -1094,6 +1103,7 @@ class StreamWrapper {
    * @param string $path
    *   The URL.
    * @retval boolean
+   * @return boolean
    *   TRUE if the file was deleted, FALSE otherwise.
    */
   public function unlink($path) {
@@ -1320,6 +1330,10 @@ class StreamWrapper {
    *
    * @param string $mode
    *   The mode string, e.g. `r+` or `wb`.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::StreamWrapper
+   * @return \HPCloud\Storage\ObjectStorage\StreamWrapper
+   *   $this so the method can be used in chaining.
    */
   protected function setMode($mode) {
     $mode = strtolower($mode);
@@ -1391,6 +1405,7 @@ class StreamWrapper {
 
     }
 
+    return $this;
   }
 
   /**
@@ -1404,6 +1419,7 @@ class StreamWrapper {
    * @param mixed $default
    *   The default value to return if no config param was found.
    * @retval mixed
+   * @return mixed
    *   The discovered result, or $default if specified, or NULL if
    *   no $default is specified.
    */
@@ -1450,6 +1466,7 @@ class StreamWrapper {
    * @param string $url
    *   A Swift URL.
    * @retval array
+   * @return array
    *   An array as documented in parse_url().
    */
   protected function parseUrl($url) {

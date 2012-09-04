@@ -54,6 +54,7 @@ class SnapshotDetails {
    * The ID of the snapshot.
    *
    * @retval string
+   * @return string
    *   The ID.
    */
   public function id() {
@@ -66,6 +67,7 @@ class SnapshotDetails {
    * is a snapshot.
    *
    * @retval string
+   * @return string
    *   The database instance ID.
    */
   public function instanceId() {
@@ -75,6 +77,7 @@ class SnapshotDetails {
    * The data upon which this snapshot was created.
    *
    * @retval string
+   * @return string
    *   An ISO data string representing the date and time
    *   that this snapshot was created.
    */
@@ -90,6 +93,7 @@ class SnapshotDetails {
    *   The data returned from this may be in flux during the beta release
    *   of this product.
    * @retval array
+   * @return array
    *   An array of links. Typically, at least an URL to the snapshot should
    *   be provided.
    */

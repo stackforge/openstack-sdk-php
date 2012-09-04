@@ -121,6 +121,10 @@ class RemoteObject extends Object {
    *   CDN URL when requested.
    * @param string $cdnSslUrl
    *   The URL to the SSL-protected CDN version of the object.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   A new RemoteObject.
    */
   public static function newFromHeaders($name, $headers, $token, $url, $cdnUrl = NULL, $cdnSslUrl = NULL) {
     $object = new RemoteObject($name);
@@ -183,10 +187,16 @@ class RemoteObject extends Object {
    *   The URL to this object in CDN.
    * @param string $sslUrl
    *   The SSL URL to this object in CDN.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this for the current object so it can be used in chaining methods.
    */
   public function useCDN($url, $sslUrl) {
     $this->cdnUrl = $url;
     $this->cdnSslUrl = $sslUrl;
+
+    return $this;
   }
 
   /**
@@ -210,6 +220,7 @@ class RemoteObject extends Object {
    *   (b) it mirrors non-CDN behavior. This can be turned off by setting
    *   $useSSL to FALSE.
    * @retval string
+   * @return string
    *   A URL to the object. The following considerations apply:
    *   - If the container is public, this URL can be loaded without
    *     authentication. You can, for example, pass the URL to a browser
@@ -260,6 +271,13 @@ class RemoteObject extends Object {
     return $this->metadata;
   }
 
+  /**
+   * Set the headers
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this for the current object so it can be used in chaining methods.
+   */
   public function setHeaders($headers) {
     $this->allHeaders = array();
 
@@ -268,6 +286,8 @@ class RemoteObject extends Object {
         $this->allHeaders[$name] = $value;
       }
     }
+
+    return $this;
   }
 
   /**
@@ -279,6 +299,7 @@ class RemoteObject extends Object {
    * were sent from the server.
    *
    * @retval array
+   * @return array
    *   An associative array of header names and values.
    */
   public function headers() {
@@ -307,6 +328,14 @@ class RemoteObject extends Object {
     'transfer-encoding' => TRUE,
     'x-trans-id' => TRUE,
   );
+
+  /**
+   * Filter the headers.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this for the current object so it can be used in chaining methods.
+   */
   public function filterHeaders(&$headers) {
     $unset = array();
     foreach ($headers as $name => $value) {
@@ -318,6 +347,8 @@ class RemoteObject extends Object {
     foreach ($unset as $u) {
       unset($headers[$u]);
     }
+
+    return $this;
   }
 
   /**
@@ -337,12 +368,18 @@ class RemoteObject extends Object {
    *
    * @param array $keys
    *   The header names to be removed.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this for the current object so it can be used in chaining methods.
    */
   public function removeHeaders($keys) {
     foreach ($keys as $key) {
       unset($this->allHeaders[$key]);
       unset($this->additionalHeaders[$key]);
     }
+
+    return $this;
   }
 
   /**
@@ -361,6 +398,7 @@ class RemoteObject extends Object {
    * Be wary of using this method with large files.
    *
    * @retval string
+   * @return string
    *   The contents of the file as a string.
    * @throws \HPCloud\Transport\FileNotFoundException
    *   when the requested content cannot be located on the remote
@@ -427,6 +465,7 @@ class RemoteObject extends Object {
    *   and the content will be refreshed from the server. Any
    *   local changes to the object will be discarded.
    * @retval resource
+   * @return resource
    *   A handle to the stream, which is already opened and positioned at
    *   the beginning of the stream.
    */
@@ -478,9 +517,14 @@ class RemoteObject extends Object {
    * @param boolean $enabled
    *   If this is TRUE, caching will be enabled. If this is FALSE,
    *   caching will be disabled.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this so the method can be used in chaining.
    */
   public function setCaching($enabled) {
     $this->caching = $enabled;
+    return $this;
   }
 
   /**
@@ -490,6 +534,7 @@ class RemoteObject extends Object {
    * its contents, not whether anything is actually cached.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if caching is enabled, FALSE otherwise.
    */
   public function isCaching() {
@@ -518,9 +563,14 @@ class RemoteObject extends Object {
    *   If this is TRUE, content verification is performed. The content
    *   is hashed and checked against a server-supplied MD5 hashcode. If
    *   this is FALSE, no checking is done.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this so the method can be used in chaining.
    */
   public function setContentVerification($enabled) {
     $this->contentVerification = $enabled;
+    return $this;
   }
 
   /**
@@ -532,6 +582,7 @@ class RemoteObject extends Object {
    * supplied ETag hash.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if this is verifying, FALSE otherwise.
    */
   public function isVerifyingContent() {
@@ -588,6 +639,10 @@ class RemoteObject extends Object {
    *
    * @param boolean $fetchContent
    *   If this is TRUE, the content will be downloaded as well.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this for the current object so it can be used in chaining methods.
    */
   public function refresh($fetchContent = FALSE) {
 
@@ -600,6 +655,8 @@ class RemoteObject extends Object {
     if ($fetchContent) {
       $this->setContent($response->content());
     }
+
+    return $this;
   }
 
   /**
@@ -610,7 +667,8 @@ class RemoteObject extends Object {
    *   cause the remote host to return the object in the response body.
    *   The response body is not handled, though. If this is set to
    *   FALSE, a HEAD request is sent, and no body is returned.
-   * @retval \HPCloud\Transport\Response
+   * @retval HPCloud::Transport::Response
+   * @return \HPCloud\Transport\Response
    *   containing the object metadata and (depending on the
    *   $fetchContent flag) optionally the data.
    */
@@ -642,6 +700,10 @@ class RemoteObject extends Object {
    * Extract information from HTTP headers.
    *
    * This is used internally to set object properties from headers.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
+   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   *   $this for the current object so it can be used in chaining methods.
    */
   protected function extractFromHeaders($response) {
     $this->setContentType($response->header('Content-Type', $this->contentType()));
@@ -654,6 +716,8 @@ class RemoteObject extends Object {
 
     // Reset the metadata, too:
     $this->setMetadata(Container::extractHeaderAttributes($response->headers()));
+
+    return $this;
 
   }
 }

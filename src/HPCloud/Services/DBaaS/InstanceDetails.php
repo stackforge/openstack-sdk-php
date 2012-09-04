@@ -74,6 +74,7 @@ class InstanceDetails {
    * Get the name of this instance.
    *
    * @retval string
+   * @return string
    *   The name of the instance.
    */
   public function name() {
@@ -84,6 +85,7 @@ class InstanceDetails {
    * Get the ID of the instance.
    *
    * @retval string
+   * @return string
    *   The ID.
    */
   public function id() {
@@ -96,6 +98,7 @@ class InstanceDetails {
    * This may only be set during CREATE or DESCRIBE results.
    *
    * @retval string
+   * @return string
    *   A string indicating the creation time.
    *   Format is in ISO date format.
    */
@@ -115,6 +118,7 @@ class InstanceDetails {
    *- restarting: Instance has been restarted, and is still coming online.
    *
    * @retval string
+   * @return string
    *   A short status message.
    */
   public function status() {
@@ -129,6 +133,7 @@ class InstanceDetails {
    * checking that status() returns 'running'.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE if this is running, FALSE otherwise.
    */
   public function isRunning() {
@@ -148,6 +153,7 @@ class InstanceDetails {
    * This returns the DNS name of the host (or possibly an IP address).
    *
    * @retval string
+   * @return string
    *   The FQDN or IP address of the MySQL server.
    */
   public function hostname() {
@@ -177,6 +183,7 @@ class InstanceDetails {
    * Typically this is only available at creation time!
    *
    * @retval string
+   * @return string
    *   The username for the MySQL instance.
    */
   public function username() {
@@ -208,6 +215,7 @@ class InstanceDetails {
    *   This is only returned when a database is first created.
    *
    * @retval string
+   * @return string
    *   A password string.
    */
   public function password() {
@@ -250,6 +258,7 @@ class InstanceDetails {
    * definition.
    *
    * @retval array
+   * @return array
    *   An array of related links to DBaaS URLs.
    */
   public function links() {
@@ -271,6 +280,7 @@ class InstanceDetails {
    *   of PHP use this.
    *
    * @retval string
+   * @return string
    *   The DSN, including driver, host, port, and database name.
    * @todo
    *   At this time, 'mysql' is hard-coded as the driver name. Does this

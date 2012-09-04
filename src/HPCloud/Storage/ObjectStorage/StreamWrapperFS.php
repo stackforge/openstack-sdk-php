@@ -148,7 +148,8 @@ class StreamWrapperFS extends StreamWrapper {
    * 
    * @param  string $path
    *   The directory path to test.
-   * @retval bool
+   * @retval boolean
+   * @return boolean
    *   TRUE if the directory prefix exists and FALSE otherwise.
    */
   protected function testDirectoryExists($path) {

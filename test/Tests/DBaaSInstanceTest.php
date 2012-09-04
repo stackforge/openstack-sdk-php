@@ -41,11 +41,11 @@ class DBaaSInstanceTest extends DBaaSTestCase {
     $ident = $this->identity();
     $dbaas = DBaaS::newFromIdentity($ident);
 
-    $endpoint = self::conf('hpcloud.dbaas.endpoint') . '/' . $ident->tenantId();
+    // $endpoint = self::conf('hpcloud.dbaas.endpoint') . '/' . $ident->tenantId();
 
-    // Test #1: Build from scratch.
-    $inst = new Instance($ident->token(), $ident->tenantName(), $endpoint);
-    $this->assertInstanceOf('\HPCloud\Services\DBaaS\Instance', $inst);
+    // // Test #1: Build from scratch.
+    // $inst = new Instance($ident->token(), $ident->tenantName(), $endpoint);
+    // $this->assertInstanceOf('\HPCloud\Services\DBaaS\Instance', $inst);
 
     // Test #2: Build from DBaaS.
     $inst = $dbaas->instance();

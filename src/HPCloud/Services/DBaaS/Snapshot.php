@@ -66,6 +66,7 @@ class Snapshot extends Operations {
    *   An optional database instance ID. If set, only snapshots for
    *   the given instance will be returned.
    * @retval array
+   * @return array
    *   An array of HPCloud::Services::DBaaS::SnapshotDetails
    *   instances.
    */
@@ -102,7 +103,8 @@ class Snapshot extends Operations {
    *   A human-readable name for the snapshot. Internally,
    *   a snapshot ID will be used to reference this
    *   snapshot.
-   * @retval object HPCloud::Services::DBaaS::SnapshotDetails
+   * @retval HPCloud::Services::DBaaS::SnapshotDetails
+   * @return \HPCloud\Services\DBaaS\SnapshotDetails
    *   A snapshot details object containing information about
    *   the snapshot.
    */
@@ -130,6 +132,7 @@ class Snapshot extends Operations {
    *   The snapshot ID for the snapshot that should
    *   be deleted.
    * @retval boolean
+   * @return boolean
    *   Returns boolean TRUE on success. Throws one of the 
    *   HPCloud::Exception instances on failure.
    * @throws HPCloud::Exception
@@ -148,7 +151,8 @@ class Snapshot extends Operations {
    * @param string $snapshotId
    *   The snapshot ID.
    *
-   * @retval object HPCloud::Services::DBaaS::SnapshotDetails
+   * @retval HPCloud::Services::DBaaS::SnapshotDetails
+   * @return \HPCloud\Services\DBaaS\SnapshotDetails
    *   The details object.
    */
   public function describe($snapshotId) {

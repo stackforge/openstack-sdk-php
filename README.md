@@ -26,9 +26,9 @@ Coming soon:
 We also have support for using PHP's native HTTP stream wrapper, but it
 is not as reliable. We recommend cURL.
 
-## Warnings
+## Versioning
 
-The API for services in beta (e.g., DBaaS) should be considered beta as well.
+We have a goal to be as consistent as possible with [Semantic Versioning](http://semver.org/). For released HP Cloud services this is what you can expect. For products in beta expect the included components to be in beta. For example, [HP Cloud Relational Database for MySQL](https://www.hpcloud.com/products/RDB) (our DBaaS offering) is private beta.
 
 ## Installation
 

@@ -137,6 +137,7 @@ class DBaaS {
    * Get the project ID for this session.
    *
    * @retval string
+   * @return string
    *   The project ID.
    */
   public function projectId() {
@@ -147,6 +148,7 @@ class DBaaS {
    * Get the endpoint URL to the DBaaS session.
    *
    * @retval string
+   * @return string
    *   The URL.
    */
   public function url() {

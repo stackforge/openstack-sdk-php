@@ -147,9 +147,14 @@ class Object {
    *
    * @param array $array
    *   An associative array of metadata names to values.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setMetadata(array $array) {
     $this->metadata = $array;
+    
     return $this;
   }
 
@@ -159,6 +164,7 @@ class Object {
    * This returns an associative array of all metadata for this object.
    *
    * @retval array
+   * @return array
    *   An associative array of metadata. This may be empty.
    */
   public function metadata() {
@@ -178,6 +184,10 @@ class Object {
    *
    * @param string $name
    *   A file or object name.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setName($name) {
     $this->name = $name;
@@ -191,6 +201,7 @@ class Object {
    * using setName(), this will return the latest (overwritten) name.
    *
    * @retval string
+   * @return string
    *   The name of the object.
    */
   public function name() {
@@ -223,6 +234,10 @@ class Object {
    *
    * @param string $type
    *   A valid content type.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setContentType($type) {
     $this->contentType = $type;
@@ -235,6 +250,7 @@ class Object {
    * This returns the currently set content type.
    *
    * @retval string
+   * @return string
    *   The content type, including any additional options.
    */
   public function contentType() {
@@ -261,6 +277,10 @@ class Object {
    * @param string $type
    *   The content type (MIME type). This can be set here for
    *   convenience, or you can call setContentType() directly.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setContent($content, $type = NULL) {
     $this->content = $content;
@@ -289,6 +309,7 @@ class Object {
    * returns the entire contents of an object.
    *
    * @retval string
+   * @return string
    *   The content of the file.
    */
   public function content() {
@@ -306,7 +327,8 @@ class Object {
    * When extending this class, you should make sure to calculate the
    * content length appropriately.
    *
-   * return int
+   * @retval int
+   * @return int
    *   The length of the content, in bytes.
    */
   public function contentLength() {
@@ -324,6 +346,7 @@ class Object {
    * the entire object's content (but not the metadata or name).
    *
    * @retval string
+   * @return string
    *   An MD5 value as a string of 32 hex digits (0-9a-f).
    */
   public function eTag() {
@@ -348,9 +371,15 @@ class Object {
    *
    * @param string $encoding
    *   A valid encoding type.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setEncoding($encoding) {
     $this->contentEncoding = $encoding;
+
+    return $this;
   }
 
   /**
@@ -360,6 +389,7 @@ class Object {
    * See setEncoding() for more information.
    *
    * @retval string
+   * @return string
    *   The encoding type.
    */
   public function encoding() {
@@ -386,9 +416,15 @@ class Object {
    * @param string $disposition
    *   A valid disposition declaration. These are defined in various
    *   HTTP specifications.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setDisposition($disposition) {
     $this->contentDisposition = $disposition;
+
+    return $this;
   }
 
   /**
@@ -397,6 +433,7 @@ class Object {
    * See setDisposition() for discussion.
    *
    * @retval string
+   * @return string
    *   The disposition string, or NULL if none is set.
    */
   public function disposition() {
@@ -436,9 +473,14 @@ class Object {
    *   An associative array where each name is an HTTP header name, and
    *   each value is the HTTP header value. No encoding or escaping is
    *   done.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this so the method can be used in chaining.
    */
   public function setAdditionalHeaders($headers) {
     $this->additionalHeaders = $headers;
+    return $this;
   }
 
   /**
@@ -466,11 +508,17 @@ class Object {
    *
    * @param array $keys
    *   The header names to be removed.
+   *
+   * @retval HPCloud::Storage::ObjectStorage::Object
+   * @return \HPCloud\Storage\ObjectStorage\Object
+   *   $this for the current object so it can be used in chaining methods.
    */
   public function removeHeaders($keys) {
     foreach ($keys as $k) {
       unset($this->additionalHeaders[$k]);
     }
+
+    return $this;
   }
 
   /**
@@ -490,6 +538,7 @@ class Object {
    * if this returns TRUE, contentLength() is ignored.
    *
    * @retval boolean
+   * @return boolean
    *   TRUE to recommend chunked transfer, FALSE otherwise.
    */
   public function isChunked() {

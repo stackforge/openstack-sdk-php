@@ -143,6 +143,7 @@ class Response {
    * (they are one and the same).
    *
    * @retval resource
+   * @return resource
    *   A file handle.
    */
   public function file() {
@@ -162,6 +163,7 @@ class Response {
    * entire content in a string.
    *
    * @retval string
+   * @return string
    *   The contents of the response body.
    */
   public function content() {
@@ -203,6 +205,7 @@ class Response {
    * data.
    *
    * @retval array
+   * @return array
    *   An associative array of metadata about the
    *   transaction resulting in this response.
    */
@@ -219,6 +222,7 @@ class Response {
    *   An optional default value.
    *
    * @retval mixed
+   * @return mixed
    *   The value, if found, or the default, is specified, or NULL.
    */
   public function header($name, $default = NULL) {
@@ -237,8 +241,9 @@ class Response {
    *
    * These are available even if the stream has been closed.
    *
-   * @retval
-   *   array The array of headers.
+   * @retval array
+   * @return array
+   *   The array of headers.
    */
   public function headers() {
     return $this->headers;
@@ -266,6 +271,7 @@ class Response {
    * appear in a Response object.
    *
    * @retval int
+   * @return int
    *   The HTTP code, e.g. 200 or 202.
    */
   public function status() {
@@ -279,6 +285,7 @@ class Response {
    * recommendations. e.g. 200 returns 'OK'.
    *
    * @retval string
+   * @return string
    *  A server-generated status message.
    */
   public function statusMessage() {
@@ -291,6 +298,7 @@ class Response {
    * Example: HTTP/1.1
    *
    * @retval string
+   * @return string
    *   The protocol name and version.
    */
   public function protocol() {
@@ -308,6 +316,7 @@ class Response {
    *   An indexed array of headers, as returned by the PHP stream
    *   library.
    * @retval array
+   * @return array
    *   An associative array of header name/value pairs.
    */
   protected function parseHeaders($headerArray) {

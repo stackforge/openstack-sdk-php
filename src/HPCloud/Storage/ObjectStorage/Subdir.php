@@ -61,6 +61,7 @@ class Subdir {
    * The path is delimited using the string returned by delimiter().
    *
    * @retval string
+   * @return string
    *   The path.
    */
   public function path() {
@@ -70,6 +71,7 @@ class Subdir {
    * Get the delimiter used by the server.
    *
    * @retval string
+   * @return string
    *   The value used as a delimiter.
    */
   public function delimiter() {
