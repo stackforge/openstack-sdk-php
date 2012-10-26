@@ -211,11 +211,24 @@ class Bootstrap {
    *   the transport layer should wait for an HTTP request. A
    *   transport MAY ignore this parameter, but the ones included
    *   with the library honor it.
+   * - 'transport.ssl.verify': Set this to FALSE to turn off SSL certificate
+   *   verification. This is NOT recommended, but is sometimes necessary for
+   *   certain proxy configurations.
    * - 'account' and 'secret'
    * - 'username' and 'password'
    * - 'tenantid'
    * - 'endpoint': The full URL to identity services. This is used by stream
    *   wrappers.
+   *
+   * The CURL wrapper supports proxy settings:
+   *
+   * - proxy: the proxy server URL (CURLOPT_PROXY)
+   * - proxy.userpwd: the proxy username:password (CURLOPT_PROXYUSERPWD)
+   * - proxy.auth: See CURLOPT_PROXYAUTH
+   * - proxy.port: The proxy port. (CURLOPT_PROXYPORT)
+   * - proxy.type: see CURLOPT_PROXYTYPE
+   * - proxy.tunnel: If this is set to TRUE, attempt to tunnel through the
+   *   proxy. This is recommended when using a proxy. (CURLOPT_HTTPPROXYTUNNEL)
    *
    * @param array $array
    *   An associative array of configuration directives.
@@ -263,8 +276,8 @@ class Bootstrap {
     }
 
     // We need the path up to, but not including, the root HPCloud dir:
-    $local_path = substr(self::$basedir, 0, strrpos(self::$basedir, '/HPCloud'));
-
+    $loc = DIRECTORY_SEPARATOR . 'HPCloud';
+    $local_path = substr(self::$basedir, 0, strrpos(self::$basedir, $loc));
 
     array_unshift($components, $local_path);
     $path = implode(DIRECTORY_SEPARATOR, $components) . '.php';

@@ -78,6 +78,8 @@ class ObjectStorage {
 
   const API_VERSION = '1';
 
+  const DEFAULT_REGION = 'region-a.geo-1';
+
   /**
    * The authorization token.
    */
@@ -176,7 +178,7 @@ class ObjectStorage {
    * @return \HPCloud\Storage\ObjectStorage
    *   A new ObjectStorage instance.
    */
-  public static function newFromIdentity($identity) {
+  public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION) {
     $cat = $identity->serviceCatalog();
     $tok = $identity->token();
     return self::newFromServiceCatalog($cat, $tok);
@@ -201,16 +203,16 @@ class ObjectStorage {
    * @return \HPCloud\Storage\ObjectStorage
    *   A new ObjectStorage instance.
    */
-  public static function newFromServiceCatalog($catalog, $authToken) {
+  public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION) {
     $c = count($catalog);
     for ($i = 0; $i < $c; ++$i) {
       if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
-          if (isset($endpoint['publicURL'])) {
-            $cdn = new ObjectStorage($authToken, $endpoint['publicURL']);
+          if (isset($endpoint['publicURL']) && $endpoint['region'] == $region) {
+            $os= new ObjectStorage($authToken, $endpoint['publicURL']);
             //$cdn->url = $endpoint['publicURL'];
 
-            return $cdn;
+            return $os;
           }
         }
       }

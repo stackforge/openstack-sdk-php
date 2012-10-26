@@ -85,6 +85,14 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
+  public function testFailedNewFromServiceCatalog(){
+    $ident = $this->identity();
+    $tok = $ident->token();
+    $cat = $ident->serviceCatalog();
+    $ostore = \HPCloud\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok, 'region-w.geo-99999.fake');
+    $this->assertEmpty($ostore);
+  }
+
   public function testNewFromIdnetity() {
     $ident = $this->identity();
     $ostore = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);

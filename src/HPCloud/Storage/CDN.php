@@ -129,6 +129,8 @@ class CDN {
    */
   const API_VERSION = '1.0';
 
+  const DEFAULT_REGION = 'region-a.geo-1';
+
   /**
    * The URL to the CDN endpoint.
    */
@@ -155,7 +157,7 @@ class CDN {
    *   A CDN object or FALSE if no CDN services could be found
    *   in the catalog.
    */
-  public static function newFromIdentity($identity) {
+  public static function newFromIdentity($identity, $region = CDN::DEFAULT_REGION) {
     $tok = $identity->token();
     $cat = $identity->serviceCatalog();
 
@@ -203,12 +205,12 @@ class CDN {
    *   A CDN object or FALSE if no CDN services could be found
    *   in the catalog.
    */
-  public static function newFromServiceCatalog($catalog, $token) {
+  public static function newFromServiceCatalog($catalog, $token, $region = CDN::DEFAULT_REGION) {
     $c = count($catalog);
     for ($i = 0; $i < $c; ++$i) {
       if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
-          if (isset($endpoint['publicURL'])) {
+          if (isset($endpoint['publicURL']) && $endpoint['region'] == $region) {
             /*
             $parts = parse_url($endpoint['publicURL']);
             $base = $parts['scheme'] . '://' . $parts['host'];
