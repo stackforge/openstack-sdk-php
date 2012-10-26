@@ -75,6 +75,8 @@ class DBaaS {
 
   const API_VERSION = '1';
 
+  const DEFAULT_REGION = 'region-a.geo-1';
+
   /**
    * The auth token for the current session.
    */
@@ -90,7 +92,7 @@ class DBaaS {
    */
   protected $projectId;
 
-  public static function newFromIdentity($identity) {
+  public static function newFromIdentity($identity, $region = DBaaS::DEFAULT_REGION) {
 
     $catalog = $identity->serviceCatalog();
 
@@ -98,7 +100,7 @@ class DBaaS {
     for ($i = 0; $i < $c; ++$i) {
       if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
-          if (isset($endpoint['publicURL'])) {
+          if (isset($endpoint['publicURL']) && $endpoint['region'] == $region) {
             $dbaas = new DBaaS($identity->token(), $endpoint['publicURL'], $identity->tenantName());
 
             return $dbaas;
