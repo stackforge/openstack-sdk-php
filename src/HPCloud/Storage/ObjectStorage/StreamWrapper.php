@@ -107,7 +107,7 @@ use \HPCloud\Storage\ObjectStorage;
  * $context = stream_context_create(
  *   array('swift' => array(
  *     'account' => ACCOUNT_NUMBER,
- *     'key' => SECRET_KEY,
+ *     'secret' => SECRET_KEY,
  *     'tenantid' => TENANT_ID,
  *     'tenantname' => TENANT_NAME, // Optional instead of tenantid.
  *     'endpoint' => AUTH_ENDPOINT_URL,
@@ -161,7 +161,7 @@ use \HPCloud\Storage\ObjectStorage;
  *   would normally pass into a stream context:
  *   * endpoint
  *   * account
- *   * key
+ *   * secret
  * - Most of the information from this family of calls can also be obtained using
  *   fstat(). If you were going to open a stream anyway, you might as well use
  *   fopen()/fstat().
@@ -215,7 +215,7 @@ use \HPCloud\Storage\ObjectStorage;
  * You are <i>required</i> to pass in authentication information. This
  * comes in one of three forms:
  *
- * -# API keys: acccount, key, tenantid, endpoint
+ * -# API keys: acccount, secret, tenantid, endpoint
  * -# User login: username, password, tenantid, endpoint
  * -# Existing (valid) token: token, swift_endpoint
  *
@@ -236,8 +236,8 @@ use \HPCloud\Storage\ObjectStorage;
  *     'token' is set. Otherwise it is ignored.
  * - username: A username. MUST be accompanied by 'password' and 'tenantid' (or 'tenantname').
  * - password: A password. MUST be accompanied by 'username' and 'tenantid' (or 'tenantname').
- * - account: An account ID. MUST be accompanied by a 'key' and 'tenantid' (or 'tenantname').
- * - key: A secret key. MUST be accompanied by an 'account' and 'tenantid' (or 'tenantname').
+ * - account: An account ID. MUST be accompanied by a 'secret' and 'tenantid' (or 'tenantname').
+ * - secret: A secret key. MUST be accompanied by an 'account' and 'tenantid' (or 'tenantname').
  * - endpoint: The URL to the authentication endpoint. Necessary if you are not
  *     using a 'token' and 'swift_endpoint'.
  * - use_swift_auth: If this is set to TRUE, it will force the app to use
@@ -1503,8 +1503,8 @@ class StreamWrapper {
    *     'token' is set. Otherwise it is ignored.
    * - username: A username. MUST be accompanied by 'password' and 'tenantname'.
    * - password: A password. MUST be accompanied by 'username' and 'tenantname'.
-   * - account: An account ID. MUST be accompanied by a 'key' and 'tenantname'.
-   * - key: A secret key. MUST be accompanied by an 'account' and 'tenantname'.
+   * - account: An account ID. MUST be accompanied by a 'secret' and 'tenantname'.
+   * - secret: A secret key. MUST be accompanied by an 'account' and 'tenantname'.
    * - endpoint: The URL to the authentication endpoint. Necessary if you are not
    *     using a 'token' and 'swift_endpoint'.
    * - use_swift_auth: If this is set to TRUE, it will force the app to use
@@ -1521,7 +1521,8 @@ class StreamWrapper {
     $token = $this->cxt('token');
 
     $account = $this->cxt('account');
-    $key = $this->cxt('key');
+    // Legacy support for old 'key' param.
+    $key = $this->cxt('key', $this->cxt('secret'));
 
     $tenantId = $this->cxt('tenantid');
     $tenantName = $this->cxt('tenantname');
@@ -1639,7 +1640,8 @@ class StreamWrapper {
     $password = $this->cxt('password');
 
     $account = $this->cxt('account');
-    $key = $this->cxt('key');
+    // Legacy support for old 'key' param.
+    $key = $this->cxt('key', $this->cxt('secret'));
 
     $tenantId = $this->cxt('tenantid');
     $tenantName = $this->cxt('tenantname');
