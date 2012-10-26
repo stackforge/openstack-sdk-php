@@ -233,7 +233,7 @@ class CURLTransport implements Transporter {
       'proxy.auth' => CURLOPT_PROXYAUTH,
       'proxy.port' => CURLOPT_PROXYPORT,
       'proxy.type' => CURLOPT_PROXYTYPE,
-      'proxy.userpwd' => CURLOPT_USERPWD,
+      'proxy.userpwd' => CURLOPT_PROXYUSERPWD,
     );
     foreach ($proxyMap as $conf => $opt) {
       if (Bootstrap::hasConfig($conf)) {
