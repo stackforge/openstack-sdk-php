@@ -276,8 +276,8 @@ class Bootstrap {
     }
 
     // We need the path up to, but not including, the root HPCloud dir:
-    $local_path = substr(self::$basedir, 0, strrpos(self::$basedir, '/HPCloud'));
-
+    $loc = DIRECTORY_SEPARATOR . 'HPCloud';
+    $local_path = substr(self::$basedir, 0, strrpos(self::$basedir, $loc));
 
     array_unshift($components, $local_path);
     $path = implode(DIRECTORY_SEPARATOR, $components) . '.php';
