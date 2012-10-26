@@ -226,6 +226,22 @@ class CURLTransport implements Transporter {
       $opts[CURLOPT_SSL_VERIFYPEER] = $validate;
     }
 
+    // PROXY settings
+    $proxyMap = array(
+      'proxy' => CURLOPT_PROXY,
+      'proxy.tunnel' => CURLOPT_HTTPPROXYTUNNEL,
+      'proxy.auth' => CURLOPT_PROXYAUTH,
+      'proxy.port' => CURLOPT_PROXYPORT,
+      'proxy.type' => CURLOPT_PROXYTYPE,
+      'proxy.userpwd' => CURLOPT_USERPWD,
+    );
+    foreach ($proxyMap as $conf => $opt) {
+      if (Bootstrap::hasConfig($conf)) {
+        $val = Bootstrap::config($conf);
+        $opts[$opt] = $val;
+      }
+    }
+
 
     // Set all of the curl opts and then execute.
     curl_setopt_array($curl, $opts);
@@ -294,6 +310,7 @@ class CURLTransport implements Transporter {
     }
     curl_multi_add_handle($multi, $handle);
 
+    // Initialize all of the listeners
     $active = NULL;
     do {
       $ret = curl_multi_exec($multi, $active);
