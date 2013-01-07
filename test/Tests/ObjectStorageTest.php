@@ -100,6 +100,17 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
+  public function testNewFromIdentityAltRegion() {
+    $ident = $this->identity();
+    $ostore = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident, 'region-b.geo-1');
+    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $this->assertTrue(strlen($ostore->token()) > 0);
+
+    // Make sure the store is not the same as the default region.
+    $ostoreDefault = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
+    $this->assertNotEquals($ostore, $ostoreDefault);
+  }
+
   /**
    * @group auth
    * @ group acl

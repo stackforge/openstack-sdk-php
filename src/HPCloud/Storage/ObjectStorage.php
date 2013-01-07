@@ -181,7 +181,7 @@ class ObjectStorage {
   public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION) {
     $cat = $identity->serviceCatalog();
     $tok = $identity->token();
-    return self::newFromServiceCatalog($cat, $tok);
+    return self::newFromServiceCatalog($cat, $tok, $region);
   }
 
   /**
