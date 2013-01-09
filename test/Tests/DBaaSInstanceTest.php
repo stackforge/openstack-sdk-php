@@ -52,6 +52,12 @@ class DBaaSInstanceTest extends DBaaSTestCase {
     $this->assertInstanceOf('\HPCloud\Services\DBaaS\Instance', $inst);
   }
 
+  public function testListFlavors() {
+    $flavors = $this->dbaas()->flavor()->listFlavors();
+
+    $this->assertNotEmpty($flavors);
+  }
+
   public function testCreate() {
     // Make sure there aren't old fixtures hanging around from a
     // failed run.
