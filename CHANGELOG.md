@@ -2,9 +2,11 @@
 
 This changelog contains the relevant feature additions and bug fixes. To obtain a complete diff between versions you can got to https://github.com/hpcloud/HPCloud-PHP/compare/XXX...XXX where the XXX values are two different tagged versions of the library. For example, https://github.com/hpcloud/HPCloud-PHP/compare/1.0.0-beta6...1.0.0
 
-* x.x.x
+* 1.2.0
 
-  * ObjectStorage::newFromIdentity now works for multiple regoins.
+  * ObjectStorage::newFromIdentity now works for multiple regions.
+  * Added classes for DBaaS Flavor and FlavorDetails.
+  * Fixed DBaaS Instance creation to use the new flavor setup.
 
 * 1.1.0
 
