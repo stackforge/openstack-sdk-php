@@ -29,6 +29,7 @@ namespace HPCloud\Services;
 
 use \HPCloud\Services\DBaaS\Instance;
 use \HPCloud\Services\DBaaS\Snapshot;
+use \HPCloud\Services\DBaaS\Flavor;
 
 /**
  * Database As A Service.
@@ -133,6 +134,10 @@ class DBaaS {
 
   public function snapshot() {
     return new Snapshot($this->token, $this->projectId, $this->url);
+  }
+
+  public function flavor() {
+    return new Flavor($this->token, $this->projectId, $this->url);
   }
 
   /**

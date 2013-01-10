@@ -85,6 +85,11 @@ class Instance extends Operations {
    * @see http://api-docs.hpcloud.com/hpcloud-dbaas/1.0/content/instance-create.html
    */
   public function create($name, $flavor = 'medium', $typeSpec = NULL) {
+
+    // Based on the name we need to get the flavor details.
+    $f = new Flavor($this->token, $this->projectId, $this->url);
+    $flavorObject = $f->getFlavorByName($flavor);
+
     // Set type spec. As of the initial release of DBaaS, the only support
     // type is mysql 5.5.
     if (empty($typeSpec)) {
@@ -96,7 +101,7 @@ class Instance extends Operations {
     $json = array(
       'instance' => array(
         'name' => $name,
-        'flavorRef' => $flavor,
+        'flavorRef' => $flavorObject->url(),
         'dbtype' => $typeSpec,
       ),
     );
