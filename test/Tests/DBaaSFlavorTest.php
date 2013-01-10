@@ -36,7 +36,7 @@ use \HPCloud\Exception;
 /**
  * @group dbaas
  */
-class DBaaSInstanceTest extends DBaaSTestCase {
+class DBaaSFlavorTest extends DBaaSTestCase {
 	public function testListFlavors() {
     $flavors = $this->dbaas()->flavor()->listFlavors();
 
