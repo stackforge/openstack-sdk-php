@@ -30,6 +30,8 @@ require_once __DIR__ . '/DBaaSTestCase.php';
 
 use \HPCloud\Services\DBaaS;
 use \HPCloud\Services\DBaaS\Flavor;
+use \HPCloud\Services\DBaaS\FlavorDetails;
+use \HPCloud\Exception;
 
 /**
  * @group dbaas
@@ -39,5 +41,28 @@ class DBaaSInstanceTest extends DBaaSTestCase {
     $flavors = $this->dbaas()->flavor()->listFlavors();
 
     $this->assertNotEmpty($flavors);
+
+    $this->assertInstanceOf('\HPCloud\Services\DBaaS\FlavorDetails', $flavors[0]);
+  }
+
+  public function testGetFlavorByName() {
+  	$flavor = $this->dbaas()->flavor();
+
+  	$small = $flavor->getFlavorByName('small');
+
+  	$this->assertInstanceOf('\HPCloud\Services\DBaaS\FlavorDetails', $small);
+  	$this->assertEquals('small', $small->name());
+
+  	// make sure a failure happens well
+  	try {
+  		$foo = $flavor->getFlavorByName('foo');  // This should be a non-real name.
+
+  		$this->fail("Found flavor that should not exist.");
+
+  	} catch (Exception $e) {
+  		if ($e->getMessage() != 'DBaaS Flavor foo not available.') {
+  			$this->fail('Flavor not found with wrong error message.');
+  		}
+  	}
   }
 }

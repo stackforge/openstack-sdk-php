@@ -27,6 +27,7 @@ SOFTWARE.
 namespace HPCloud\Services\DBaaS;
 
 use \HPCloud\Transport;
+use \HPCloud\Exception;
 
 /**
  * Class for working with Database Flavors.
@@ -64,5 +65,28 @@ class Flavor extends Operations {
     }
 
     return $list;
+  }
+
+  /**
+   * Get a FlavorDetails object by its name.
+   * 
+   * @param string $name
+   *   The name of the flavor.
+   *
+   * @retval HPCloud::Services::DBaaS::FlavorDetails
+   * @return \HPCloud\Services\DBaaS\FlavorDetails
+   *   A flavor details object for the flavor.
+   */
+  public function getFlavorByName($name) {
+  	$flavors = $this->listFlavors();
+  	foreach ($flavors as $k => $v) {
+  		if ($v->name() == $name) {
+  			return $v;
+  		}
+  	}
+
+  	// If we got here there was either no flavor with that name or a problem
+  	// getting the flavors. Throw an exception.
+  	throw new Exception("DBaaS Flavor {$name} not available.");
   }
 }
