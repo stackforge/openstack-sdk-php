@@ -234,6 +234,7 @@ class PHPStreamTransport implements Transporter {
    */
   protected function buildStreamContext($method, $headers, $body) {
     // Construct the stream options.
+    $headers['Connection'] = 'close';
     $config = array(
       'http' => array(
         'protocol_version' => $this->httpVersion,
