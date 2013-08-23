@@ -161,7 +161,7 @@ class CDN {
     $tok = $identity->token();
     $cat = $identity->serviceCatalog();
 
-    return self::newFromServiceCatalog($cat, $tok);
+    return self::newFromServiceCatalog($cat, $tok, $region);
   }
 
   /**

@@ -73,7 +73,7 @@ class CDNTest extends \HPCloud\Tests\TestCase {
     $token = $ident->token();
     $catalog = $ident->serviceCatalog();
 
-    $cdn = CDN::newFromServiceCatalog($catalog, $token);
+    $cdn = CDN::newFromServiceCatalog($catalog, $token, $this->conf('hpcloud.swift.region'));
 
     $this->assertInstanceOf('\HPCloud\Storage\CDN', $cdn);
 
@@ -85,7 +85,7 @@ class CDNTest extends \HPCloud\Tests\TestCase {
    */
   public function testNewFromIdentity() {
     $ident = $this->identity();
-    $cdn = CDN::newFromIdentity($ident);
+    $cdn = CDN::newFromIdentity($ident, $this->conf('hpcloud.swift.region'));
 
     $this->assertInstanceOf('\HPCloud\Storage\CDN', $cdn);
 
