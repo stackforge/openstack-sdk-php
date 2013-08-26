@@ -7,7 +7,8 @@ You can use this library to:
 * Authenticate your application to the HP Cloud.
 * Interact with Object Storage (aka Swift).
 * Interact with CDN service (Content Delivery Network).
-* Interact with our relational database (DBaaS and MySQL compatible)
+
+Previously this library could be used to interact with our relational database (DBaaS and MySQL compatible). The API has changed and the bindings do not currently support this feature.
 
 Coming soon:
 
