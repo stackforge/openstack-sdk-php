@@ -8,8 +8,6 @@ You can use this library to:
 * Interact with Object Storage (aka Swift).
 * Interact with CDN service (Content Delivery Network).
 
-Previously this library could be used to interact with our relational database (DBaaS and MySQL compatible). The API has changed and the bindings do not currently support this feature.
-
 Coming soon:
 
 * Intect with the Compute (Nova) manager.
@@ -29,7 +27,7 @@ is not as reliable. We recommend cURL.
 
 ## Versioning
 
-We have a goal to be as consistent as possible with [Semantic Versioning](http://semver.org/). For released HP Cloud services this is what you can expect. For products in beta expect the included components to be in beta. For example, [HP Cloud Relational Database for MySQL](https://www.hpcloud.com/products/RDB) (our DBaaS offering) is private beta.
+We have a goal to be as consistent as possible with [Semantic Versioning](http://semver.org/). For released HP Cloud services this is what you can expect.
 
 ## Installation
 

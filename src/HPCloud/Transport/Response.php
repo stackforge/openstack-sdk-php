@@ -94,8 +94,6 @@ class Response {
         throw new \HPCloud\Transport\LengthRequiredException($err);
       case '422':
         throw new \HPCloud\Transport\UnprocessableEntityException($err);
-      case '423':
-        throw new \HPCloud\Transport\LockedException($err);
       case '500':
         throw new \HPCloud\Transport\ServerException($err);
       default:
