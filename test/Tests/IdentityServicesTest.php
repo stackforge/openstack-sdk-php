@@ -138,7 +138,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($tok2);
 
     $details = $service->tokenDetails();
-    $this->assertEmpty($details['tenant']);
+    $this->assertFalse(isset($details['tenant']));
   }
 
   /**
@@ -248,7 +248,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     // Details for account auth.
     $details = $service->tokenDetails();
     $this->assertNotEmpty($details['id']);
-    $this->assertEmpty($details['tenant']);
+    $this->assertFalse(isset($details['tenant']));
 
     $ts = strtotime($details['expires']);
     $this->assertGreaterThan($now, $ts);
@@ -384,7 +384,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($token);
 
     $details = $service->tokenDetails();
-    $this->assertEmpty($details['tenant']);
+    $this->assertFalse(isset($details['tenant']));
 
     // With no tenant ID, there should be only
     // one entry in the catalog.
@@ -402,7 +402,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     // Test unscoping
     $service->rescopeUsingTenantId('');
     $details = $service->tokenDetails();
-    $this->assertEmpty($details['tenant']);
+    $this->assertFalse(isset($details['tenant']));
     $catalog = $service->serviceCatalog();
     $this->assertEquals(1, count($catalog));
 
@@ -424,7 +424,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $this->assertNotEmpty($token);
 
     $details = $service->tokenDetails();
-    $this->assertEmpty($details['tenant']);
+    $this->assertFalse(isset($details['tenant']));
 
     // With no tenant ID, there should be only
     // one entry in the catalog.
@@ -442,7 +442,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     // Test unscoping
     $service->rescope('');
     $details = $service->tokenDetails();
-    $this->assertEmpty($details['tenant']);
+    $this->assertFalse(isset($details['tenant']));
     $catalog = $service->serviceCatalog();
     $this->assertEquals(1, count($catalog));
 
