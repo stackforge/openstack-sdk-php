@@ -69,7 +69,6 @@ namespace HPCloud\Storage\ObjectStorage;
  * container.
  *
  * @todo Add support for container metadata.
- * @todo Add CDN support fo container listings.
  */
 class Container implements \Countable, \IteratorAggregate {
   /**
@@ -92,10 +91,6 @@ class Container implements \Countable, \IteratorAggregate {
   protected $baseUrl;
   protected $acl;
   protected $metadata;
-
-  // This is only set if CDN service is activated.
-  protected $cdnUrl;
-  protected $cdnSslUrl;
 
   /**
    * Transform a metadata array into headers.
@@ -329,27 +324,6 @@ class Container implements \Countable, \IteratorAggregate {
     $this->name = $name;
     $this->url = $url;
     $this->token = $token;
-  }
-
-  /**
-   * Set the URL of the CDN to use.
-   *
-   * If this is set, the Container will attempt to fetch objects
-   * from the CDN instead of the Swift storage whenever possible.
-   *
-   * If ObjectStorage::useCDN() is already called, this is not necessary.
-   *
-   * Setting this to NULL will have the effect of turning off CDN for this
-   * container.
-   *
-   * @param string $url
-   *   The URL to the CDN for this container.
-   * @param string $sslUrl
-   *   The SSL URL to the CDN for this container.
-   */
-  public function useCDN($url, $sslUrl) {
-    $this->cdnUrl = $url;
-    $this->cdnSslUrl = $sslUrl;
   }
 
   /**
@@ -699,25 +673,15 @@ class Container implements \Countable, \IteratorAggregate {
    * - If-Modified-Since/If-Unmodified-Since
    * - If-Match/If-None-Match
    *
-   * If a CDN has been specified either using useCDN() or
-   * ObjectStorage::useCDN(), this will attempt to fetch the object
-   * from the CDN.
-   *
    * @param string $name
    *   The name of the object to load.
-   * @param boolean $requireSSL
-   *   If this is TRUE (the default), then SSL will always be
-   *   used. If this is FALSE, then CDN-based fetching will
-   *   use non-SSL, which is faster.
    * @retval HPCloud::Storage::ObjectStorage::RemoteObject
    * @return \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A remote object with the content already stored locally.
    */
-  public function object($name, $requireSSL = TRUE) {
+  public function object($name) {
 
     $url = self::objectUrl($this->url, $name);
-    $cdn = self::objectUrl($this->cdnUrl, $name);
-    $cdnSsl = self::objectUrl($this->cdnSslUrl, $name);
     $headers = array();
 
     // Auth token.
@@ -725,14 +689,7 @@ class Container implements \Countable, \IteratorAggregate {
 
     $client = \HPCloud\Transport::instance();
 
-    if (empty($this->cdnUrl)) {
-      $response = $client->doRequest($url, 'GET', $headers);
-    }
-    else {
-      $from = $requireSSL ? $cdnSsl : $cdn;
-      // print "Fetching object from $from\n";
-      $response = $client->doRequest($from, 'GET', $headers);
-    }
+    $response = $client->doRequest($url, 'GET', $headers);
 
     if ($response->status() != 200) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
@@ -740,10 +697,6 @@ class Container implements \Countable, \IteratorAggregate {
 
     $remoteObject = RemoteObject::newFromHeaders($name, $response->headers(), $this->token, $url);
     $remoteObject->setContent($response->content());
-
-    if (!empty($this->cdnUrl)) {
-      $remoteObject->useCDN($cdn, $cdnSsl);
-    }
 
     return $remoteObject;
   }
@@ -780,8 +733,6 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function proxyObject($name) {
     $url = self::objectUrl($this->url, $name);
-    $cdn = self::objectUrl($this->cdnUrl, $name);
-    $cdnSsl = self::objectUrl($this->cdnSslUrl, $name);
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
@@ -789,12 +740,7 @@ class Container implements \Countable, \IteratorAggregate {
 
     $client = \HPCloud\Transport::instance();
 
-    if (empty($this->cdnUrl)) {
-      $response = $client->doRequest($url, 'HEAD', $headers);
-    }
-    else {
-      $response = $client->doRequest($cdnSsl, 'HEAD', $headers);
-    }
+    $response = $client->doRequest($url, 'HEAD', $headers);
 
     if ($response->status() != 200) {
       throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
@@ -803,10 +749,6 @@ class Container implements \Countable, \IteratorAggregate {
     $headers = $response->headers();
 
     $obj = RemoteObject::newFromHeaders($name, $headers, $this->token, $url);
-
-    if (!empty($this->cdnUrl)) {
-      $obj->useCDN($cdn, $cdnSsl);
-    }
 
     return $obj;
   }
@@ -979,10 +921,6 @@ class Container implements \Countable, \IteratorAggregate {
    */
   public function url() {
     return $this->url;
-  }
-
-  public function cdnUrl($ssl = TRUE) {
-    return $ssl ? $this->cdnSslUrl : $this->cdnUrl;
   }
 
   /**

@@ -111,14 +111,7 @@ By default, this will run ALL of the unit tests. However, you can run
 a subset of the tests using the TESTS argument:
 
 ```
-$ make test TESTS=test/Tests/CDNTest.php
-```
-
-The above only runs the CDN unit tests. To specify a list of tests, 
-make sure you put quotes around the entire string:
-
-```
-$ make test TESTS="test/Tests/CDNTest.php test/Tests/ACLTest.php"
+$ make test TESTS="test/Tests/BootstrapTest.php test/Tests/ACLTest.php"
 ```
 
 If you know which *group* of tests you want to run, you can run just

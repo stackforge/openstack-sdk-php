@@ -582,7 +582,6 @@ class IdentityServices /*implements Serializable*/ {
    * - identity: Identity Services (i.e. Keystone)
    * - compute: Compute instance (Nova)
    * - object-store: Object Storage (Swift)
-   * - hpext:cdn: HPCloud CDN service (yes, the colon belongs in there)
    *
    * Other services will be added.
    *

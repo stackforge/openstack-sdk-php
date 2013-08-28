@@ -6,7 +6,6 @@ You can use this library to:
 
 * Authenticate your application to the HP Cloud.
 * Interact with Object Storage (aka Swift).
-* Interact with CDN service (Content Delivery Network).
 
 Coming soon:
 
@@ -61,15 +60,6 @@ to other services.
 With full stream wrapper support, you can use built-in
 PHP functions like `file_get_contents()`, `fopen()`, and `stat()` for
 reading and writing files into object storage.
-
-#### CDN
-
-With CDN service enabled, objects in Object Storage can be pushed onto
-the HP Cloud edge server network.
-
-With this library, manage CDN integration for object storage containers,
-and manage individual objects. The library allows you to fetch cached
-objects either from object storage or from the CDN cache.
 
 #### Autoloading
 

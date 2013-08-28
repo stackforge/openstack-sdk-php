@@ -225,7 +225,7 @@
  * HPCloud classes providing access to various services.
  *
  * HPCloud offers a number of services, including Compute (Nova),
- * IdentityServices, and CDN.
+ * and IdentityServices.
  *
  * This package is reserved for classes that provide access to
  * services.
@@ -237,7 +237,6 @@
  * Services for now and the future:
  *
  *- ObjectStorage
- *- CDN caching of storage
  *- Others coming.
  *
  */
@@ -246,10 +245,6 @@
  * Classes specific to ObjectStorage.
  *
  * The main class is HPCloud::Storage::ObjectStorage.
- */
-/*
- * @package HPCloud.Storage.CDN
- * Classes specific to CDN.
  */
 /**
  * @package HPCloud.Transport

@@ -245,24 +245,10 @@ use \HPCloud\Storage\ObjectStorage;
  *     In general, you should avoid using this.
  * - content_type: This is effective only when writing files. It will
  *     set the Content-Type of the file during upload.
- * - use_cdn: If this is set to TRUE, then whenever possible assets will be
- *     loaded from CDN instead of from the object store. The following
- *     conditions must obtain for this to work:
- *     - The container must allow public reading (ACL)
- *     - The container must have CDN enabled
- *     - The CDN container must be active ("cdn-enabled")
- *     - Authentication info must be accessible to the stream wrapper.
- * - cdn_require_ssl: If this is set to FALSE, then CDN-based requests
- *     may use plain HTTP instead of HTTPS. This will spead up CDN
- *     fetches at the cost of security.
  * - tenantid: The tenant ID for the services you will use. (An account may
  *     have multiple tenancies associated.)
  * - tenantname: The tenant name for the services you will use. You may use
  *     this in lieu of tenant ID.
- *
- * @attention
- *  ADVANCED: You can also pass an HPCloud::Storage::CDN object in use_cdn instead of
- *  a boolean.
  *
  * @see http://us3.php.net/manual/en/class.streamwrapper.php
  *
@@ -840,28 +826,6 @@ class StreamWrapper {
     }
 
     //syslog(LOG_WARNING, "Container: " . $containerName);
-
-    // EXPERIMENTAL:
-    // If we can get the resource from CDN, we do so now. Note that we try to sidestep
-    // the Container creation, which saves us an HTTP request.
-    $cdnUrl = $this->store->cdnUrl($containerName, FALSE);
-    $cdnSslUrl = $this->store->cdnUrl($containerName, TRUE);
-    if (!empty($cdnUrl) && !$this->isWriting && !$this->isAppending) {
-      $requireSSL = (boolean) $this->cxt('cdn_require_ssl', TRUE);
-      try {
-        $newUrl = $this->store->url() . '/' . $containerName;
-        $token = $this->store->token();
-        $this->container = new \HPCloud\Storage\ObjectStorage\Container($containerName, $newUrl, $token);
-        $this->container->useCDN($cdnUrl, $cdnSslUrl);
-        $this->obj = $this->container->object($objectName, $requireSSL);
-        $this->objStream = $this->obj->stream();
-
-        return TRUE;
-      }
-      // If there is an error, fall back to regular handling.
-      catch (\HPCloud\Exception $e) {}
-    }
-    // End EXPERIMENTAL section.
 
     // Now we need to get the container. Doing a server round-trip here gives
     // us the peace of mind that we have an actual container.
@@ -1579,60 +1543,8 @@ class StreamWrapper {
        */
     }
 
-    try {
-      $this->initializeCDN($token, $serviceCatalog);
-    }
-    catch (\HPCloud\Exception $e) {
-      //fwrite(STDOUT, $e);
-      throw new \HPCloud\Exception('CDN could not be initialized', 1, $e);
-
-    }
-
     return !empty($this->store);
 
-  }
-
-  /**
-   * Initialize CDN service.
-   *
-   * When the `use_cdn` parameter is passed into the context, we try
-   * to use a CDN service wherever possible.
-   *
-   * If `use_cdn` is set to TRUE, we try to create a new CDN object.
-   * This will require a service catalog.
-   *
-   * When use_cdn is set to TRUE, the wrapper tries to use CDN service.
-   * In such cases, we need a handle to the CDN object. This initializes
-   * that handle, which can later be used to get other information.
-   *
-   * Also note that CDN's default behavior is to fetch over SSL CDN.
-   * To disable this, set 'cdn_require_ssl' to FALSE.
-   */
-  protected function initializeCDN($token, $catalog) {
-    $cdn = $this->cxt('use_cdn', FALSE);
-
-    // No CDN should be enabled.
-    if (empty($cdn)) {
-      return FALSE;
-    }
-    // Use the CDN object, if provided.
-    elseif ($cdn instanceof \HPCloud\Storage\CDN) {
-      $this->cdn = $cdn;
-    }
-    // Or try to create a new CDN from the catalog.
-    else {
-      if (empty($catalog)) {
-        $ident = $this->authenticate();
-        $catalog = $ident->serviceCatalog();
-        $token = $ident->token();
-      }
-      $this->cdn = \HPCloud\Storage\CDN::newFromServiceCatalog($catalog, $token);
-    }
-
-    if (!empty($this->cdn)) {
-      $this->store->useCDN($this->cdn);
-    }
-    return TRUE;
   }
 
   protected function authenticate() {

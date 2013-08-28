@@ -64,8 +64,7 @@ use HPCloud\Storage\ObjectStorage\ACL;
  *
  * @todo ObjectStorage is not yet constrained to a particular version
  * of the API. It attempts to use whatever version is passed in to the
- * URL. This is different than IdentityServices and CDN, which use a
- * fixed version.
+ * URL. This is different than IdentityServices, which used a fixed version.
  */
 class ObjectStorage {
 
@@ -88,14 +87,6 @@ class ObjectStorage {
    * The URL to the Swift endpoint.
    */
   protected $url = NULL;
-
-  /**
-   * CDN containers.
-   *
-   * This is an associative array of container names to URLs.
-   */
-  protected $cdnContainers;
-
 
   /**
    * Create a new instance after getting an authenitcation token.
@@ -210,7 +201,6 @@ class ObjectStorage {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
           if (isset($endpoint['publicURL']) && $endpoint['region'] == $region) {
             $os= new ObjectStorage($authToken, $endpoint['publicURL']);
-            //$cdn->url = $endpoint['publicURL'];
 
             return $os;
           }
@@ -236,75 +226,6 @@ class ObjectStorage {
   public function __construct($authToken, $url) {
     $this->token = $authToken;
     $this->url = $url;
-  }
-
-  /**
-   * Indicate that this ObjectStorage instance should use the given CDN service.
-   *
-   * This will cause this ObjectStorage instance to use CDN as often as it can.
-   * Any containers (and subsequently container objects) that can leverage
-   * CDN services will act accordingly.
-   *
-   * CDN is used for *read* operations. Because CDN is a time-based cache,
-   * objects in CDN can be older than objects in Swift itself. For that
-   * reason, CDN should not be used when a combination of read and write
-   * operations occur.
-   *
-   * @retval HPCloud::Storage::ObjectStorage
-   * @return \HPCloud\Storage\ObjectStorage
-   *   $this for current object so the method can be used in chaining.
-   */
-  public function useCDN($cdn) {
-
-    // This should not happen, but has happened when service
-    // catalog was bad.
-    if (empty($cdn)) {
-      throw new \HPCloud\Exception('Cannot use CDN: No CDN provided.');
-    }
-
-    $containers = $cdn->containers(TRUE);
-    $buffer = array();
-
-    foreach ($containers as $item) {
-      // This is needed b/c of a bug in SOS that sometimes
-      // returns disabled containers (DEVEX-1733).
-      if ($item['cdn_enabled'] == 1) {
-        $buffer[$item['name']] = array(
-          'url' => $item['x-cdn-uri'],
-          'sslUrl' => $item['x-cdn-ssl-uri'],
-        );
-      }
-    }
-    $this->cdnContainers = $buffer;
-
-    return $this;
-  }
-
-  public function hasCDN() {
-    return !empty($this->cdnContainers);
-  }
-
-  /**
-   * Return the CDN URL for a particular container.
-   *
-   * If CDN is enabled, this will attempt to get the URL
-   * to the CDN endpoint for the given container.
-   *
-   * @param string $containerName
-   *   The name of the container.
-   * @param boolean $ssl
-   *   If this is TRUE (default), get the URL to the SSL CDN;
-   *   otherwise get the URL to the plain HTTP CDN.
-   * @retval string
-   * @return string
-   *   The URL to the CDN container, or NULL if no such
-   *   URL is found.
-   */
-  public function cdnUrl($containerName, $ssl = TRUE) {
-    if (!empty($this->cdnContainers[$containerName])) {
-      $key = $ssl ? 'sslUrl' : 'url';
-      return $this->cdnContainers[$containerName][$key];
-    }
   }
 
   /**
@@ -383,11 +304,6 @@ class ObjectStorage {
     foreach ($containers as $container) {
       $cname = $container['name'];
       $containerList[$cname] = Container::newFromJSON($container, $this->token(), $this->url());
-
-      if (!empty($this->cdnContainers[$cname])) {
-        $cdnList = $this->cdnContainers[$cname];
-        $containerList[$cname]->useCDN($cdnList['url'], $cdnList['sslUrl']);
-      }
     }
 
     return $containerList;
@@ -414,11 +330,6 @@ class ObjectStorage {
     $status = $data->status();
     if ($status == 204) {
       $container = Container::newFromResponse($name, $data, $this->token(), $this->url());
-
-      if (isset($this->cdnContainers[$name])) {
-        $cdnList = $this->cdnContainers[$name];
-        $container->useCDN($cdnList['url'], $cdnList['sslUrl']);
-      }
 
       return $container;
     }

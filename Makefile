@@ -17,9 +17,6 @@ fulltest:
 	phpunit --color --exclude-group=deprecated --bootstrap=test/bootstrap_curl.php $(TESTS);
 	phpunit --color --exclude-group=deprecated --bootstrap=test/bootstrap_phpstream.php $(TESTS)
 
-test-cdn :
-	php test/CDNTest.php
-
 test-group :
 	phpunit --color -v --group $(GROUP) $(TESTS)
 

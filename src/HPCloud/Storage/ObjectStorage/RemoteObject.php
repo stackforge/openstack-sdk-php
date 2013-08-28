@@ -67,9 +67,6 @@ class RemoteObject extends Object {
    */
   protected $allHeaders = array();
 
-  protected $cdnUrl;
-  protected $cdnSslUrl;
-
   /**
    * Create a new RemoteObject from JSON data.
    *
@@ -114,19 +111,12 @@ class RemoteObject extends Object {
    * @param string $url
    *   The URL to the object in the object storage. Used for issuing
    *   subsequent requests.
-   * @param string $cdnUrl
-   *   The URL to the CDN version of the object. Used for issuing
-   *   subsequent requests. If this is set, this object may use
-   *   CDN to make subsequent requests. It may also return the
-   *   CDN URL when requested.
-   * @param string $cdnSslUrl
-   *   The URL to the SSL-protected CDN version of the object.
    *
    * @retval HPCloud::Storage::ObjectStorage::RemoteObject
    * @return \HPCloud\Storage\ObjectStorage\RemoteObject
    *   A new RemoteObject.
    */
-  public static function newFromHeaders($name, $headers, $token, $url, $cdnUrl = NULL, $cdnSslUrl = NULL) {
+  public static function newFromHeaders($name, $headers, $token, $url) {
     $object = new RemoteObject($name);
 
     //$object->allHeaders = $headers;
@@ -160,43 +150,8 @@ class RemoteObject extends Object {
 
     $object->token = $token;
     $object->url = $url;
-    $object->cdnUrl = $cdnUrl;
-    $object->cdnSslUrl = $cdnSslUrl;
 
     return $object;
-  }
-
-  /**
-   * Set the URL to this object in a CDN service.
-   *
-   * A CDN may be used to expedite *reading* the object. Write
-   * operations are never performed on a CDN. Since a RemoteObject
-   * can be partially loaded, it is possible that part of the object
-   * is read from a CDN, and part from Swift. However, to accomplish
-   * this would require one to set CDN services in one place, and
-   * not in the other.
-   *
-   * Note that if CDN was set using ObjectStorage::useCDN() or
-   * Container::useCDN(), you needn't call this method. CDN will
-   * be automatically enabled during object construction.
-   *
-   * Setting this to NULL has the effect of turning off CDN for
-   * this object.
-   *
-   * @param string $url
-   *   The URL to this object in CDN.
-   * @param string $sslUrl
-   *   The SSL URL to this object in CDN.
-   *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
-   *   $this for the current object so it can be used in chaining methods.
-   */
-  public function useCDN($url, $sslUrl) {
-    $this->cdnUrl = $url;
-    $this->cdnSslUrl = $sslUrl;
-
-    return $this;
   }
 
   /**
@@ -205,37 +160,16 @@ class RemoteObject extends Object {
    * If this object has been stored remotely, it will have
    * a valid URL.
    *
-   * @param boolean $cached
-   *   If this value is set to TRUE, this call *may* return the
-   *   URL to a cached (CDN) URL. Reading from a cached URL should
-   *   be substantially faster than reading from a normal URL. Note,
-   *   however, that a container must have CDN enabled on it before
-   *   caching can be used, and a CDN must be passed into this
-   *   object. See ObjectStorage::useCDN(), Container::useCDN() and
-   *   RemoteObject::useCDN(). (Generally, using ObjectStorage::useCDN()
-   *   is all you need to do.)
-   * @param boolean $useSSL
-   *   FOR CACHED URLS ONLY, there is an option for either SSL or non-SSL
-   *   URLs. By default, we use SSL URLs because (a) it's safer, and
-   *   (b) it mirrors non-CDN behavior. This can be turned off by setting
-   *   $useSSL to FALSE.
    * @retval string
    * @return string
    *   A URL to the object. The following considerations apply:
    *   - If the container is public, this URL can be loaded without
    *     authentication. You can, for example, pass the URL to a browser
    *     user agent.
-   *   - If a CDN URL has been provided to useCDN() and $cached is TRUE...
-   *     - If the container is CDN enabled, a URL to the cache will be returned.
-   *     - Otherwise, the Swift URL will be returned.
    *   - If this object has never been saved remotely, then there will be
    *     no URL, and this will return NULL.
    */
-  public function url($cached = FALSE, $useSSL = TRUE) {
-
-    if ($cached && !empty($this->cdnUrl)) {
-      return $useSSL ? $this->cdnSslUrl : $this->cdnUrl;
-    }
+  public function url() {
     return $this->url;
   }
 
@@ -680,12 +614,7 @@ class RemoteObject extends Object {
       'X-Auth-Token' => $this->token,
     );
 
-    if (empty($this->cdnUrl)) {
-      $response = $client->doRequest($this->url, $method, $headers);
-    }
-    else {
-      $response = $client->doRequest($this->cdnUrl, $method, $headers);
-    }
+    $response = $client->doRequest($this->url, $method, $headers);
 
     if ($response->status() != 200) {
       throw new \HPCloud\Exception('An unknown exception occurred during transmission.');

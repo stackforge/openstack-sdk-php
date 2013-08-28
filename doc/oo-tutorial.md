@@ -157,7 +157,7 @@ page. It's all there.
 ### Identity Services
 
 The HPCloud is composed of numerous services. There's the Compute
-service, the Object Storage service, the CDN service... and so on.
+service, the Object Storage service... and so on.
 
 Authenticating separately to each of these would be a collosal waste of
 network resources. And behind the scenes, account management would be
@@ -300,7 +300,6 @@ Instances of HPCloud::Storage::ObjectStorage are responsbile for:
 - Providing high-level information about the Object Storage service
 - Creating, deleting, loading, and listing Containers
 - Modifying Container ACLs
-- Attaching a HPCloud::Storage::CDN service object to a Container (advanced)
 
 ## Step 5: Adding a Container
 
@@ -355,7 +354,6 @@ A HPCloud::Storage::ObjectStorage::Container instance is responsible for the fol
 - Creating, saving, deleting, and listing objects in the container
 - Providing path-like traversal of objects
 - Copying objects across containers
-- Interacting with CDN objects (advanced)
 - Loading a lightweight representation of an object without fetching the
   entire object (more on this later).
 
@@ -501,7 +499,6 @@ Instances of a HPCloud::Storage::ObjectStorage::RemoteObject offer the following
 
 - Access to an object stored on the remote object storage
 - A proxying mechanism for lazily loading objects
-- Support for loading via CDN (advanced)
 - A stream-based API for using stream and file-based PHP functions
 - Automatic tempfile-based caching for large objects (using
   `php://temp`).
