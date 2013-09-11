@@ -22,6 +22,6 @@
     "curl": ">=7.0.0"
   },
   "autoload": {
-    "psr-0": { "HPCloud": "src" }
+    "psr-0": { "HPCloud": "src", "OpenStack": "src" }
   }
 }

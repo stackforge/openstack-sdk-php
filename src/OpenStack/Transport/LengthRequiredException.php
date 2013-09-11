@@ -21,13 +21,11 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- *
- * The permission denied exception.
  */
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 /**
- * Thrown when an access constraint is not met.
+ * Represents an HTTP 412 error.
  *
- * Represents an HTTP 403 exception.
+ * During some PUT requests, Content-Length is a required header.
  */
-class ForbiddenException extends AuthorizationException {}
+class LengthRequiredException extends \OpenStack\Exception {}

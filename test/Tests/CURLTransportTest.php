@@ -24,22 +24,22 @@ SOFTWARE.
  *
  * Unit tests for ObjectStorage Object.
  */
-namespace HPCloud\Tests\Transport;
+namespace OpenStack\Tests\Transport;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Transport;
-use \HPCloud\Transport\CURLTransport;
+use \OpenStack\Transport;
+use \OpenStack\Transport\CURLTransport;
 
-class CURLTransportTest extends \HPCloud\Tests\TestCase {
+class CURLTransportTest extends \OpenStack\Tests\TestCase {
 
   public static function tearDownAfterClass() {
     $transport = NULL;
     if (isset(self::$settings['transport'])) {
       $transport = self::$settings['transport'];
     }
-    \HPCloud\Bootstrap::setConfiguration(array(
+    \OpenStack\Bootstrap::setConfiguration(array(
       'transport' => $transport,
     ));
   }
@@ -49,8 +49,8 @@ class CURLTransportTest extends \HPCloud\Tests\TestCase {
 
     // This is prone to failure because instance() caches
     // the class.
-    $trans = '\HPCloud\Transport\CURLTransport';
-    \HPCloud\Bootstrap::setConfiguration(array(
+    $trans = '\OpenStack\Transport\CURLTransport';
+    \OpenStack\Bootstrap::setConfiguration(array(
       'transport' => $trans,
     ));
 
@@ -59,14 +59,14 @@ class CURLTransportTest extends \HPCloud\Tests\TestCase {
   }
 
   public function testDoRequest() {
-    $url = 'http://technosophos.com/index.php';
+    $url = 'http://www.openstack.org';
     $method = 'GET';
     $headers = array();
 
     $curl = new CURLTransport();
     $response = $curl->doRequest($url, $method, $headers);
 
-    $this->assertInstanceOf('\HPCloud\Transport\Response', $response);
+    $this->assertInstanceOf('\OpenStack\Transport\Response', $response);
 
     $this->assertEquals(200, $response->status());
 
@@ -85,10 +85,10 @@ class CURLTransportTest extends \HPCloud\Tests\TestCase {
 
   /**
    * @depends testDoRequest
-   * @expectedException \HPCloud\Transport\FileNotFoundException
+   * @expectedException \OpenStack\Transport\FileNotFoundException
    */
   public function testDoRequestException() {
-    $url = 'http://technosophos.com/this-does-no-exist';
+    $url = 'http://www.openstack.org/this-does-no-exist';
     $method = 'GET';
     $headers = array();
 
@@ -96,13 +96,13 @@ class CURLTransportTest extends \HPCloud\Tests\TestCase {
     $curl->doRequest($url, $method, $headers);
   }
 
-  public function testSwiftAuth() {
-    // We know that the object works, so now we test whether it can
-    // communicate with Swift.
-    $storage = $this->objectStore();
+  // public function testSwiftAuth() {
+  //   // We know that the object works, so now we test whether it can
+  //   // communicate with Swift.
+  //   $storage = $this->objectStore();
 
-    $info = $storage->accountInfo();
+  //   $info = $storage->accountInfo();
 
-    $this->assertTrue(count($info) > 1);
-  }
+  //   $this->assertTrue(count($info) > 1);
+  // }
 }

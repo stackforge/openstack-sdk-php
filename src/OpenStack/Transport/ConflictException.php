@@ -22,8 +22,12 @@ SOFTWARE.
 /**
  * @file
  */
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 /**
- * Represents an HTTP 500 error.
+ * Represents an HTTP 409 error.
+ *
+ * During DELETE requests, this occurs when a remote resource cannot be
+ * deleted because the resource is not empty or deleteable. (viz.
+ * containers).
  */
-class ServerException extends \HPCloud\Exception {}
+class ConflictException extends \OpenStack\Exception {}

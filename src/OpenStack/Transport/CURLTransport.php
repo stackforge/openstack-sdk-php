@@ -24,9 +24,9 @@ SOFTWARE.
  * Implements a transporter with CURL.
  */
 
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 
-use \HPCloud\Bootstrap;
+use \OpenStack\Bootstrap;
 
 /**
  * Provide HTTP transport with CURL.
@@ -130,7 +130,7 @@ class CURLTransport implements Transporter {
     // XXX: I don't like this, but I'm getting bug reports that mistakenly
     // assume this library is broken, when in fact CURL is not installed.
     if (!function_exists('curl_init')) {
-      throw new \HPCloud\Exception('The CURL library is not available.');
+      throw new \OpenStack\Exception('The CURL library is not available.');
     }
 
     //syslog(LOG_WARNING, "Real Operation: $method $uri");

@@ -24,12 +24,12 @@ SOFTWARE.
  *
  * Unit tests for the Bootstrap.
  */
-namespace HPCloud\Tests;
+namespace OpenStack\Tests;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-class BootstrapTest extends \HPCloud\Tests\TestCase {
+class BootstrapTest extends \OpenStack\Tests\TestCase {
 
   /**
    * Canary test.
@@ -42,19 +42,19 @@ class BootstrapTest extends \HPCloud\Tests\TestCase {
    * Test the BaseDir.
    */
   public function testBasedir() {
-    $basedir = \HPCloud\Bootstrap::$basedir;
-    $this->assertRegExp('/HPCloud/', $basedir);
+    $basedir = \OpenStack\Bootstrap::$basedir;
+    $this->assertRegExp('/OpenStack/', $basedir);
   }
 
   /**
    * Test the autoloader.
    */
   public function testAutoloader() {
-    \HPCloud\Bootstrap::useAutoloader();
+    \OpenStack\Bootstrap::useAutoloader();
 
     // If we can construct a class, we are okay.
-    $test = new \HPCloud\Exception("TEST");
+    $test = new \OpenStack\Exception("TEST");
 
-    $this->assertInstanceOf('\HPCloud\Exception', $test);
+    $this->assertInstanceOf('\OpenStack\Exception', $test);
   }
 }

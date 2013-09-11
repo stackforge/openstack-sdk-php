@@ -22,8 +22,8 @@ SOFTWARE.
 /**
  * @file
  */
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 /**
  * Represents an HTTP 405 error.
  */
-class MethodNotAllowedException extends \HPCloud\Exception {}
+class MethodNotAllowedException extends \OpenStack\Exception {}

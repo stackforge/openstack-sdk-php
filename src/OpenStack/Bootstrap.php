@@ -24,18 +24,18 @@ SOFTWARE.
  * HP Cloud configuration.
  *
  * This file contains the HP Cloud autoloader. It also automatically
- * register the HPCloud stream wrappers.
+ * register the OpenStack stream wrappers.
  */
 
-namespace HPCloud;
+namespace OpenStack;
 
 use HPCloud\Services\IdentityServices;
-use HPCloud\Exception;
+use OpenStack\Exception;
 
 /**
  * Bootstrapping services.
  *
- * There is no requirement that this class be used. HPCloud is
+ * There is no requirement that this class be used. OpenStack is
  * built to be flexible, and any individual component can be
  * used directly, with one caveat: No explicit @c require or
  * @c include calls are made. See the "autoloaders" discussion
@@ -48,10 +48,10 @@ use HPCloud\Exception;
  *   can be set, and the config() and hasConfig() methods to see
  *   how configuration might be checked.
  * - <em>Stream Wrappers:</em> This class can initialize a set of stream
- *   wrappers which will make certain HPCloud services available
+ *   wrappers which will make certain OpenStack services available
  *   through the core PHP stream support.
  * - <em>Autoloader:</em> It provides a special-purpose autoloader that can
- *   load the HPCloud classes, but which will not interfere with
+ *   load the OpenStack classes, but which will not interfere with
  *   other autoloading facilities.
  *
  * <b>Configuration</b>
@@ -63,7 +63,7 @@ use HPCloud\Exception;
  * <?php
  * $config = array(
  *   // Use the faster and better CURL transport.
- *   'transport' => '\HPCloud\Transport\CURLTransport',
+ *   'transport' => '\OpenStack\Transport\CURLTransport',
  *   // Set the HTTP max wait time to 500.
  *   'transport.timeout' => 500,
  * );
@@ -85,20 +85,20 @@ use HPCloud\Exception;
  *
  * <b>AUTOLOADING</b>
  *
- * HPCloud comes with a built-in autoloader that can be called like this:
+ * OpenStack comes with a built-in autoloader that can be called like this:
  *
  * @code
  * Bootstrap::useAutoloader();
  * @endcode
  *
  * @attention
- * The structure of the HPCloud file hierarchy is PSR-0 compliant.
+ * The structure of the OpenStack file hierarchy is PSR-0 compliant.
  * This means that you can use any standard PSR-0 classloader to
  * load all of the classes here.
  *
  * That said, many projects rely upon packages to handle their own
  * class loading. To provide this, this package contains a custom
- * classloader that will load JUST the HPCloud classes. See
+ * classloader that will load JUST the OpenStack classes. See
  * the Bootstrap::useAutoloader() static method.
  *
  * See https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
@@ -107,8 +107,8 @@ use HPCloud\Exception;
  *
  * Stream wrappers allow you to use the built-in file manipulation
  * functions in PHP to interact with other services. Specifically,
- * the HPCloud stream wrappers allow you to use built-in file commands
- * to access Object Storage (Swift) and other HPCloud services using
+ * the OpenStack stream wrappers allow you to use built-in file commands
+ * to access Object Storage (Swift) and other OpenStack services using
  * commands like file_get_contents() and fopen().
  *
  * It's awesome. Trust me.
@@ -117,23 +117,23 @@ use HPCloud\Exception;
 class Bootstrap {
 
   /**
-   * The directory where HPCloud is located.
+   * The directory where OpenStack is located.
    */
   public static $basedir = __DIR__;
 
   public static $config = array(
     // The transport implementation. By default, we use the PHP stream
     // wrapper's HTTP mechanism to process transactions.
-    //'transport' => '\HPCloud\Transport\PHPStreamTransport',
+    //'transport' => '\OpenStack\Transport\PHPStreamTransport',
 
     // This is the default transport while a bug persists in the 
     // Identity Services REST service.
-    'transport' => '\HPCloud\Transport\CURLTransport',
+    'transport' => '\OpenStack\Transport\CURLTransport',
   );
 
   /**
    * An identity services object created from the global settings.
-   * @var object HPCloud::Services::IdentityServices
+   * @var object OpenStack::Services::IdentityServices
    */
   public static $identity = NULL;
 
@@ -144,7 +144,7 @@ class Bootstrap {
    * autoloader to the list of autoloaders that PHP will
    * leverage to resolve class paths.
    *
-   * Because HPCloud is PSR-0 compliant, any
+   * Because OpenStack is PSR-0 compliant, any
    * full PSR-0 classloader should be capable of loading
    * these classes witout issue. You may prefer to use
    * a standard PSR-0 loader instead of this one.
@@ -156,7 +156,7 @@ class Bootstrap {
   }
 
   /**
-   * Register stream wrappers for HPCloud.
+   * Register stream wrappers for OpenStack.
    *
    * This register the ObjectStorage stream wrappers, which allow you to access
    * ObjectStorage through standard file access mechanisms.
@@ -192,18 +192,18 @@ class Bootstrap {
   }
 
   /**
-   * Set configuration directives for HPCloud.
+   * Set configuration directives for OpenStack.
    *
    * This merges the provided associative array into the existing
    * configuration parameters (Bootstrap::$config).
    *
-   * All of the HPCloud classes share the same configuration. This
+   * All of the OpenStack classes share the same configuration. This
    * ensures that a stable runtime environment is maintained.
    *
    * Common configuration directives:
    *
    * - 'transport': The namespaced classname for the transport that
-   *   should be used. Example: @code \HPCloud\Transport\CURLTransport @endcode
+   *   should be used. Example: @code \OpenStack\Transport\CURLTransport @endcode
    * - 'transport.debug': The integer 1 for enabling debug, 0 for
    *   disabling. Enabling will turn on verbose debugging output
    *   for any transport that supports it.
@@ -238,10 +238,10 @@ class Bootstrap {
   }
 
   /**
-   * HPCloud autoloader.
+   * OpenStack autoloader.
    *
    * An implementation of a PHP autoload function. Use
-   * HPCloud::useAutoloader() if you want PHP to automatically
+   * OpenStack::useAutoloader() if you want PHP to automatically
    * load classes using this autoloader.
    *
    * @code
@@ -250,8 +250,8 @@ class Bootstrap {
    * @endcode
    *
    * This is a special-purpose autoloader for loading
-   * only the HPCloud classes. It will not attempt to
-   * autoload anything outside of the HPCloud namespace.
+   * only the OpenStack classes. It will not attempt to
+   * autoload anything outside of the OpenStack namespace.
    *
    * Because this is a special-purpose autoloader, it
    * should be safe to use with other special-purpose
@@ -271,12 +271,12 @@ class Bootstrap {
     // our classes. A general purpose
     // classloader should be used for
     // more sophisticated needs.
-    if ($components[0] != 'HPCloud') {
+    if ($components[0] != 'OpenStack') {
       return;
     }
 
-    // We need the path up to, but not including, the root HPCloud dir:
-    $loc = DIRECTORY_SEPARATOR . 'HPCloud';
+    // We need the path up to, but not including, the root OpenStack dir:
+    $loc = DIRECTORY_SEPARATOR . 'OpenStack';
     $local_path = substr(self::$basedir, 0, strrpos(self::$basedir, $loc));
 
     array_unshift($components, $local_path);
@@ -339,18 +339,18 @@ class Bootstrap {
   }
 
   /**
-   * Get a HPCloud::Services::IdentityService object from the bootstrap config.
+   * Get a OpenStack::Services::IdentityService object from the bootstrap config.
    *
    * A factory helper function that uses the bootstrap configuration to create
-   * a ready to use HPCloud::Services::IdentityService object.
+   * a ready to use OpenStack::Services::IdentityService object.
    *
    * @param bool $force
    *   Whether to force the generation of a new object even if one is already
    *   cached.
-   * @retval HPCloud::Services::IdentityService
-   * @return \HPCloud\Services\:IdentityService
-   *   An authenticated ready to use HPCloud::Services::IdentityService object.
-   * @throws HPCloud::Exception
+   * @retval OpenStack::Services::IdentityService
+   * @return \OpenStack\Services\:IdentityService
+   *   An authenticated ready to use OpenStack::Services::IdentityService object.
+   * @throws OpenStack::Exception
    *   When the needed configuration to authenticate is not available.
    */
   public static function identity($force = FALSE) {

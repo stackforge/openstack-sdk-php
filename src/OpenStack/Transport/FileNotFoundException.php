@@ -22,10 +22,8 @@ SOFTWARE.
 /**
  * @file
  */
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 /**
- * Represents an HTTP 412 error.
- *
- * During some PUT requests, Content-Length is a required header.
+ * Represents an HTTP File Not Found error.
  */
-class LengthRequiredException extends \HPCloud\Exception {}
+class FileNotFoundException extends \OpenStack\Exception {}

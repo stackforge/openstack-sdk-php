@@ -21,9 +21,13 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
+ *
+ * The permission denied exception.
  */
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 /**
- * Represents an HTTP File Not Found error.
+ * Thrown when an access constraint is not met.
+ *
+ * Represents an HTTP 403 exception.
  */
-class FileNotFoundException extends \HPCloud\Exception {}
+class ForbiddenException extends AuthorizationException {}

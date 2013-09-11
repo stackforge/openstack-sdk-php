@@ -24,7 +24,7 @@ SOFTWARE.
  *
  * A response from a transport.
  */
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 
 /**
  * A Transport response.
@@ -72,8 +72,8 @@ class Response {
    *   The HTTP method, e.g. 'HEAD', 'GET', 'DELETE'.
    * @param string $extra
    *   An extra string of debugging information. (NOT USED)
-   * @throws HPCloud::Exception
-   *   A wide variety of HPCloud::Transport exceptions.
+   * @throws OpenStack::Exception
+   *   A wide variety of OpenStack::Transport exceptions.
    */
   public static function failure($code, $err = 'Unknown', $uri = '', $method = '', $extra = '') {
 
@@ -81,23 +81,23 @@ class Response {
     switch ($code) {
 
       case '403':
-        throw new \HPCloud\Transport\ForbiddenException($err);
+        throw new \OpenStack\Transport\ForbiddenException($err);
       case '401':
-        throw new \HPCloud\Transport\UnauthorizedException($err);
+        throw new \OpenStack\Transport\UnauthorizedException($err);
       case '404':
-        throw new \HPCloud\Transport\FileNotFoundException($err . " ($uri)");
+        throw new \OpenStack\Transport\FileNotFoundException($err . " ($uri)");
       case '405':
-        throw new \HPCloud\Transport\MethodNotAllowedException($err . " ($method $uri)");
+        throw new \OpenStack\Transport\MethodNotAllowedException($err . " ($method $uri)");
       case '409':
-        throw new \HPCloud\Transport\ConflictException($err);
+        throw new \OpenStack\Transport\ConflictException($err);
       case '412':
-        throw new \HPCloud\Transport\LengthRequiredException($err);
+        throw new \OpenStack\Transport\LengthRequiredException($err);
       case '422':
-        throw new \HPCloud\Transport\UnprocessableEntityException($err);
+        throw new \OpenStack\Transport\UnprocessableEntityException($err);
       case '500':
-        throw new \HPCloud\Transport\ServerException($err);
+        throw new \OpenStack\Transport\ServerException($err);
       default:
-        throw new \HPCloud\Exception($err);
+        throw new \OpenStack\Exception($err);
 
     }
 

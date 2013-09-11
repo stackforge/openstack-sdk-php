@@ -21,14 +21,9 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- * The parent exception class for HPCloud.
  */
-namespace HPCloud;
+namespace OpenStack\Transport;
 /**
- * The top-level HPCloud exception.
- *
- * In most cases, the library will throw a more finely
- * grained exception, but all exceptions thrown directly
- * by HPCloud will be an instance of this exception.
+ * Represents an HTTP 500 error.
  */
-class Exception extends \Exception {}
+class ServerException extends \OpenStack\Exception {}

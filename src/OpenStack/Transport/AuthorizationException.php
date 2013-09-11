@@ -21,13 +21,13 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- */
-namespace HPCloud\Transport;
-/**
- * Represents an HTTP 409 error.
  *
- * During DELETE requests, this occurs when a remote resource cannot be
- * deleted because the resource is not empty or deleteable. (viz.
- * containers).
+ * The authorization exception.
  */
-class ConflictException extends \HPCloud\Exception {}
+namespace OpenStack\Transport;
+/**
+ * Thrown when an access constraint is not met.
+ *
+ * Represents an HTTP 401 or 403 exception.
+ */
+class AuthorizationException extends \OpenStack\Exception {}

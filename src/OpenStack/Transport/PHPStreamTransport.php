@@ -24,7 +24,7 @@ SOFTWARE.
  * Implements a transporter with the PHP HTTP Stream Wrapper.
  */
 
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 
 /**
  * Provide HTTP transport with the PHP HTTP stream wrapper.
@@ -40,9 +40,9 @@ namespace HPCloud\Transport;
  * You can use a single PHPStreamTransport object to execute multiple requests.
  *
  * @attention This class should not be constructed directly.
- * Use HPCloud::Transport::instance() to get an instance.
+ * Use OpenStack::Transport::instance() to get an instance.
  *
- * See HPCloud::Transport and HPCloud::Bootstrap.
+ * See OpenStack::Transport and OpenStack::Bootstrap.
  */
 class PHPStreamTransport implements Transporter {
 
@@ -77,9 +77,9 @@ class PHPStreamTransport implements Transporter {
       if (empty($err['message'])) {
         // FIXME: Under certain circumstances, all this really means is that
         // there is a 404. So we pretend that it's always a 404.
-        // throw new \HPCloud\Exception("An unknown exception occurred while sending a request.");
+        // throw new \OpenStack\Exception("An unknown exception occurred while sending a request.");
         $msg = "File not found, perhaps due to a network failure.";
-        throw new \HPCloud\Transport\FileNotFoundException($msg);
+        throw new \OpenStack\Transport\FileNotFoundException($msg);
       }
       $this->guessError($err['message'], $uri, $method);
 
@@ -88,7 +88,7 @@ class PHPStreamTransport implements Transporter {
     }
 
     $metadata = stream_get_meta_data($res);
-    if (\HPCloud\Bootstrap::hasConfig('transport.debug')) {
+    if (\OpenStack\Bootstrap::hasConfig('transport.debug')) {
       $msg = implode(PHP_EOL, $metadata['wrapper_data']);
       $msg .= sprintf("\nWaiting to read %d bytes.\n", $metadata['unread_bytes']);
 
@@ -143,7 +143,7 @@ class PHPStreamTransport implements Transporter {
       $err = error_get_last();
 
       if (empty($err['message'])) {
-        throw new \HPCloud\Exception("An unknown exception occurred while sending a request.");
+        throw new \OpenStack\Exception("An unknown exception occurred while sending a request.");
       }
       $this->guessError($err['message'], $uri, $method);
 
@@ -177,7 +177,7 @@ class PHPStreamTransport implements Transporter {
     preg_match($regex, $err, $matches);
 
     if (count($matches) < 3) {
-      throw new \HPCloud\Exception($err);
+      throw new \OpenStack\Exception($err);
     }
 
     Response::failure($matches[1], $matches[0], $uri, $method);
@@ -248,8 +248,8 @@ class PHPStreamTransport implements Transporter {
       $config['http']['content'] = $body;
     }
 
-    if (\HPCloud\Bootstrap::hasConfig('transport.timeout')) {
-      $config['http']['timeout'] = (float) \HPCloud\Bootstrap::config('transport.timeout');
+    if (\OpenStack\Bootstrap::hasConfig('transport.timeout')) {
+      $config['http']['timeout'] = (float) \OpenStack\Bootstrap::config('transport.timeout');
     }
 
     // Set the params. (Currently there is only one.)
@@ -258,7 +258,7 @@ class PHPStreamTransport implements Transporter {
       $params['notification'] = $this->notificationCallback;
     }
     // Enable debugging:
-    elseif (\HPCloud\Bootstrap::hasConfig('transport.debug')) {
+    elseif (\OpenStack\Bootstrap::hasConfig('transport.debug')) {
       //fwrite(STDOUT, "Sending debug messages to STDOUT\n");
       $params['notification'] = array($this, 'printNotifications');
     }

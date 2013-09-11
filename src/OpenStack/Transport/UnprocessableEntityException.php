@@ -21,13 +21,12 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- *
- * The authorization exception.
  */
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 /**
- * Thrown when authorization fails.
+ * Represents an HTTP 422 error.
  *
- * Represents an HTTP 401 exception.
+ * This often represents a case where a checksum or hash did not match
+ * the generated checksum on the remote end.
  */
-class UnauthorizedException extends AuthorizationException {}
+class UnprocessableEntityException extends \OpenStack\Exception {}

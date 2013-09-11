@@ -21,13 +21,14 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- *
- * The authorization exception.
+ * The parent exception class for OpenStack.
  */
-namespace HPCloud\Transport;
+namespace OpenStack;
 /**
- * Thrown when an access constraint is not met.
+ * The top-level OpenStack exception.
  *
- * Represents an HTTP 401 or 403 exception.
+ * In most cases, the library will throw a more finely
+ * grained exception, but all exceptions thrown directly
+ * by OpenStack will be an instance of this exception.
  */
-class AuthorizationException extends \HPCloud\Exception {}
+class Exception extends \Exception {}

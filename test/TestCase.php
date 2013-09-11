@@ -26,19 +26,16 @@ SOFTWARE.
 /**
  * @defgroup Tests
  *
- * The HPCloud library is tested with PHPUnit tests.
+ * The OpenStack library is tested with PHPUnit tests.
  *
  * This group contains all of the unit testing classes.
  */
 
 
-namespace HPCloud\Tests;
+namespace OpenStack\Tests;
 
-#require_once  'mageekguy.atoum.phar';
 require_once 'PHPUnit/Autoload.php';
-require_once 'src/HPCloud/Bootstrap.php';
-
-//use \mageekguy\atoum;
+require_once 'src/OpenStack/Bootstrap.php';
 
 /**
  * @ingroup Tests
@@ -74,8 +71,8 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     }
 
 
-    \HPCloud\Bootstrap::useAutoloader();
-    \HPCloud\Bootstrap::setConfiguration(self::$settings);
+    \OpenStack\Bootstrap::useAutoloader();
+    \OpenStack\Bootstrap::setConfiguration(self::$settings);
 
     //parent::__construct($score, $locale, $adapter);
   }
@@ -197,7 +194,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
       $container = $store->container($cname);
     }
     // The container was never created.
-    catch (\HPCloud\Transport\FileNotFoundException $e) {
+    catch (\OpenStack\Transport\FileNotFoundException $e) {
       return;
     }
 
@@ -225,7 +222,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
       $container = $store->container($cname);
     }
     // The container was never created.
-    catch (\HPCloud\Transport\FileNotFoundException $e) {
+    catch (\OpenStack\Transport\FileNotFoundException $e) {
       return;
     }
 

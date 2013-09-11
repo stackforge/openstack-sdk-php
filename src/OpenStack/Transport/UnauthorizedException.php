@@ -21,12 +21,13 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- */
-namespace HPCloud\Transport;
-/**
- * Represents an HTTP 422 error.
  *
- * This often represents a case where a checksum or hash did not match
- * the generated checksum on the remote end.
+ * The authorization exception.
  */
-class UnprocessableEntityException extends \HPCloud\Exception {}
+namespace OpenStack\Transport;
+/**
+ * Thrown when authorization fails.
+ *
+ * Represents an HTTP 401 exception.
+ */
+class UnauthorizedException extends AuthorizationException {}

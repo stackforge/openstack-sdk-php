@@ -23,11 +23,11 @@ SOFTWARE.
  * @file
  * The Transport class.
  */
-namespace HPCloud;
+namespace OpenStack;
 /**
- * Provide an HTTP client (Transporter) for interaction with HPCloud.
+ * Provide an HTTP client (Transporter) for interaction with OpenStack.
  *
- * Interaction with the OpenStack/HPCloud services is handled via
+ * Interaction with the OpenStack services is handled via
  * HTTPS/REST requests. This class provides transport for requests.
  *
  * <b>Usage</b>
@@ -52,8 +52,8 @@ class Transport {
   /**
    * Get an instance of a Transporter.
    *
-   * See HPCloud::Transport::CURLTransport and HPCloud::Transport::PHPStreamTransport
-   * for implementations of an HPCloud::Transport::Transporter.
+   * See OpenStack::Transport::CURLTransport and OpenStack::Transport::PHPStreamTransport
+   * for implementations of an OpenStack::Transport::Transporter.
    *
    * To set the transport, the suggested method is this:
    *
@@ -63,22 +63,22 @@ class Transport {
    * $settings = array(
    *   // Make sure you use the entire namespace, and that
    *   // your classloader can find this namespace.
-   *   'transport' => '\HPCloud\Transport\CURLTransport',
+   *   'transport' => '\OpenStack\Transport\CURLTransport',
    * );
    *
    * // Merge $settings into existing configuration.
-   * \HPCloud\Bootstrap::setConfiguration($settings);
+   * \OpenStack\Bootstrap::setConfiguration($settings);
    * ?>
    * @endcode
    *
-   * @retval HPCloud::Transport::Transporter
-   * @return \HPCloud\Transport\Transporter
+   * @retval OpenStack::Transport::Transporter
+   * @return \OpenStack\Transport\Transporter
    *   An initialized transporter.
    */
   public static function instance() {
 
     if (empty(self::$inst)) {
-      $klass = \HPCloud\Bootstrap::config('transport');
+      $klass = \OpenStack\Bootstrap::config('transport');
       self::$inst = new $klass();
     }
     return self::$inst;

@@ -24,7 +24,7 @@ SOFTWARE.
  * This file contains the interface for transporters.
  */
 
-namespace HPCloud\Transport;
+namespace OpenStack\Transport;
 
 /**
  * Describes a Transporter.
@@ -40,7 +40,7 @@ namespace HPCloud\Transport;
  */
 interface Transporter {
 
-  const HTTP_USER_AGENT = 'HPCloud-PHP/1.0';
+  const HTTP_USER_AGENT = 'OpenStack-PHP/1.0';
 
   /**
    * Perform a request.
