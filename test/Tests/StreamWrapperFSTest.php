@@ -24,20 +24,20 @@ SOFTWARE.
  *
  * Unit tests for the stream wrapper file systema.
  */
-namespace HPCloud\Tests\Storage\ObjectStorage;
+namespace OpenStack\Tests\Storage\ObjectStorage;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Storage\ObjectStorage\StreamWrapperFS;
-use \HPCloud\Storage\ObjectStorage\Container;
-use \HPCloud\Storage\ObjectStorage\Object;
-use \HPCloud\Storage\ObjectStorage\ACL;
+use \OpenStack\Storage\ObjectStorage\StreamWrapperFS;
+use \OpenStack\Storage\ObjectStorage\Container;
+use \OpenStack\Storage\ObjectStorage\Object;
+use \OpenStack\Storage\ObjectStorage\ACL;
 
 /**
  * @group streamWrapper
  */
-class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
+class StreamWrapperFSTest extends \OpenStack\Tests\TestCase {
 
   const FNAME = 'streamTest.txt';
   const FTYPE = 'application/x-tuna-fish; charset=iso-8859-13';
@@ -56,22 +56,22 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
     $tenantId = self::conf('openstack.identity.tenantId');
     $url = self::conf('openstack.identity.url');
 
-    $ident = new \HPCloud\Services\IdentityServices($url);
+    $ident = new \OpenStack\Services\IdentityService($url);
 
     $token = $ident->authenticateAsUser($user, $pass, $tenantId);
 
     // Then we need to get an instance of storage
-    $store = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
+    $store = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
 
 
     // Delete the container and all the contents.
-    $cname = self::$settings['hpcloud.swift.container'];
+    $cname = self::$settings['openstack.swift.container'];
     
     try {
       $container = $store->container($cname);
     }
     // The container was never created.
-    catch (\HPCloud\Transport\FileNotFoundException $e) {
+    catch (\OpenStack\Transport\FileNotFoundException $e) {
       return;
     }
 
@@ -87,7 +87,7 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
 
   protected function newUrl($objectName) {
     $scheme = StreamWrapperFS::DEFAULT_SCHEME;
-    $cname = self::$settings['hpcloud.swift.container'];
+    $cname = self::$settings['openstack.swift.container'];
     $cname = urlencode($cname);
 
     $objectParts = explode('/', $objectName);
@@ -105,7 +105,7 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
    * This assumes auth has already been done.
    */
   protected function basicSwiftContext($add = array(), $scheme = NULL) {
-    $cname   = self::$settings['hpcloud.swift.container'];
+    $cname   = self::$settings['openstack.swift.container'];
 
     if (empty($scheme)) {
       $scheme = StreamWrapperFS::DEFAULT_SCHEME;
@@ -128,11 +128,11 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
   /**
    * This performs authentication via context.
    *
-   * UPDATE: This now users IdentityServices instead of deprecated
+   * UPDATE: This now users IdentityService instead of deprecated
    * swauth.
    */
   protected function authSwiftContext($add = array(), $scheme = NULL) {
-    $cname   = self::$settings['hpcloud.swift.container'];
+    $cname   = self::$settings['openstack.swift.container'];
     $account = self::$settings['openstack.identity.access'];
     $key     = self::$settings['openstack.identity.secret'];
     $tenant  = self::$settings['openstack.identity.tenantId'];
@@ -173,14 +173,14 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
       'token' => $this->objectStore()->token(),
       'swift_endpoint' => $this->objectStore()->url(),
     );
-    \HPCloud\Bootstrap::setConfiguration($opts);
+    \OpenStack\Bootstrap::setConfiguration($opts);
 
   }
 
   // Canary. There are UTF-8 encoding issues in stream wrappers.
   public function testStreamContext() {
     // Clear old values.
-    \HPCloud\Bootstrap::setConfiguration(array(
+    \OpenStack\Bootstrap::setConfiguration(array(
       'token' => NULL,
     ));
 
@@ -200,7 +200,7 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
     // Canary
     $this->assertNotEmpty(StreamWrapperFS::DEFAULT_SCHEME);
 
-    $klass = '\HPCloud\Storage\ObjectStorage\StreamWrapperFS';
+    $klass = '\OpenStack\Storage\ObjectStorage\StreamWrapperFS';
     stream_wrapper_register(StreamWrapperFS::DEFAULT_SCHEME, $klass);
 
     $wrappers = stream_get_wrappers();
@@ -222,7 +222,7 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
    * @depends testRegister
    */
   public function testOpen() {
-    $cname = self::$settings['hpcloud.swift.container'];
+    $cname = self::$settings['openstack.swift.container'];
 
     // Create a fresh container.
     $this->eradicateContainer($cname);
@@ -384,7 +384,7 @@ class StreamWrapperFSTest extends \HPCloud\Tests\TestCase {
     //throw new \Exception(print_r($md, true));
     $obj = $md['wrapper_data']->object();
 
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\RemoteObject', $obj);
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage\RemoteObject', $obj);
 
     $this->assertEquals(self::FTYPE, $obj->contentType());
 

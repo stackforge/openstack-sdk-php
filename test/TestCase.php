@@ -47,7 +47,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   public static $ostore = NULL;
 
   /**
-   * The IdentityServices instance.
+   * The IdentityService instance.
    */
   public static $ident;
 
@@ -97,17 +97,17 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    */
   protected function swiftAuth() {
 
-    $user = self::$settings['hpcloud.swift.account'];
-    $key = self::$settings['hpcloud.swift.key'];
-    $url = self::$settings['hpcloud.swift.url'];
+    $user = self::$settings['openstack.swift.account'];
+    $key = self::$settings['openstack.swift.key'];
+    $url = self::$settings['openstack.swift.url'];
     //$url = self::$settings['openstack.identity.url'];
 
-    return \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
+    return \OpenStack\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
 
   }
 
   /**
-   * Get a handle to an IdentityServices object.
+   * Get a handle to an IdentityService object.
    *
    * Authentication is performed, and the returned
    * service has its tenant ID set already.
@@ -127,7 +127,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
       $tenantId = self::conf('openstack.identity.tenantId');
       $url = self::conf('openstack.identity.url');
 
-      $is = new \HPCloud\Services\IdentityServices($url);
+      $is = new \OpenStack\Services\IdentityService($url);
 
       $token = $is->authenticateAsUser($user, $pass, $tenantId);
 
@@ -142,7 +142,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     if ($reset || empty(self::$ostore)) {
       $ident = $this->identity($reset);
 
-      $objStore = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
+      $objStore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
 
       self::$ostore = $objStore;
 
@@ -158,7 +158,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
 
     if (empty($this->containerFixture)) {
       $store = $this->objectStore();
-      $cname = self::$settings['hpcloud.swift.container'];
+      $cname = self::$settings['openstack.swift.container'];
 
       try {
         $store->createContainer($cname);
@@ -216,7 +216,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    */
   protected function destroyContainerFixture() {
     $store = $this->objectStore();
-    $cname = self::$settings['hpcloud.swift.container'];
+    $cname = self::$settings['openstack.swift.container'];
 
     try {
       $container = $store->container($cname);

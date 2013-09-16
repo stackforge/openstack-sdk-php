@@ -24,16 +24,16 @@ SOFTWARE.
  *
  * Unit tests for ObjectStorage ACLs.
  */
-namespace HPCloud\Tests\Storage\ObjectStorage;
+namespace OpenStack\Tests\Storage\ObjectStorage;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Storage\ObjectStorage\ACL;
+use \OpenStack\Storage\ObjectStorage\ACL;
 /**
  * @ingroup Tests
  */
-class ACLTest extends \HPCloud\Tests\TestCase {
+class ACLTest extends \OpenStack\Tests\TestCase {
 
   public function testConstructor() {
     $acl = new ACL();

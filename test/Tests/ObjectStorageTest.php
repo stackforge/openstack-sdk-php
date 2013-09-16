@@ -24,16 +24,16 @@ SOFTWARE.
  *
  * Unit tests for ObjectStorage.
  */
-namespace HPCloud\Tests\Storage;
+namespace OpenStack\Tests\Storage;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Storage\ObjectStorage\Object;
-use \HPCloud\Storage\ObjectStorage\ACL;
+use \OpenStack\Storage\ObjectStorage\Object;
+use \OpenStack\Storage\ObjectStorage\ACL;
 
 
-class ObjectStorageTest extends \HPCloud\Tests\TestCase {
+class ObjectStorageTest extends \OpenStack\Tests\TestCase {
 
   /**
    * Canary test.
@@ -50,7 +50,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
     $ostore = $this->swiftAuth();
 
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
@@ -60,7 +60,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
   public function testConstructor() {
     $ident = $this->identity();
 
-    $services = $ident->serviceCatalog(\HPCloud\Storage\ObjectStorage::SERVICE_TYPE);
+    $services = $ident->serviceCatalog(\OpenStack\Storage\ObjectStorage::SERVICE_TYPE);
 
     if (empty($services)) {
       throw new \Exception('No object-store service found.');
@@ -69,9 +69,9 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     //$serviceURL = $services[0]['endpoints'][0]['adminURL'];
     $serviceURL = $services[0]['endpoints'][0]['publicURL'];
 
-    $ostore = new \HPCloud\Storage\ObjectStorage($ident->token(), $serviceURL);
+    $ostore = new \OpenStack\Storage\ObjectStorage($ident->token(), $serviceURL);
 
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
 
   }
@@ -80,8 +80,8 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $ident = $this->identity();
     $tok = $ident->token();
     $cat = $ident->serviceCatalog();
-    $ostore = \HPCloud\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok);
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok);
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
@@ -89,25 +89,25 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $ident = $this->identity();
     $tok = $ident->token();
     $cat = $ident->serviceCatalog();
-    $ostore = \HPCloud\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok, 'region-w.geo-99999.fake');
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok, 'region-w.geo-99999.fake');
     $this->assertEmpty($ostore);
   }
 
   public function testNewFromIdnetity() {
     $ident = $this->identity();
-    $ostore = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
   public function testNewFromIdentityAltRegion() {
     $ident = $this->identity();
-    $ostore = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident, 'region-b.geo-1');
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage', $ostore);
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident, 'region-b.geo-1');
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
 
     // Make sure the store is not the same as the default region.
-    $ostoreDefault = \HPCloud\Storage\ObjectStorage::newFromIdentity($ident);
+    $ostoreDefault = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
     $this->assertNotEquals($ostore, $ostoreDefault);
   }
 
@@ -116,7 +116,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    * @ group acl
    */
   public function testCreateContainer() {
-    $testCollection = self::$settings['hpcloud.swift.container'];
+    $testCollection = self::$settings['openstack.swift.container'];
 
     $this->assertNotEmpty($testCollection, "Canary: container name must be in settings file.");
 
@@ -161,14 +161,14 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
 
     //$first = array_shift($containers);
 
-    $testCollection = self::conf('hpcloud.swift.container');
+    $testCollection = self::conf('openstack.swift.container');
     $testContainer = $containers[$testCollection];
     $this->assertEquals($testCollection, $testContainer->name());
     $this->assertEquals(0, $testContainer->bytes());
     $this->assertEquals(0, $testContainer->count());
 
     // Make sure we get back an ACL:
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\ACL', $testContainer->acl());
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage\ACL', $testContainer->acl());
 
   }
 
@@ -176,7 +176,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    * @depends testCreateContainer
    */
   public function testContainer() {
-    $testCollection = self::$settings['hpcloud.swift.container'];
+    $testCollection = self::$settings['openstack.swift.container'];
     $store = $this->objectStore();
 
     $container = $store->container($testCollection);
@@ -194,7 +194,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    * @depends testCreateContainer
    */
   public function testHasContainer() {
-    $testCollection = self::$settings['hpcloud.swift.container'];
+    $testCollection = self::$settings['openstack.swift.container'];
     $store = $this->objectStore();
 
     $this->assertTrue($store->hasContainer($testCollection));
@@ -205,7 +205,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    * @depends testHasContainer
    */
   public function testDeleteContainer() {
-    $testCollection = self::$settings['hpcloud.swift.container'];
+    $testCollection = self::$settings['openstack.swift.container'];
 
     $store = $this->objectStore();
     //$ret = $store->createContainer($testCollection);
@@ -221,11 +221,11 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
-   * @expectedException \HPCloud\Storage\ObjectStorage\ContainerNotEmptyException
+   * @expectedException \OpenStack\Storage\ObjectStorage\ContainerNotEmptyException
    */
   public function testDeleteNonEmptyContainer() {
 
-    $testCollection = self::$settings['hpcloud.swift.container'];
+    $testCollection = self::$settings['openstack.swift.container'];
 
     $this->assertNotEmpty($testCollection);
 
@@ -258,7 +258,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    * @group acl
    */
   public function testCreateContainerPublic() {
-    $testCollection = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
+    $testCollection = self::$settings['openstack.swift.container'] . 'PUBLIC';
     $store = $this->objectStore();
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
@@ -273,7 +273,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $url = $container->url() . '?format=xml';
 
     // Use CURL to get better debugging:
-    //$client = \HPCloud\Transport::instance();
+    //$client = \OpenStack\Transport::instance();
     //$response = $client->doRequest($url, 'GET');
 
     $data = file_get_contents($url);
@@ -289,7 +289,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
    * @depends testCreateContainerPublic
    */
   public function testChangeContainerACL() {
-    $testCollection = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
+    $testCollection = self::$settings['openstack.swift.container'] . 'PUBLIC';
     $store = $this->objectStore();
     if ($store->hasContainer($testCollection)) {
       $store->deleteContainer($testCollection);
@@ -297,7 +297,7 @@ class ObjectStorageTest extends \HPCloud\Tests\TestCase {
     $ret = $store->createContainer($testCollection);
 
 
-    $acl = \HPCloud\Storage\ObjectStorage\ACL::makePublic();
+    $acl = \OpenStack\Storage\ObjectStorage\ACL::makePublic();
     $ret = $store->changeContainerACL($testCollection, $acl);
 
     $this->assertFalse($ret);

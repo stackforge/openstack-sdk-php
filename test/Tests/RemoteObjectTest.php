@@ -24,16 +24,16 @@ SOFTWARE.
  *
  * Unit tests for ObjectStorage RemoteObject.
  */
-namespace HPCloud\Tests\Storage\ObjectStorage;
+namespace OpenStack\Tests\Storage\ObjectStorage;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Storage\ObjectStorage\RemoteObject;
-use \HPCloud\Storage\ObjectStorage\Object;
-use \HPCloud\Storage\ObjectStorage\Container;
+use \OpenStack\Storage\ObjectStorage\RemoteObject;
+use \OpenStack\Storage\ObjectStorage\Object;
+use \OpenStack\Storage\ObjectStorage\Container;
 
-class RemoteObjectTest extends \HPCloud\Tests\TestCase {
+class RemoteObjectTest extends \OpenStack\Tests\TestCase {
 
   const FNAME = 'RemoteObjectTest';
   //const FTYPE = 'text/plain; charset=UTF-8';
@@ -74,7 +74,7 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
 
     $obj = $container->remoteObject(self::FNAME);
 
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\RemoteObject', $obj);
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage\RemoteObject', $obj);
 
     return $obj;
   }
@@ -184,8 +184,8 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     // This will be HTTP if we are using the PHP stream
     // wrapper, but for CURL this will be PHP.
 
-    $klass = \HPCloud\Bootstrap::config('transport', NULL);
-    if ($klass == '\HPCloud\Transport\PHPStreamTransport') {
+    $klass = \OpenStack\Bootstrap::config('transport', NULL);
+    if ($klass == '\OpenStack\Transport\PHPStreamTransport') {
       $expect = 'http';
     }
     else {
@@ -259,8 +259,8 @@ class RemoteObjectTest extends \HPCloud\Tests\TestCase {
     // The CURL, though, backs its up with a temp file wrapped in a PHP 
     // stream. Other backends are likely to do the same. So this test
     // is weakened for CURL backends.
-    $transport = \HPCloud\Bootstrap::config('transport');
-    if ($transport == '\HPCloud\Transport\PHPStreamTransport') {
+    $transport = \OpenStack\Bootstrap::config('transport');
+    if ($transport == '\OpenStack\Transport\PHPStreamTransport') {
       $expect = 'http';
     }
     else {

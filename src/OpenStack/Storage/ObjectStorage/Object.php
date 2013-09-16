@@ -24,12 +24,12 @@ SOFTWARE.
  * Contains the class Object for ObjectStorage.
  */
 
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
 /**
  * An object for ObjectStorage.
  *
- * The HPCloud ObjectStorage system provides a method for storing
+ * The OpenStack ObjectStorage system provides a method for storing
  * complete chunks of data (objects) in the cloud. This class describes
  * such a chunk of data.
  *
@@ -148,8 +148,8 @@ class Object {
    * @param array $array
    *   An associative array of metadata names to values.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this so the method can be used in chaining.
    */
   public function setMetadata(array $array) {
@@ -180,13 +180,13 @@ class Object {
    * object store.
    *
    * To copy an object, see
-   * HPCloud::Storage::ObjectStorage::Container::copyObject().
+   * OpenStack::Storage::ObjectStorage::Container::copyObject().
    *
    * @param string $name
    *   A file or object name.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this so the method can be used in chaining.
    */
   public function setName($name) {
@@ -235,8 +235,8 @@ class Object {
    * @param string $type
    *   A valid content type.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this so the method can be used in chaining.
    */
   public function setContentType($type) {
@@ -278,8 +278,8 @@ class Object {
    *   The content type (MIME type). This can be set here for
    *   convenience, or you can call setContentType() directly.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this so the method can be used in chaining.
    */
   public function setContent($content, $type = NULL) {
@@ -372,8 +372,8 @@ class Object {
    * @param string $encoding
    *   A valid encoding type.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this so the method can be used in chaining.
    */
   public function setEncoding($encoding) {
@@ -417,8 +417,8 @@ class Object {
    *   A valid disposition declaration. These are defined in various
    *   HTTP specifications.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this so the method can be used in chaining.
    */
   public function setDisposition($disposition) {
@@ -474,8 +474,8 @@ class Object {
    *   each value is the HTTP header value. No encoding or escaping is
    *   done.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this so the method can be used in chaining.
    */
   public function setAdditionalHeaders($headers) {
@@ -509,8 +509,8 @@ class Object {
    * @param array $keys
    *   The header names to be removed.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Object
-   * @return \HPCloud\Storage\ObjectStorage\Object
+   * @retval OpenStack::Storage::ObjectStorage::Object
+   * @return \OpenStack\Storage\ObjectStorage\Object
    *   $this for the current object so it can be used in chaining methods.
    */
   public function removeHeaders($keys) {

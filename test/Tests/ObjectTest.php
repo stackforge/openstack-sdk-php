@@ -24,14 +24,14 @@ SOFTWARE.
  *
  * Unit tests for ObjectStorage Object.
  */
-namespace HPCloud\Tests\Storage;
+namespace OpenStack\Tests\Storage;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Storage\ObjectStorage\Object;
+use \OpenStack\Storage\ObjectStorage\Object;
 
-class ObjectTest extends \HPCloud\Tests\TestCase {
+class ObjectTest extends \OpenStack\Tests\TestCase {
 
   const FNAME = 'descartes.txt';
   const FCONTENT = 'Cogito ergo sum.';

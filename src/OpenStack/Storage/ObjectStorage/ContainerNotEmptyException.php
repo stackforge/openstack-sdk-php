@@ -25,7 +25,7 @@ SOFTWARE.
  * Contains exception class for ContainerNotEmptyException.
  */
 
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
 /**
  * Indicatest that a container is not empty.
@@ -35,4 +35,4 @@ namespace HPCloud\Storage\ObjectStorage;
  * exception is thrown when such an operation encounters an unempty
  * container when it requires an empty one.
  */
-class ContainerNotEmptyException extends \HPCloud\Transport\ServerException {}
+class ContainerNotEmptyException extends \OpenStack\Transport\ServerException {}

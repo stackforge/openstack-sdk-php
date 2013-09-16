@@ -21,60 +21,17 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- * Contains the Subdir class.
+ *
+ * Contains the ContentVerificationException object.
  */
-
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
 /**
- * Represent a subdirectory (subdir) entry.
+ * Content Verification error condition.
  *
- * Depending on the method with which Swift container requests are 
- * executed, Swift may return subdir entries instead of Objects.
+ * This occurs when the server sends content whose value does
+ * not match the supplied checksum. See
+ * RemoteObject::setContentVerification().
  *
- * Subdirs are used for things that are directory-like.
  */
-class Subdir {
-
-  protected $path;
-  protected $delimiter;
-
-
-  /**
-   * Create a new subdirectory.
-   *
-   * This represents a remote response's tag for a subdirectory.
-   *
-   * @param string $path
-   *   The path string that this subdir describes.
-   * @param string $delimiter
-   *   The delimiter used in this path.
-   */
-  public function __construct($path, $delimiter = '/') {
-    $this->path = $path;
-    $this->delimiter = $delimiter;
-  }
-
-  /**
-   * Get the path.
-   *
-   * The path is delimited using the string returned by delimiter().
-   *
-   * @retval string
-   * @return string
-   *   The path.
-   */
-  public function path() {
-    return $this->path;
-  }
-  /**
-   * Get the delimiter used by the server.
-   *
-   * @retval string
-   * @return string
-   *   The value used as a delimiter.
-   */
-  public function delimiter() {
-    return $this->delimiter;
-  }
-}
+class ContentVerificationException extends \OpenStack\Exception {}

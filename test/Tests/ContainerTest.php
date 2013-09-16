@@ -24,16 +24,16 @@ SOFTWARE.
  *
  * Unit tests for Containers.
  */
-namespace HPCloud\Tests\Storage\ObjectStorage;
+namespace OpenStack\Tests\Storage\ObjectStorage;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Storage\ObjectStorage\Container;
-use \HPCloud\Storage\ObjectStorage\Object;
-use \HPCloud\Storage\ObjectStorage\ACL;
+use \OpenStack\Storage\ObjectStorage\Container;
+use \OpenStack\Storage\ObjectStorage\Object;
+use \OpenStack\Storage\ObjectStorage\ACL;
 
-class ContainerTest extends \HPCloud\Tests\TestCase {
+class ContainerTest extends \OpenStack\Tests\TestCase {
 
   const FILENAME = 'unit-test-dummy.txt';
   const FILESTR = 'This is a test.';
@@ -54,7 +54,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
   }
 
   /**
-   * @expectedException \HPCloud\Exception
+   * @expectedException \OpenStack\Exception
    */
   public function testConstructorFailure() {
     $container = new Container('foo');
@@ -195,8 +195,8 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     try {
       $foo = $container->object('no/such');
     }
-    catch (\HPCloud\Exception $e) {
-      $this->assertInstanceOf('\HPCloud\Transport\FileNotFoundException', $e);
+    catch (\OpenStack\Exception $e) {
+      $this->assertInstanceOf('\OpenStack\Transport\FileNotFoundException', $e);
     }
   }
 
@@ -265,7 +265,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
     $this->assertEquals(2, count($objects));
 
     foreach ($objects as $o) {
-      $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\Object', $o);
+      $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage\Object', $o);
     }
 
     // This should give us one file and one subdir.
@@ -378,7 +378,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
     // Create a new container.
     $store = $this->objectStore();
-    $cname = self::$settings['hpcloud.swift.container'] . 'COPY';
+    $cname = self::$settings['openstack.swift.container'] . 'COPY';
     if ($store->hasContainer($cname)) {
       $this->eradicateContainer($cname);
     }
@@ -424,7 +424,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
    */
   public function testAcl() {
     $store = $this->objectStore();
-    $cname = self::$settings['hpcloud.swift.container'] . 'PUBLIC';
+    $cname = self::$settings['openstack.swift.container'] . 'PUBLIC';
 
     if ($store->hasContainer($cname)) {
       $store->deleteContainer($cname);
@@ -438,7 +438,7 @@ class ContainerTest extends \HPCloud\Tests\TestCase {
 
     $acl = $container->acl();
 
-    $this->assertInstanceOf('\HPCloud\Storage\ObjectStorage\ACL', $acl);
+    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage\ACL', $acl);
     $this->assertTrue($acl->isPublic());
 
     $store->deleteContainer($cname);

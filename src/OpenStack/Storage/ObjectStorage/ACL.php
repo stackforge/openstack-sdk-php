@@ -25,7 +25,7 @@ SOFTWARE.
  * Contains the class for manipulating ObjectStorage ACL strings.
  */
 
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
 /**
  * Access control list for object storage.
@@ -151,8 +151,8 @@ class ACL {
    *
    * - READ to any host, with container listings.
    *
-   * @retval HPCloud::Storage::ObjectStorage::ACL
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval OpenStack::Storage::ObjectStorage::ACL
+   * @return \OpenStack\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makePublic() {
@@ -172,8 +172,8 @@ class ACL {
    * This does not grant any permissions. OpenStack interprets an object
    * with no permissions as a private object.
    *
-   * @retval HPCloud::Storage::ObjectStorage::ACL
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval OpenStack::Storage::ObjectStorage::ACL
+   * @return \OpenStack\Storage\ObjectStorage\ACL
    *   an ACL object with the appopriate permissions set.
    */
   public static function makeNonPublic() {
@@ -196,8 +196,8 @@ class ACL {
    *
    * @param array $headers
    *   An associative array of headers.
-   * @retval HPCloud::Storage::ObjectStorage::ACL
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval OpenStack::Storage::ObjectStorage::ACL
+   * @return \OpenStack\Storage\ObjectStorage\ACL
    *   A new ACL.
    */
   public static function newFromHeaders($headers) {
@@ -324,8 +324,8 @@ class ACL {
    *   The name of the user, or optionally an indexed array of user
    *   names.
    *
-   * @retval HPCloud::Storage::ObjectStorage::ACL
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval OpenStack::Storage::ObjectStorage::ACL
+   * @return \OpenStack\Storage\ObjectStorage\ACL
    *   $this for current object so the method can be used in chaining.
    */
   public function addAccount($perm, $account, $user = NULL) {
@@ -361,8 +361,8 @@ class ACL {
    * @param string $host
    *   A host specification string as described above.
    *
-   * @retval HPCloud::Storage::ObjectStorage::ACL
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval OpenStack::Storage::ObjectStorage::ACL
+   * @return \OpenStack\Storage\ObjectStorage\ACL
    *   $this for current object so the method can be used in chaining.
    */
   public function addReferrer($perm, $host = '*') {
@@ -379,8 +379,8 @@ class ACL {
    * @param array $rule
    *   A rule array.
    * 
-   * @retval HPCloud::Storage::ObjectStorage::ACL
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval OpenStack::Storage::ObjectStorage::ACL
+   * @return \OpenStack\Storage\ObjectStorage\ACL
    *   $this for current object so the method can be used in chaining.
    */
   protected function addRule($perm, $rule) {
@@ -402,8 +402,8 @@ class ACL {
    * In the current Swift implementation, there is no mechanism for
    * allowing some hosts to get listings, while denying others.
    *
-   * @retval HPCloud::Storage::ObjectStorage::ACL
-   * @return \HPCloud\Storage\ObjectStorage\ACL
+   * @retval OpenStack::Storage::ObjectStorage::ACL
+   * @return \OpenStack\Storage\ObjectStorage\ACL
    *   $this for current object so the method can be used in chaining.
    */
   public function allowListings() {

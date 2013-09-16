@@ -30,10 +30,10 @@ SOFTWARE.
  * a text document, a binary).
  */
 
-namespace HPCloud\Storage;
+namespace OpenStack\Storage;
 
-use HPCloud\Storage\ObjectStorage\Container;
-use HPCloud\Storage\ObjectStorage\ACL;
+use OpenStack\Storage\ObjectStorage\Container;
+use OpenStack\Storage\ObjectStorage\ACL;
 
 /**
  * Access to ObjectStorage (Swift).
@@ -44,7 +44,7 @@ use HPCloud\Storage\ObjectStorage\ACL;
  *
  * There is also a stream wrapper interface that exposes ObjectStorage
  * to PHP's streams system. For common use of an object store, you may
- * prefer to use that system. (See HPCloud::Bootstrap).
+ * prefer to use that system. (See OpenStack::Bootstrap).
  *
  * When constructing a new ObjectStorage object, you will need to know
  * what kind of authentication you are going to perform. Older
@@ -53,7 +53,7 @@ use HPCloud\Storage\ObjectStorage\ACL;
  * perform this type of authentication.
  *
  * Newer versions use the IdentityServices authentication mechanism (see
- * HPCloud::Services::IdentityServices). That method is the preferred
+ * OpenStack::Services::IdentityServices). That method is the preferred
  * method.
  *
  * Common Tasks
@@ -69,7 +69,7 @@ use HPCloud\Storage\ObjectStorage\ACL;
 class ObjectStorage {
 
   /**
-   * The name of this service type in HPCloud.
+   * The name of this service type in OpenStack.
    *
    * This is used with IdentityService::serviceCatalog().
    */
@@ -92,7 +92,7 @@ class ObjectStorage {
    * Create a new instance after getting an authenitcation token.
    *
    * THIS METHOD IS DEPRECATED. OpenStack now uses Keyston to authenticate.
-   * You should use HPCloud::Services::IdentityServices to authenticate.
+   * You should use OpenStack::Services::IdentityServices to authenticate.
    * Then use this class's constructor to create an object.
    *
    * This uses the legacy Swift authentication facility to authenticate
@@ -118,11 +118,11 @@ class ObjectStorage {
    * @param string $url
    *   The URL to the object storage endpoint.
    *
-   * @throws HPCloud::Transport::AuthorizationException if the
+   * @throws OpenStack::Transport::AuthorizationException if the
    *   authentication failed.
-   * @throws HPCloud::Transport::FileNotFoundException if the URL is
+   * @throws OpenStack::Transport::FileNotFoundException if the URL is
    *   wrong.
-   * @throws HPCloud::Exception if some other exception occurs.
+   * @throws OpenStack::Exception if some other exception occurs.
    *
    * @deprecated Newer versions of OpenStack use Keystone auth instead
    * of Swift auth.
@@ -133,7 +133,7 @@ class ObjectStorage {
       'X-Auth-Key' => $key,
     );
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
 
     // This will throw an exception if it cannot connect or
     // authenticate.
@@ -160,13 +160,13 @@ class ObjectStorage {
    * Given an IdentityServices instance, create an ObjectStorage instance.
    *
    * This constructs a new ObjectStorage from an authenticated instance
-   * of an HPCloud::Services::IdentityServices object.
+   * of an OpenStack::Services::IdentityServices object.
    *
-   * @param HPCloud::Services::IdentityServices $identity
+   * @param OpenStack::Services::IdentityServices $identity
    *   An identity services object that already has a valid token and a
    *   service catalog.
-   * @retval HPCloud::Storage::ObjectStorage
-   * @return \HPCloud\Storage\ObjectStorage
+   * @retval OpenStack::Storage::ObjectStorage
+   * @return \OpenStack\Storage\ObjectStorage
    *   A new ObjectStorage instance.
    */
   public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION) {
@@ -190,8 +190,8 @@ class ObjectStorage {
    *   just ObjectStorage::SERVICE_TYPE.
    * @param string $authToken
    *   The auth token returned by IdentityServices.
-   * @retval HPCloud::Storage::ObjectStorage
-   * @return \HPCloud\Storage\ObjectStorage
+   * @retval OpenStack::Storage::ObjectStorage
+   * @return \OpenStack\Storage\ObjectStorage
    *   A new ObjectStorage instance.
    */
   public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION) {
@@ -283,7 +283,7 @@ class ObjectStorage {
    * @return array
    *   An associative array of containers, where the key is the
    *   container's name and the value is an
-   *   HPCloud::Storage::ObjectStorage::Container object. Results are
+   *   OpenStack::Storage::ObjectStorage::Container object. Results are
    *   ordered in server order (the order that the remote host puts them
    *   in).
    */
@@ -316,10 +316,10 @@ class ObjectStorage {
    *
    * @param string $name
    *   The name of the container to load.
-   * @retval HPCloud::Storage::ObjectStorage::Container
-   * @return \HPCloud\Storage\ObjectStorage\Container
+   * @retval OpenStack::Storage::ObjectStorage::Container
+   * @return \OpenStack\Storage\ObjectStorage\Container
    *   A container.
-   * @throws HPCloud::Transport::FileNotFoundException
+   * @throws OpenStack::Transport::FileNotFoundException
    *   if the named container is not found on the remote server.
    */
   public function container($name) {
@@ -335,7 +335,7 @@ class ObjectStorage {
     }
 
     // If we get here, it's not a 404 and it's not a 204.
-    throw new \HPCloud\Exception("Unknown status: $status");
+    throw new \OpenStack\Exception("Unknown status: $status");
   }
 
   /**
@@ -350,14 +350,14 @@ class ObjectStorage {
    * @retval boolean
    * @return boolean
    *   TRUE if the container exists, FALSE if it does not.
-   * @throws HPCloud::Exception
+   * @throws OpenStack::Exception
    *   If an unexpected network error occurs.
    */
   public function hasContainer($name) {
     try {
       $container = $this->container($name);
     }
-    catch (\HPCloud\Transport\FileNotFoundException $fnfe) {
+    catch (\OpenStack\Transport\FileNotFoundException $fnfe) {
       return FALSE;
     }
     return TRUE;
@@ -410,15 +410,15 @@ class ObjectStorage {
    * ?>
    * @endcode
    *
-   * For details on ACLs, see HPCloud::Storage::ObjectStorage::ACL.
+   * For details on ACLs, see OpenStack::Storage::ObjectStorage::ACL.
    *
    * @param string $name
    *   The name of the container.
-   * @param object $acl HPCloud::Storage::ObjectStorage::ACL
+   * @param object $acl OpenStack::Storage::ObjectStorage::ACL
    *   An access control list object. By default, a container is
    *   non-public (private). To change this behavior, you can add a
    *   custom ACL. To make the container publically readable, you can
-   *   use this: HPCloud::Storage::ObjectStorage::ACL::makePublic().
+   *   use this: OpenStack::Storage::ObjectStorage::ACL::makePublic().
    * @param array $metadata
    *   An associative array of metadata to attach to the container.
    * @retval boolean
@@ -437,7 +437,7 @@ class ObjectStorage {
       $headers += Container::generateMetadataHeaders($metadata, $prefix);
     }
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     // Add ACLs to header.
     if (!empty($acl)) {
       $headers += $acl->headers();
@@ -455,7 +455,7 @@ class ObjectStorage {
     }
     // According to the OpenStack docs, there are no other return codes.
     else {
-      throw new \HPCloud\Exception('Server returned unexpected code: ' . $status);
+      throw new \OpenStack\Exception('Server returned unexpected code: ' . $status);
     }
   }
 
@@ -482,7 +482,7 @@ class ObjectStorage {
    *
    * @param string $name
    *   The name of the container.
-   * @param object $acl HPCloud::Storage::ObjectStorage::ACL
+   * @param object $acl OpenStack::Storage::ObjectStorage::ACL
    *   An ACL. To make the container publically readable, use
    *   ACL::makePublic().
    * @retval boolean
@@ -502,7 +502,7 @@ class ObjectStorage {
    * the object storage.
    *
    * The container MUST be empty before it can be deleted. If it is not,
-   * an HPCloud::Storage::ObjectStorage::ContainerNotEmptyException will
+   * an OpenStack::Storage::ObjectStorage::ContainerNotEmptyException will
    * be thrown.
    *
    * @param string $name
@@ -511,10 +511,10 @@ class ObjectStorage {
    * @return boolean
    *   TRUE if the container was deleted, FALSE if the container was not
    *   found (and hence, was not deleted).
-   * @throws HPCloud::Storage::ObjectStorage::ContainerNotEmptyException
+   * @throws OpenStack::Storage::ObjectStorage::ContainerNotEmptyException
    *   if the container is not empty.
-   * @throws HPCloud::Exception if an unexpected response code is returned.
-   *   While this should never happen on HPCloud servers, forks of
+   * @throws OpenStack::Exception if an unexpected response code is returned.
+   *   While this should never happen on OpenStack servers, forks of
    *   OpenStack may choose to extend object storage in a way that
    *   results in a non-standard code.
    */
@@ -524,12 +524,12 @@ class ObjectStorage {
     try {
       $data = $this->req($url, 'DELETE', FALSE);
     }
-    catch (\HPCloud\Transport\FileNotFoundException $e) {
+    catch (\OpenStack\Transport\FileNotFoundException $e) {
       return FALSE;
     }
     // XXX: I'm not terribly sure about this. Why not just throw the
     // ConflictException?
-    catch (\HPCloud\Transport\ConflictException $e) {
+    catch (\OpenStack\Transport\ConflictException $e) {
       throw new ObjectStorage\ContainerNotEmptyException("Non-empty container cannot be deleted.");
     }
 
@@ -542,7 +542,7 @@ class ObjectStorage {
     // OpenStacks documentation doesn't suggest any other return
     // codes.
     else {
-      throw new \HPCloud\Exception('Server returned unexpected code: ' . $status);
+      throw new \OpenStack\Exception('Server returned unexpected code: ' . $status);
     }
   }
 
@@ -560,7 +560,7 @@ class ObjectStorage {
    *  - bytes: Bytes consumed by existing content.
    *  - containers: Number of containers.
    *  - objects: Number of objects.
-   * @throws HPCloud::Transport::AuthorizationException
+   * @throws OpenStack::Transport::AuthorizationException
    *   if the user credentials are invalid or have expired.
    */
   public function accountInfo() {
@@ -590,7 +590,7 @@ class ObjectStorage {
    * Internal request issuing command.
    */
   protected function req($url, $method = 'GET', $jsonDecode = TRUE, $body = '') {
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $headers = array(
         'X-Auth-Token' => $this->token(),
     );

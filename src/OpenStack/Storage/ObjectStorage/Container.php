@@ -25,7 +25,7 @@ SOFTWARE.
  * Contains the class for ObjectStorage Container objects.
  */
 
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
 /**
  * A container in an ObjectStorage.
@@ -44,9 +44,9 @@ namespace HPCloud\Storage\ObjectStorage;
  *
  * @code
  * <?php
- * use \HPCloud\Storage\ObjectStorage;
- * use \HPCloud\Storage\ObjectStorage\Container;
- * use \HPCloud\Storage\ObjectStorage\Object;
+ * use \OpenStack\Storage\ObjectStorage;
+ * use \OpenStack\Storage\ObjectStorage\Container;
+ * use \OpenStack\Storage\ObjectStorage\Object;
  *
  * // Create a new ObjectStorage instance, logging in with older Swift
  * // credentials.
@@ -210,8 +210,8 @@ class Container implements \Countable, \IteratorAggregate {
    *   The base URL. The container name is automatically appended to 
    *   this at construction time.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Comtainer
-   * @return \HPCloud\Storage\ObjectStorage\Container
+   * @retval OpenStack::Storage::ObjectStorage::Comtainer
+   * @return \OpenStack\Storage\ObjectStorage\Container
    *   A new container object.
    */
   public static function newFromJSON($jsonArray, $token, $url) {
@@ -247,15 +247,15 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the container.
-   * @param object $response HPCloud::Transport::Response
+   * @param object $response OpenStack::Transport::Response
    *   The HTTP response object from the Transporter layer
    * @param string $token
    *   The auth token.
    * @param string $url
    *   The base URL. The container name is automatically appended to
    *   this at construction time.
-   * @retval HPCloud::Storage::ObjectStorage::Container
-   * @return \HPCloud\Storage\ObjectStorage\Container
+   * @retval OpenStack::Storage::ObjectStorage::Container
+   * @return \OpenStack\Storage\ObjectStorage\Container
    *   The Container object, initialized and ready for use.
    */
   public static function newFromResponse($name, $response, $token, $url) {
@@ -398,8 +398,8 @@ class Container implements \Countable, \IteratorAggregate {
    * more than 256. UTF-8 or ASCII characters are allowed, though ASCII
    * seems to be preferred.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Container
-   * @return \HPCloud\Storage\ObjectStorage\Container
+   * @retval OpenStack::Storage::ObjectStorage::Container
+   * @return \OpenStack\Storage\ObjectStorage\Container
    *   $this so the method can be used in chaining.
    */
   public function setMetadata($metadata) {
@@ -434,11 +434,11 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Save an Object into Object Storage.
    *
-   * This takes an HPCloud::Storage::ObjectStorage::Object
+   * This takes an OpenStack::Storage::ObjectStorage::Object
    * and stores it in the given container in the present
    * container on the remote object store.
    *
-   * @param object $obj HPCloud::Storage::ObjectStorage::Object
+   * @param object $obj OpenStack::Storage::ObjectStorage::Object
    *   The object to store.
    * @param resource $file
    *   An optional file argument that, if set, will be treated as the
@@ -446,24 +446,24 @@ class Container implements \Countable, \IteratorAggregate {
    * @retval boolean
    * @return boolean
    *   TRUE if the object was saved.
-   * @throws HPCloud::Transport::LengthRequiredException
+   * @throws OpenStack::Transport::LengthRequiredException
    *   if the Content-Length could not be determined and chunked
    *   encoding was not enabled. This should not occur for this class,
    *   which always automatically generates Content-Length headers.
    *   However, subclasses could generate this error.
-   * @throws HPCloud::Transport::UnprocessableEntityException
+   * @throws OpenStack::Transport::UnprocessableEntityException
    *   if the checksome passed here does not match the checksum
    *   calculated remotely.
-   * @throws HPCloud::Exception when an unexpected (usually
+   * @throws OpenStack::Exception when an unexpected (usually
    *   network-related) error condition arises.
    */
   public function save(Object $obj, $file = NULL) {
 
     if (empty($this->token)) {
-      throw new \HPCloud\Exception('Container does not have an auth token.');
+      throw new \OpenStack\Exception('Container does not have an auth token.');
     }
     if (empty($this->url)) {
-      throw new \HPCloud\Exception('Container does not have a URL to send data.');
+      throw new \OpenStack\Exception('Container does not have a URL to send data.');
     }
 
     //$url = $this->url . '/' . rawurlencode($obj->name());
@@ -502,7 +502,7 @@ class Container implements \Countable, \IteratorAggregate {
       $headers += $moreHeaders;
     }
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
 
     if (empty($file)) {
       // Now build up the rest of the headers:
@@ -544,7 +544,7 @@ class Container implements \Countable, \IteratorAggregate {
     }
 
     if ($response->status() != 201) {
-      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+      throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
     return TRUE;
   }
@@ -560,14 +560,14 @@ class Container implements \Countable, \IteratorAggregate {
    * particularly in cases where custom headers have been set.
    * Use with caution.
    *
-   * @param object $obj HPCloud::Storage::ObjectStorage::Object
+   * @param object $obj OpenStack::Storage::ObjectStorage::Object
    *   The object to update.
    *
    * @retval boolean
    * @return boolean
    *   TRUE if the metadata was updated.
    *
-   * @throws HPCloud::Transport::FileNotFoundException
+   * @throws OpenStack::Transport::FileNotFoundException
    *   if the object does not already exist on the object storage.
    */
   public function updateMetadata(Object $obj) {
@@ -587,13 +587,13 @@ class Container implements \Countable, \IteratorAggregate {
     // content type IS reset during this operation.
     $headers['Content-Type'] = $obj->contentType();
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
 
     // The POST verb is for updating headers.
     $response = $client->doRequest($url, 'POST', $headers, $obj->content());
 
     if ($response->status() != 202) {
-      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+      throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
     return TRUE;
   }
@@ -610,7 +610,7 @@ class Container implements \Countable, \IteratorAggregate {
    * Note that there is no MOVE operation. You must copy and then DELETE
    * in order to achieve that.
    *
-   * @param object $obj HPCloud::Storage::ObjectStorage::Object
+   * @param object $obj OpenStack::Storage::ObjectStorage::Object
    *   The object to copy. This object MUST already be saved on the
    *   remote server. The body of the object is not sent. Instead, the
    *   copy operation is performed on the remote server. You can, and
@@ -630,7 +630,7 @@ class Container implements \Countable, \IteratorAggregate {
     $sourceUrl = self::objectUrl($this->url, $obj->name());
 
     if (empty($newName)) {
-      throw new \HPCloud\Exception("An object name is required to copy the object.");
+      throw new \OpenStack\Exception("An object name is required to copy the object.");
     }
 
     // Figure out what container we store in.
@@ -645,11 +645,11 @@ class Container implements \Countable, \IteratorAggregate {
       'Destination' => $destUrl,
     );
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $response = $client->doRequest($sourceUrl, 'COPY', $headers);
 
     if ($response->status() != 201) {
-      throw new \HPCloud\Exception("An unknown condition occurred during copy. " . $response->status());
+      throw new \OpenStack\Exception("An unknown condition occurred during copy. " . $response->status());
     }
     return TRUE;
   }
@@ -675,8 +675,8 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the object to load.
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   A remote object with the content already stored locally.
    */
   public function object($name) {
@@ -687,12 +687,12 @@ class Container implements \Countable, \IteratorAggregate {
     // Auth token.
     $headers['X-Auth-Token'] = $this->token;
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
 
     $response = $client->doRequest($url, 'GET', $headers);
 
     if ($response->status() != 200) {
-      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+      throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
 
     $remoteObject = RemoteObject::newFromHeaders($name, $response->headers(), $this->token, $url);
@@ -727,8 +727,8 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * @param string $name
    *   The name of the object to fetch.
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   A remote object ready for use.
    */
   public function proxyObject($name) {
@@ -738,12 +738,12 @@ class Container implements \Countable, \IteratorAggregate {
     );
 
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
 
     $response = $client->doRequest($url, 'HEAD', $headers);
 
     if ($response->status() != 200) {
-      throw new \HPCloud\Exception('An unknown error occurred while saving: ' . $response->status());
+      throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
 
     $headers = $response->headers();
@@ -937,8 +937,8 @@ class Container implements \Countable, \IteratorAggregate {
    * ObjectStorage methods.
    *
    * @todo Determine how to get the ACL from JSON data.
-   * @retval \HPCloud\Storage\ObjectStorage\ACL
-   * @return HPCloud::Storage::ObjectStorage::ACL
+   * @retval \OpenStack\Storage\ObjectStorage\ACL
+   * @return OpenStack::Storage::ObjectStorage::ACL
    *   An ACL, or NULL if the ACL could not be retrieved.
    */
   public function acl() {
@@ -954,8 +954,8 @@ class Container implements \Countable, \IteratorAggregate {
    * Not all containers come fully instantiated. This method is sometimes
    * called to "fill in" missing fields.
    *
-   * @retval HPCloud::Storage::ObjectStorage::Comtainer
-   * @return \HPCloud\Storage\ObjectStorage\Container
+   * @retval OpenStack::Storage::ObjectStorage::Comtainer
+   * @return \OpenStack\Storage\ObjectStorage\Container
    */
   protected function loadExtraData() {
 
@@ -964,10 +964,10 @@ class Container implements \Countable, \IteratorAggregate {
     // created with Container::createContainer(). We treat
     // this as an error condition.
     if (empty($this->url) || empty($this->token)) {
-      throw new \HPCloud\Exception('Remote data cannot be fetched. Tokena and endpoint URL are required.');
+      throw new \OpenStack\Exception('Remote data cannot be fetched. Tokena and endpoint URL are required.');
     }
     // Do a GET on $url to fetch headers.
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
@@ -1006,7 +1006,7 @@ class Container implements \Countable, \IteratorAggregate {
     $query = str_replace('%2F', '/', $query);
     $url = $this->url . '?' . $query;
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
@@ -1016,7 +1016,7 @@ class Container implements \Countable, \IteratorAggregate {
     // The only codes that should be returned are 200 and the ones
     // already thrown by doRequest.
     if ($response->status() != 200) {
-      throw new \HPCloud\Exception('An unknown exception occurred while processing the request.');
+      throw new \OpenStack\Exception('An unknown exception occurred while processing the request.');
     }
 
     $responseContent = $response->content();
@@ -1029,7 +1029,7 @@ class Container implements \Countable, \IteratorAggregate {
         $list[] = new Subdir($item['subdir'], $params['delimiter']);
       }
       elseif (empty($item['name'])) {
-        throw new \HPCloud\Exception('Unexpected entity returned.');
+        throw new \OpenStack\Exception('Unexpected entity returned.');
       }
       else {
         //$url = $this->url . '/' . rawurlencode($item['name']);
@@ -1088,17 +1088,17 @@ class Container implements \Countable, \IteratorAggregate {
       'X-Auth-Token' => $this->token,
     );
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
 
     try {
       $response = $client->doRequest($url, 'DELETE', $headers);
     }
-    catch (\HPCloud\Transport\FileNotFoundException $fnfe) {
+    catch (\OpenStack\Transport\FileNotFoundException $fnfe) {
       return FALSE;
     }
 
     if ($response->status() != 204) {
-      throw new \HPCloud\Exception("An unknown exception occured while deleting $name.");
+      throw new \OpenStack\Exception("An unknown exception occured while deleting $name.");
     }
 
     return TRUE;

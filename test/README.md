@@ -76,11 +76,11 @@ Your settings should look something like this:
 
 ```
 ; Settings to work with swift:
-; hpcloud.swift.account = 12345678:87654321
-; hpcloud.swift.key = abcdef123456
-; hpcloud.swift.url = https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/
+; openstack.swift.account = 12345678:87654321
+; openstack.swift.key = abcdef123456
+; openstack.swift.url = https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/
 
-hpcloud.swift.container = "I♡HPCloud"
+openstack.swift.container = "I♡HPCloud"
 
 openstack.identity.url = https://region-a.geo-1.idenity.hpcloudsvc.com
 openstack.identity.tenantId = 12345
@@ -93,7 +93,7 @@ hpcloud.identity.key = 9878787
 You will need to add all of the `hpcloud.identity` settings, and all of
 this information can be found on your console.
 
-The hpcloud.swift.account, key, and url params are no longer required
+The openstack.swift.account, key, and url params are no longer required
 for the basic tests, but are required if you are also running the tests
 in the group `deprecated`.
 

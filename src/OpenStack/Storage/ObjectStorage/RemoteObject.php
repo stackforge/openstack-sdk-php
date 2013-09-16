@@ -25,14 +25,14 @@ SOFTWARE.
  * Contains the RemoteObject class.
  */
 
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
 /**
  * A representation of an object stored in remote Object Storage.
  *
  * A remote object is one whose canonical copy is stored in a remote
  * object storage. It represents a local (and possibly partial) copy of
- * an object. (Contrast this with HPCloud::Storage::ObjectStorage::Object)
+ * an object. (Contrast this with OpenStack::Storage::ObjectStorage::Object)
  *
  * Depending on how the object was constructed, it may or may not have a
  * local copy of the entire contents of the file. It may only have the
@@ -43,7 +43,7 @@ namespace HPCloud\Storage\ObjectStorage;
  * Remote objects can be modified locally. Simply modifying an object
  * will not result in those modifications being stored on the remote
  * server. The object must be saved (see 
- * HPCloud::Storage::ObjectStorage::Container::save()). When an
+ * OpenStack::Storage::ObjectStorage::Container::save()). When an
  * object is modified so that its local contents differ from the remote
  * stored copy, it is marked dirty (see isDirty()).
  */
@@ -112,8 +112,8 @@ class RemoteObject extends Object {
    *   The URL to the object in the object storage. Used for issuing
    *   subsequent requests.
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   A new RemoteObject.
    */
   public static function newFromHeaders($name, $headers, $token, $url) {
@@ -208,8 +208,8 @@ class RemoteObject extends Object {
   /**
    * Set the headers
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   $this for the current object so it can be used in chaining methods.
    */
   public function setHeaders($headers) {
@@ -266,8 +266,8 @@ class RemoteObject extends Object {
   /**
    * Filter the headers.
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   $this for the current object so it can be used in chaining methods.
    */
   public function filterHeaders(&$headers) {
@@ -303,8 +303,8 @@ class RemoteObject extends Object {
    * @param array $keys
    *   The header names to be removed.
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   $this for the current object so it can be used in chaining methods.
    */
   public function removeHeaders($keys) {
@@ -334,10 +334,10 @@ class RemoteObject extends Object {
    * @retval string
    * @return string
    *   The contents of the file as a string.
-   * @throws \HPCloud\Transport\FileNotFoundException
+   * @throws \OpenStack\Transport\FileNotFoundException
    *   when the requested content cannot be located on the remote
    *   server.
-   * @throws \HPCloud\Exception
+   * @throws \OpenStack\Exception
    *   when an unknown exception (usually an abnormal network condition)
    *   occurs.
    */
@@ -452,8 +452,8 @@ class RemoteObject extends Object {
    *   If this is TRUE, caching will be enabled. If this is FALSE,
    *   caching will be disabled.
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   $this so the method can be used in chaining.
    */
   public function setCaching($enabled) {
@@ -498,8 +498,8 @@ class RemoteObject extends Object {
    *   is hashed and checked against a server-supplied MD5 hashcode. If
    *   this is FALSE, no checking is done.
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   $this so the method can be used in chaining.
    */
   public function setContentVerification($enabled) {
@@ -574,8 +574,8 @@ class RemoteObject extends Object {
    * @param boolean $fetchContent
    *   If this is TRUE, the content will be downloaded as well.
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   $this for the current object so it can be used in chaining methods.
    */
   public function refresh($fetchContent = FALSE) {
@@ -601,15 +601,15 @@ class RemoteObject extends Object {
    *   cause the remote host to return the object in the response body.
    *   The response body is not handled, though. If this is set to
    *   FALSE, a HEAD request is sent, and no body is returned.
-   * @retval HPCloud::Transport::Response
-   * @return \HPCloud\Transport\Response
+   * @retval OpenStack::Transport::Response
+   * @return \OpenStack\Transport\Response
    *   containing the object metadata and (depending on the
    *   $fetchContent flag) optionally the data.
    */
   protected function fetchObject($fetchContent = FALSE) {
     $method = $fetchContent ? 'GET' : 'HEAD';
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
@@ -617,7 +617,7 @@ class RemoteObject extends Object {
     $response = $client->doRequest($this->url, $method, $headers);
 
     if ($response->status() != 200) {
-      throw new \HPCloud\Exception('An unknown exception occurred during transmission.');
+      throw new \OpenStack\Exception('An unknown exception occurred during transmission.');
     }
 
     $this->extractFromHeaders($response);
@@ -630,8 +630,8 @@ class RemoteObject extends Object {
    *
    * This is used internally to set object properties from headers.
    *
-   * @retval HPCloud::Storage::ObjectStorage::RemoteObject
-   * @return \HPCloud\Storage\ObjectStorage\RemoteObject
+   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
    *   $this for the current object so it can be used in chaining methods.
    */
   protected function extractFromHeaders($response) {

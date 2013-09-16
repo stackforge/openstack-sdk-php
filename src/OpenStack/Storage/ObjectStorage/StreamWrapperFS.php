@@ -25,7 +25,7 @@ SOFTWARE.
  * 
  * <b>Note, this stream wrapper is in early testing.</b>
  * 
- * The stream wrapper implemented in HPCloud\Storage\ObjectStorage\StreamWrapper
+ * The stream wrapper implemented in OpenStack\Storage\ObjectStorage\StreamWrapper
  * only supports the elements of a stream that are implemented by object
  * storage. This is how the PHP documentation states a stream wrapper should be
  * created. Because some features do not exist, attempting to treat a stream
@@ -38,7 +38,7 @@ SOFTWARE.
  * Hence the protocol is swiftfs standing for swift file system.
  * 
  * To understand how this stream wrapper works start by first reading the
- * documentation on the HPCloud::Storage::ObjectStorage::StreamWrapper.
+ * documentation on the OpenStack::Storage::ObjectStorage::StreamWrapper.
  * 
  * <b>DIRECTORIES</b>
  * 
@@ -51,7 +51,7 @@ SOFTWARE.
  * 
  * In addition to the parameters supported by StreamWrapper, the following
  * parameters may be set either in the stream context or through 
- * HPCloud::Bootstrap::setConfiguration():
+ * OpenStack::Bootstrap::setConfiguration():
  * - swiftfs_fake_stat_mode: Directories don't exist in swift. When stat() is
  *     is called on a directory we mock the stat information so functions like
  *     is_dir will work. The default file permissions is 0777. Though this
@@ -64,10 +64,10 @@ SOFTWARE.
  *     FALSE.
  */
 
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
-use \HPCloud\Bootstrap;
-use \HPCloud\Storage\ObjectStorage;
+use \OpenStack\Bootstrap;
+use \OpenStack\Storage\ObjectStorage;
 
 /**
  * Provides stream wrapping for Swift like a file system.
@@ -178,7 +178,7 @@ class StreamWrapperFS extends StreamWrapper {
 
       return !empty($dirListing);
     }
-    catch (\HPCloud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       trigger_error('Path could not be opened: ' . $e->getMessage(), E_USER_WARNING);
       return FALSE;
     }

@@ -21,17 +21,9 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- *
- * Contains the ContentVerificationException object.
  */
-namespace HPCloud\Storage\ObjectStorage;
-
+namespace OpenStack\Storage\ObjectStorage;
 /**
- * Content Verification error condition.
- *
- * This occurs when the server sends content whose value does
- * not match the supplied checksum. See
- * RemoteObject::setContentVerification().
- *
+ * Thrown if an object that is read only is modified.
  */
-class ContentVerificationException extends \HPCloud\Exception {}
+class ReadOnlyObjectException extends \OpenStack\Exception {}

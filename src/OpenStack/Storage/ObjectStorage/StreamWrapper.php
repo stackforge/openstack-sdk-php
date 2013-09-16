@@ -24,10 +24,10 @@ SOFTWARE.
  * Contains the stream wrapper for `swift://` URLs.
  */
 
-namespace HPCloud\Storage\ObjectStorage;
+namespace OpenStack\Storage\ObjectStorage;
 
-use \HPCloud\Bootstrap;
-use \HPCloud\Storage\ObjectStorage;
+use \OpenStack\Bootstrap;
+use \OpenStack\Storage\ObjectStorage;
 
 /**
  * Provides stream wrapping for Swift.
@@ -83,7 +83,7 @@ use \HPCloud\Storage\ObjectStorage;
  * The principle purpose of this wrapper is to make it easy to access and
  * manipulate objects on a remote object storage instance. Managing
  * containers is a secondary concern (and can often better be managed using
- * the HPCloud API). Consequently, almost all actions done through the
+ * the OpenStack API). Consequently, almost all actions done through the
  * stream wrapper are focused on objects, not containers, servers, etc.
  *
  * <b>Retrieving an Existing Object</b>
@@ -102,7 +102,7 @@ use \HPCloud\Storage\ObjectStorage;
  *
  * @code
  * <?php
- * \HPCloud\Bootstrap::useStreamWrappers();
+ * \OpenStack\Bootstrap::useStreamWrappers();
  * // Set up the context.
  * $context = stream_context_create(
  *   array('swift' => array(
@@ -144,7 +144,7 @@ use \HPCloud\Storage\ObjectStorage;
  * - filesize()
  * - fileperms()
  *
- * The HPCloud stream wrapper provides support for these file-level functions.
+ * The OpenStack stream wrapper provides support for these file-level functions.
  * But there are a few things you should know:
  *
  * - Each call to one of these functions generates at least one request. It may
@@ -199,14 +199,14 @@ use \HPCloud\Storage\ObjectStorage;
  * said markers ought to be created, they are not supported by the stream
  * wrapper.
  *
- * As usual, the underlying HPCloud::Storage::ObjectStorage::Container class
+ * As usual, the underlying OpenStack::Storage::ObjectStorage::Container class
  * supports the full range of Swift features.
  *
  * <b>SUPPORTED CONTEXT PARAMETERS</b>
  *
  * This section details paramters that can be passed <i>either</i>
  * through a stream context <i>or</i> through
- * HPCloud::Bootstrap::setConfiguration().
+ * OpenStack::Bootstrap::setConfiguration().
  *
  * @attention
  * PHP functions that do not allow you to pass a context may still be supported
@@ -227,7 +227,7 @@ use \HPCloud\Storage\ObjectStorage;
  * to an account and tenant.
  *
  * The following parameters may be set either in the stream context
- * or through HPCloud::Bootstrap::setConfiguration():
+ * or through OpenStack::Bootstrap::setConfiguration():
  *
  * - token: An auth token. If this is supplied, authentication is skipped and
  *     this token is used. NOTE: You MUST set swift_endpoint if using this
@@ -241,7 +241,7 @@ use \HPCloud\Storage\ObjectStorage;
  * - endpoint: The URL to the authentication endpoint. Necessary if you are not
  *     using a 'token' and 'swift_endpoint'.
  * - use_swift_auth: If this is set to TRUE, it will force the app to use
- *     the deprecated swiftAuth instead of IdentityServices authentication.
+ *     the deprecated swiftAuth instead of IdentityService authentication.
  *     In general, you should avoid using this.
  * - content_type: This is effective only when writing files. It will
  *     set the Content-Type of the file during upload.
@@ -420,7 +420,7 @@ class StreamWrapper {
 
       $this->dirListing = $container->objectsWithPrefix($this->dirPrefix, $sep);
     }
-    catch (\HPCloud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       trigger_error('Directory could not be opened: ' . $e->getMessage(), E_USER_WARNING);
       return FALSE;
     }
@@ -462,7 +462,7 @@ class StreamWrapper {
     $curr = $this->dirListing[$this->dirIndex];
     $this->dirIndex++;
 
-    if ($curr instanceof \HPCloud\Storage\ObjectStorage\Subdir) {
+    if ($curr instanceof \OpenStack\Storage\ObjectStorage\Subdir) {
       $fullpath = $curr->path();
     }
     else {
@@ -578,7 +578,7 @@ class StreamWrapper {
         return $container->delete($src['path']);
       }
     }
-    catch (\HPCloud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       trigger_error('Rename was not completed: ' . $e->getMessage(), E_USER_WARNING);
       return FALSE;
     }
@@ -631,7 +631,7 @@ class StreamWrapper {
     try {
       $this->writeRemote();
     }
-    catch (\HPCloud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       trigger_error('Error while closing: ' . $e->getMessage(), E_USER_NOTICE);
       return FALSE;
     }
@@ -671,7 +671,7 @@ class StreamWrapper {
     try {
       $this->writeRemote();
     }
-    catch (\HPCloud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       syslog(LOG_WARNING, $e);
       trigger_error('Error while flushing: ' . $e->getMessage(), E_USER_NOTICE);
       return FALSE;
@@ -820,7 +820,7 @@ class StreamWrapper {
     try {
       $this->initializeObjectStorage();
     }
-    catch (\HPCloud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       trigger_error('Failed to init object storage: ' . $e->getMessage(), E_USER_WARNING);
       return FALSE;
     }
@@ -834,7 +834,7 @@ class StreamWrapper {
     try {
       $this->container = $this->store->container($containerName);
     }
-    catch (\HPCloud\Transport\FileNotFoundException $e) {
+    catch (\OpenStack\Transport\FileNotFoundException $e) {
         trigger_error('Container not found.', E_USER_WARNING);
         return FALSE;
     }
@@ -883,7 +883,7 @@ class StreamWrapper {
 
     // If a 404 is thrown, we need to determine whether
     // or not a new file should be created.
-    catch (\HPCloud\Transport\FileNotFoundException $nf) {
+    catch (\OpenStack\Transport\FileNotFoundException $nf) {
 
       // For many modes, we just go ahead and create.
       if ($this->createIfNotFound) {
@@ -900,7 +900,7 @@ class StreamWrapper {
 
     }
     // All other exceptions are fatal.
-    catch (\HPCloud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       //if ($this->triggerErrors) {
         trigger_error('Failed to fetch object: ' . $e->getMessage(), E_USER_WARNING);
       //}
@@ -1001,7 +1001,7 @@ class StreamWrapper {
    *
    * To use standard \c stat() on a Swift stream, you will
    * need to set account information (tenant ID, account ID, secret,
-   * etc.) through HPCloud::Bootstrap::setConfiguration().
+   * etc.) through OpenStack::Bootstrap::setConfiguration().
    *
    * @retval array
    * @return array
@@ -1061,7 +1061,7 @@ class StreamWrapper {
    * a marker will NOT delete the contents of the "directory".
    *
    * @attention
-   * You will need to use HPCloud::Bootstrap::setConfiguration() to set the
+   * You will need to use OpenStack::Bootstrap::setConfiguration() to set the
    * necessary stream configuration, since \c unlink() does not take a context.
    *
    * @param string $path
@@ -1093,10 +1093,10 @@ class StreamWrapper {
       $name = $url['host'];
       $token = $this->store->token();
       $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
-      $container = new \HPCloud\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
+      $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
       return $container->delete($url['path']);
     }
-    catch (\HPCLoud\Exception $e) {
+    catch (\OpenStack\Exception $e) {
       trigger_error('Error during unlink: ' . $e->getMessage(), E_USER_WARNING);
       return FALSE;
     }
@@ -1126,10 +1126,10 @@ class StreamWrapper {
       $name = $url['host'];
       $token = $this->store->token();
       $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
-      $container = new \HPCloud\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
+      $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
       $obj = $container->remoteObject($url['path']);
     }
-    catch(\HPCloud\Exception $e) {
+    catch(\OpenStack\Exception $e) {
       // Apparently file_exists does not set STREAM_URL_STAT_QUIET.
       //if ($flags & STREAM_URL_STAT_QUIET) {
         //trigger_error('Could not stat remote file: ' . $e->getMessage(), E_USER_WARNING);
@@ -1141,7 +1141,7 @@ class StreamWrapper {
       try {
         return @$this->generateStat($obj, $container, $obj->contentLength());
       }
-      catch (\HPCloud\Exception $e) {
+      catch (\OpenStack\Exception $e) {
         return FALSE;
       }
     }
@@ -1180,7 +1180,7 @@ class StreamWrapper {
   /**
    * EXPERT: Get the ObjectStorage for this wrapper.
    *
-   * @retval object HPCloud::ObjectStorage
+   * @retval object OpenStack::ObjectStorage
    *   An ObjectStorage object.
    * @see object()
    */
@@ -1200,7 +1200,7 @@ class StreamWrapper {
   }
 
   /**
-   * EXPERT: Get the service catalog (IdentityServices) for this wrapper.
+   * EXPERT: Get the service catalog (IdentityService) for this wrapper.
    *
    * This is only available when a file is opened via fopen().
    *
@@ -1256,7 +1256,7 @@ class StreamWrapper {
       $gid = 0;
     }
 
-    if ($object instanceof \HPCloud\Storage\ObjectStorage\RemoteObject) {
+    if ($object instanceof \OpenStack\Storage\ObjectStorage\RemoteObject) {
       $modTime = $object->lastModified();
     }
     else {
@@ -1295,8 +1295,8 @@ class StreamWrapper {
    * @param string $mode
    *   The mode string, e.g. `r+` or `wb`.
    *
-   * @retval HPCloud::Storage::ObjectStorage::StreamWrapper
-   * @return \HPCloud\Storage\ObjectStorage\StreamWrapper
+   * @retval OpenStack::Storage::ObjectStorage::StreamWrapper
+   * @return \OpenStack\Storage\ObjectStorage\StreamWrapper
    *   $this so the method can be used in chaining.
    */
   protected function setMode($mode) {
@@ -1409,8 +1409,8 @@ class StreamWrapper {
     }
 
     // Check to see if the value can be gotten from
-    // \HPCloud\Bootstrap.
-    $val = \HPCloud\Bootstrap::config($name, NULL);
+    // \OpenStack\Bootstrap.
+    $val = \OpenStack\Bootstrap::config($name, NULL);
     if (isset($val)) {
       return $val;
     }
@@ -1458,7 +1458,7 @@ class StreamWrapper {
    * Based on the context, initialize the ObjectStorage.
    *
    * The following parameters may be set either in the stream context
-   * or through HPCloud::Bootstrap::setConfiguration():
+   * or through OpenStack::Bootstrap::setConfiguration():
    *
    * - token: An auth token. If this is supplied, authentication is skipped and
    *     this token is used. NOTE: You MUST set swift_endpoint if using this
@@ -1472,7 +1472,7 @@ class StreamWrapper {
    * - endpoint: The URL to the authentication endpoint. Necessary if you are not
    *     using a 'token' and 'swift_endpoint'.
    * - use_swift_auth: If this is set to TRUE, it will force the app to use
-   *     the deprecated swiftAuth instead of IdentityServices authentication.
+   *     the deprecated swiftAuth instead of IdentityService authentication.
    *     In general, you should avoid using this.
    *
    * To find these params, the method first checks the supplied context. If the 
@@ -1502,23 +1502,23 @@ class StreamWrapper {
     // FIXME: If a token is invalidated, we should try to re-authenticate.
     // If context has the info we need, start from there.
     if (!empty($token) && !empty($endpoint)) {
-      $this->store = new \HPCloud\Storage\ObjectStorage($token, $endpoint);
+      $this->store = new \OpenStack\Storage\ObjectStorage($token, $endpoint);
     }
     // DEPRECATED: For old swift auth.
     elseif ($this->cxt('use_swift_auth', FALSE)) {
 
       if (empty($authUrl) || empty($account) || empty($key)) {
-        throw new \HPCloud\Exception('account, endpoint, key are required stream parameters.');
+        throw new \OpenStack\Exception('account, endpoint, key are required stream parameters.');
       }
-      $this->store = \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($account, $key, $authUrl);
+      $this->store = \OpenStack\Storage\ObjectStorage::newFromSwiftAuth($account, $key, $authUrl);
 
     }
     // If we get here and tenant ID is not set, we can't get a container.
     elseif (empty($tenantId) && empty($tenantName)) {
-      throw new \HPCloud\Exception('Either Tenant ID (tenantid) or Tenant Name (tenantname) is required.');
+      throw new \OpenStack\Exception('Either Tenant ID (tenantid) or Tenant Name (tenantname) is required.');
     }
     elseif (empty($authUrl)) {
-      throw new \HPCloud\Exception('An Identity Service Endpoint (endpoint) is required.');
+      throw new \OpenStack\Exception('An Identity Service Endpoint (endpoint) is required.');
     }
     // Try to authenticate and get a new token.
     else {
@@ -1534,8 +1534,8 @@ class StreamWrapper {
       /*
       $catalog = $ident->serviceCatalog(ObjectStorage::SERVICE_TYPE);
       if (empty($catalog) || empty($catalog[0]['endpoints'][0]['publicURL'])) {
-        //throw new \HPCloud\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, TRUE));
-        throw new \HPCloud\Exception('No object storage services could be found for this tenant ID.');
+        //throw new \OpenStack\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, TRUE));
+        throw new \OpenStack\Exception('No object storage services could be found for this tenant ID.');
       }
       $serviceURL = $catalog[0]['endpoints'][0]['publicURL'];
 
@@ -1559,7 +1559,7 @@ class StreamWrapper {
     $tenantName = $this->cxt('tenantname');
     $authUrl = $this->cxt('endpoint');
 
-    $ident = new \HPCloud\Services\IdentityServices($authUrl);
+    $ident = new \OpenStack\Services\IdentityService($authUrl);
 
     // Frustrated? Go burninate. http://www.homestarrunner.com/trogdor.html
 
@@ -1570,7 +1570,7 @@ class StreamWrapper {
       $token = $ident->authenticateAsAccount($account, $key, $tenantId, $tenantName);
     }
     else {
-      throw new \HPCloud\Exception('Either username/password or account/key must be provided.');
+      throw new \OpenStack\Exception('Either username/password or account/key must be provided.');
     }
     // Cache the service catalog.
     self::$serviceCatalogCache[$token] = $ident->serviceCatalog();

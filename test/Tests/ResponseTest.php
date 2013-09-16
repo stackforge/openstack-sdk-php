@@ -24,11 +24,11 @@ SOFTWARE.
  *
  * Unit tests for Response.
  */
-namespace HPCloud\Tests\Transport;
+namespace OpenStack\Tests\Transport;
 
 require_once 'test/TestCase.php';
 
-class ResponseTest extends \HPCloud\Tests\TestCase {
+class ResponseTest extends \OpenStack\Tests\TestCase {
 
   protected $fakeBody = '{"msg":"This is a fake response"}';
   protected $fakeHeaders = array(
@@ -61,7 +61,7 @@ class ResponseTest extends \HPCloud\Tests\TestCase {
     // reset and seek don't reset the unread_bytes.
     $metadata['unread_bytes'] = strlen($this->fakeBody);
 
-    return new \HPCloud\Transport\Response($file, $metadata);
+    return new \OpenStack\Transport\Response($file, $metadata);
 
   }
 
