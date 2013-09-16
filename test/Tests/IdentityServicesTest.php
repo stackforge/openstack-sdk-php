@@ -22,26 +22,26 @@ SOFTWARE.
 /**
  * @file
  *
- * Unit tests for IdentityServices.
+ * Unit tests for IdentityService.
  */
-namespace HPCloud\Tests\Services;
+namespace OpenStack\Tests\Services;
 
-require_once 'src/HPCloud/Bootstrap.php';
+require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
-use \HPCloud\Services\IdentityServices;
-use \HPCloud\Bootstrap;
+use \OpenStack\Services\IdentityService;
+use \OpenStack\Bootstrap;
 
 
-class IdentityServicesTest extends \HPCloud\Tests\TestCase {
+class IdentityServiceTest extends \OpenStack\Tests\TestCase {
 
   public function testConstructor(){
-    $endpoint = self::conf('hpcloud.identity.url');
+    $endpoint = self::conf('openstack.identity.url');
     $this->assertNotEmpty($endpoint);
 
-    $service = new IdentityServices($endpoint);
+    $service = new IdentityService($endpoint);
 
-    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $service);
+    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $service);
 
     return $service;
   }
@@ -50,8 +50,8 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testConstructor
    */
   public function testUrl() {
-    $endpoint = self::conf('hpcloud.identity.url');
-    $service = new IdentityServices($endpoint);
+    $endpoint = self::conf('openstack.identity.url');
+    $service = new IdentityService($endpoint);
 
     // If there is a trailing / we remove that from the endpoint. Our calls add
     // the / back where appropriate.
@@ -67,11 +67,11 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
 
     // Canary: Make sure all the required params are declared.
     $settings = array(
-      'hpcloud.identity.username',
-      'hpcloud.identity.password',
-      'hpcloud.identity.tenantId',
-      'hpcloud.identity.account',
-      'hpcloud.identity.secret',
+      'openstack.identity.username',
+      'openstack.identity.password',
+      'openstack.identity.tenantId',
+      'openstack.identity.access',
+      'openstack.identity.secret',
     );
     foreach ($settings as $setting) {
       $this->assertNotEmpty(self::conf($setting), "Required param: " . $setting);
@@ -80,26 +80,26 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     // Test username/password auth.
     $auth = array(
       'passwordCredentials' => array(
-        'username' => self::conf('hpcloud.identity.username'),
-        'password' => self::conf('hpcloud.identity.password'),
+        'username' => self::conf('openstack.identity.username'),
+        'password' => self::conf('openstack.identity.password'),
       ),
-      'tenantId' => self::conf('hpcloud.identity.tenantId'),
+      'tenantId' => self::conf('openstack.identity.tenantId'),
     );
     $tok = $service->authenticate($auth);
     $this->assertNotEmpty($tok);
 
     // We should get the same token if we request again.
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $tok2 = $service->authenticate($auth);
     $this->assertEquals($tok, $tok2);
 
     // Again with no tenant ID.
     $auth = array(
       'passwordCredentials' => array(
-        'username' => self::conf('hpcloud.identity.username'),
-        'password' => self::conf('hpcloud.identity.password'),
+        'username' => self::conf('openstack.identity.username'),
+        'password' => self::conf('openstack.identity.password'),
       ),
-      //'tenantId' => self::conf('hpcloud.identity.tenantId'),
+      //'tenantId' => self::conf('openstack.identity.tenantId'),
     );
     $tok = $service->authenticate($auth);
     $this->assertNotEmpty($tok);
@@ -108,11 +108,11 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     // Test account ID/secret key auth.
     $auth = array(
       'apiAccessKeyCredentials' => array(
-        'accessKey' => self::conf('hpcloud.identity.account'),
-        'secretKey' => self::conf('hpcloud.identity.secret'),
+        'accessKey' => self::conf('openstack.identity.access'),
+        'secretKey' => self::conf('openstack.identity.secret'),
       ),
     );
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $tok3 = $service->authenticate($auth);
 
     $this->assertNotEmpty($tok3);
@@ -123,11 +123,11 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testAuthenticate
    */
   public function testAuthenticateAsUser() {
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
 
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantId = self::conf('openstack.identity.tenantId');
 
     $tok = $service->authenticateAsUser($user, $pass, $tenantId);
 
@@ -145,11 +145,11 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testAuthenticate
    */
   public function testAuthenticateAsAccount() {
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
 
-    $account = self::conf('hpcloud.identity.account');
-    $secret = self::conf('hpcloud.identity.secret');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $account = self::conf('openstack.identity.access');
+    $secret = self::conf('openstack.identity.secret');
+    $tenantId = self::conf('openstack.identity.tenantId');
 
     // No tenant ID.
     $tok = $service->authenticateAsAccount($account, $secret);
@@ -157,7 +157,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
     $this->assertEmpty($service->tenantId());
 
     // No tenant ID.
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $tok = $service->authenticateAsAccount($account, $secret, $tenantId);
     $this->assertNotEmpty($tok);
     $this->assertEquals($tenantId, $service->tenantId());
@@ -178,7 +178,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
   public function testIsExpired($service) {
     $this->assertFalse($service->isExpired());
 
-    $service2 = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service2 = new IdentityService(self::conf('openstack.identity.url'));
     $this->assertTrue($service2->isExpired());
   }
 
@@ -186,29 +186,29 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testAuthenticateAsAccount
    */
   public function testTenantName() {
-    $account = self::conf('hpcloud.identity.account');
-    $secret = self::conf('hpcloud.identity.secret');
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantName = self::conf('hpcloud.identity.tenantName');
+    $account = self::conf('openstack.identity.access');
+    $secret = self::conf('openstack.identity.secret');
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantName = self::conf('openstack.identity.tenantName');
 
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $this->assertNull($service->tenantName());
 
     $service->authenticateAsUser($user, $pass);
     $this->assertEmpty($service->tenantName());
 
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $ret = $service->authenticateAsUser($user, $pass, NULL, $tenantName);
     $this->assertNotEmpty($service->tenantName());
 
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $this->assertNull($service->tenantName());
 
     $service->authenticateAsAccount($account, $secret);
     $this->assertEmpty($service->tenantName());
 
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $ret = $service->authenticateAsAccount($account, $secret, NULL, $tenantName);
     $this->assertNotEmpty($service->tenantName());
     $this->assertEquals($tenantName, $service->tenantName());
@@ -218,17 +218,17 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testAuthenticateAsAccount
    */
   public function testTenantId() {
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantId = self::conf('openstack.identity.tenantId');
 
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $this->assertNull($service->tenantId());
 
     $service->authenticateAsUser($user, $pass);
     $this->assertEmpty($service->tenantId());
 
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $service->authenticateAsUser($user, $pass, $tenantId);
     $this->assertNotEmpty($service->tenantId());
   }
@@ -238,11 +238,11 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    */
   public function testTokenDetails() {
     $now = time();
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantId = self::conf('openstack.identity.tenantId');
 
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $service->authenticateAsUser($user, $pass);
 
     // Details for account auth.
@@ -255,12 +255,12 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
 
 
     // Test details for username auth.
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'));
     $service->authenticateAsUser($user, $pass, $tenantId);
 
     $details = $service->tokenDetails();
 
-    $expectUser = self::conf('hpcloud.identity.username');
+    $expectUser = self::conf('openstack.identity.username');
 
     $this->assertStringStartsWith($expectUser, $details['tenant']['name']);
     $this->assertNotEmpty($details['id']);
@@ -312,7 +312,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
   public function testUser($service) {
     $user = $service->user();
 
-    $this->assertEquals(self::conf('hpcloud.identity.username'), $user['name']);
+    $this->assertEquals(self::conf('openstack.identity.username'), $user['name']);
     $this->assertNotEmpty($user['roles']);
   }
 
@@ -328,7 +328,7 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
 
     $again = unserialize($ser);
 
-    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $again);
+    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $again);
 
     $this->assertEquals($service->tenantId(), $again->tenantId());
     $this->assertEquals($service->serviceCatalog(), $again->serviceCatalog());
@@ -347,11 +347,11 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @group tenant
    */
   public function testTenants() {
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
-    $service2 = new IdentityServices(self::conf('hpcloud.identity.url'));
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service2 = new IdentityService(self::conf('openstack.identity.url'));
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantId = self::conf('openstack.identity.tenantId');
     $service->authenticateAsUser($user, $pass, $tenantId);
 
 
@@ -373,10 +373,10 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testTenants
    */
   function testRescope() {
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
+    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantId = self::conf('openstack.identity.tenantId');
 
     // Authenticate without a tenant ID.
     $token = $service->authenticateAsUser($user, $pass);
@@ -413,10 +413,10 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
    * @depends testTenants
    */
   function testRescopeByTenantName() {
-    $service = new IdentityServices(self::conf('hpcloud.identity.url'));
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantName = self::conf('hpcloud.identity.tenantName');
+    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantName = self::conf('openstack.identity.tenantName');
 
     // Authenticate without a tenant ID.
     $token = $service->authenticateAsUser($user, $pass);
@@ -463,29 +463,29 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
 
     // Test authenticating as a user.
     $settings = array(
-      'username' => self::conf('hpcloud.identity.username'),
-      'password' => self::conf('hpcloud.identity.password'),
-      'endpoint' => self::conf('hpcloud.identity.url'),
-      'tenantid' => self::conf('hpcloud.identity.tenantId'),
+      'username' => self::conf('openstack.identity.username'),
+      'password' => self::conf('openstack.identity.password'),
+      'endpoint' => self::conf('openstack.identity.url'),
+      'tenantid' => self::conf('openstack.identity.tenantId'),
     );
     Bootstrap::setConfiguration($settings);
 
     $is = Bootstrap::identity(TRUE);
-    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
+    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
 
     Bootstrap::$config = $reset;
 
     // Test authenticating as an account.
     $settings = array(
-      'account' => self::conf('hpcloud.identity.account'),
-      'secret' => self::conf('hpcloud.identity.secret'),
-      'endpoint' => self::conf('hpcloud.identity.url'),
-      'tenantid' => self::conf('hpcloud.identity.tenantId'),
+      'account' => self::conf('openstack.identity.access'),
+      'secret' => self::conf('openstack.identity.secret'),
+      'endpoint' => self::conf('openstack.identity.url'),
+      'tenantid' => self::conf('openstack.identity.tenantId'),
     );
     Bootstrap::setConfiguration($settings);
 
     $is = Bootstrap::identity(TRUE);
-    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
+    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
 
     // Test getting a second instance from the cache.
     $is2 = Bootstrap::identity();
@@ -499,25 +499,25 @@ class IdentityServicesTest extends \HPCloud\Tests\TestCase {
 
     // Test with tenant name
     $settings = array(
-      'account' => self::conf('hpcloud.identity.account'),
-      'secret' => self::conf('hpcloud.identity.secret'),
-      'endpoint' => self::conf('hpcloud.identity.url'),
-      'tenantname' => self::conf('hpcloud.identity.tenantName'),
+      'account' => self::conf('openstack.identity.access'),
+      'secret' => self::conf('openstack.identity.secret'),
+      'endpoint' => self::conf('openstack.identity.url'),
+      'tenantname' => self::conf('openstack.identity.tenantName'),
     );
     Bootstrap::setConfiguration($settings);
 
     $is = Bootstrap::identity(TRUE);
-    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
+    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
 
     $settings = array(
-      'username' => self::conf('hpcloud.identity.username'),
-      'password' => self::conf('hpcloud.identity.password'),
-      'endpoint' => self::conf('hpcloud.identity.url'),
-      'tenantname' => self::conf('hpcloud.identity.tenantName'),
+      'username' => self::conf('openstack.identity.username'),
+      'password' => self::conf('openstack.identity.password'),
+      'endpoint' => self::conf('openstack.identity.url'),
+      'tenantname' => self::conf('openstack.identity.tenantName'),
     );
     Bootstrap::setConfiguration($settings);
 
     $is = Bootstrap::identity(TRUE);
-    $this->assertInstanceOf('\HPCloud\Services\IdentityServices', $is);
+    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
   }
 }

@@ -48,10 +48,10 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
   public static function tearDownAfterClass() {
 
     // First we get an identity
-    $user = self::conf('hpcloud.identity.username');
-    $pass = self::conf('hpcloud.identity.password');
-    $tenantId = self::conf('hpcloud.identity.tenantId');
-    $url = self::conf('hpcloud.identity.url');
+    $user = self::conf('openstack.identity.username');
+    $pass = self::conf('openstack.identity.password');
+    $tenantId = self::conf('openstack.identity.tenantId');
+    $url = self::conf('openstack.identity.url');
 
     $ident = new \HPCloud\Services\IdentityServices($url);
 
@@ -130,10 +130,10 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    */
   protected function authSwiftContext($add = array(), $scheme = NULL) {
     $cname   = self::$settings['hpcloud.swift.container'];
-    $account = self::$settings['hpcloud.identity.account'];
-    $key     = self::$settings['hpcloud.identity.secret'];
-    $tenant  = self::$settings['hpcloud.identity.tenantId'];
-    $baseURL = self::$settings['hpcloud.identity.url'];
+    $account = self::$settings['openstack.identity.access'];
+    $key     = self::$settings['openstack.identity.secret'];
+    $tenant  = self::$settings['openstack.identity.tenantId'];
+    $baseURL = self::$settings['openstack.identity.url'];
 
     if (empty($scheme)) {
       $scheme = StreamWrapper::DEFAULT_SCHEME;
@@ -163,10 +163,10 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
    */
   protected function addBootstrapConfig() {
     $opts = array(
-      'account' => self::$settings['hpcloud.identity.account'],
-      'key'     => self::$settings['hpcloud.identity.secret'],
-      'endpoint' => self::$settings['hpcloud.identity.url'],
-      'tenantid' => self::$settings['hpcloud.identity.tenantId'],
+      'account' => self::$settings['openstack.identity.access'],
+      'key'     => self::$settings['openstack.identity.secret'],
+      'endpoint' => self::$settings['openstack.identity.url'],
+      'tenantid' => self::$settings['openstack.identity.tenantId'],
       'token' => $this->objectStore()->token(),
       'swift_endpoint' => $this->objectStore()->url(),
     );
@@ -185,7 +185,7 @@ class StreamWrapperTest extends \HPCloud\Tests\TestCase {
     $array = stream_context_get_options($cxt);
 
     $opts = $array['swift'];
-    $endpoint = self::conf('hpcloud.identity.url');
+    $endpoint = self::conf('openstack.identity.url');
 
     $this->assertEquals($endpoint, $opts['endpoint'], 'A UTF-8 encoding issue.');
   }

@@ -100,7 +100,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     $user = self::$settings['hpcloud.swift.account'];
     $key = self::$settings['hpcloud.swift.key'];
     $url = self::$settings['hpcloud.swift.url'];
-    //$url = self::$settings['hpcloud.identity.url'];
+    //$url = self::$settings['openstack.identity.url'];
 
     return \HPCloud\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
 
@@ -122,10 +122,10 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   protected function identity($reset = FALSE) {
 
     if ($reset || empty(self::$ident)) {
-      $user = self::conf('hpcloud.identity.username');
-      $pass = self::conf('hpcloud.identity.password');
-      $tenantId = self::conf('hpcloud.identity.tenantId');
-      $url = self::conf('hpcloud.identity.url');
+      $user = self::conf('openstack.identity.username');
+      $pass = self::conf('openstack.identity.password');
+      $tenantId = self::conf('openstack.identity.tenantId');
+      $url = self::conf('openstack.identity.url');
 
       $is = new \HPCloud\Services\IdentityServices($url);
 

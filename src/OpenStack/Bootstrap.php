@@ -29,7 +29,7 @@ SOFTWARE.
 
 namespace OpenStack;
 
-use HPCloud\Services\IdentityServices;
+use OpenStack\Services\IdentityService;
 use OpenStack\Exception;
 
 /**
@@ -133,7 +133,7 @@ class Bootstrap {
 
   /**
    * An identity services object created from the global settings.
-   * @var object OpenStack::Services::IdentityServices
+   * @var object OpenStack::Services::IdentityService
    */
   public static $identity = NULL;
 
@@ -371,14 +371,14 @@ class Bootstrap {
 
       // Check if we have a username/password
       if (!empty($user) && self::hasConfig('password')) {
-        $is = new IdentityServices(self::config('endpoint'));
+        $is = new IdentityService(self::config('endpoint'));
         $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', NULL), self::config('tenantname', NULL));
         self::$identity = $is;
       }
 
       // Otherwise we go with access/secret keys
       elseif (!empty($account) && self::hasConfig('secret')) {
-        $is = new IdentityServices(self::config('endpoint'));
+        $is = new IdentityService(self::config('endpoint'));
         $is->authenticateAsAccount($account, self::config('secret'), self::config('tenantid', NULL), self::config('tenantname', NULL));
         self::$identity = $is;
       }

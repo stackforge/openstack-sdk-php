@@ -22,15 +22,15 @@ SOFTWARE.
 /**
  * @file
  *
- * This file contains the main IdentityServices class.
+ * This file contains the main IdentityService class.
  */
 
-namespace HPCloud\Services;
+namespace OpenStack\Services;
 
 /**
- * IdentityServices provides authentication and authorization.
+ * IdentityService provides authentication and authorization.
  *
- * IdentityServices (a.k.a. Keystone) provides a central service for managing
+ * IdentityService (a.k.a. Keystone) provides a central service for managing
  * other services. Through it, you can do the following:
  *
  * - Authenticate
@@ -75,7 +75,7 @@ namespace HPCloud\Services;
  * A list of tenants associated with this account can be obtain programatically
  * using the tenants() method on this object.
  *
- * HPCloud customers can find their tenant ID in the console along with their
+ * OpenStack users can find their tenant ID in the console along with their
  * account ID and secret key.
  *
  * @b EXAMPLE
@@ -84,15 +84,15 @@ namespace HPCloud\Services;
  *
  * @code
  * <?php
- * // You may need to use \HPCloud\Bootstrap to set things up first.
+ * // You may need to use \OpenStack\Bootstrap to set things up first.
  *
- * use \HPCloud\Services\IdentityServices;
+ * use \OpenStack\Services\IdentityService;
  *
  * // Create a new object with the endpoint URL (no version number)
- * $ident = new IdentityServices('https://example.com:35357');
+ * $ident = new IdentityService('https://example.com:35357');
  *
  * // Authenticate and set the tenant ID simultaneously.
- * $ident->authenticateAsUser('butcher@hp.com', 'password', '1234567');
+ * $ident->authenticateAsUser('me@example.com', 'password', '1234567');
  *
  * // The token to use when connecting to other services:
  * $token = $ident->token();
@@ -124,12 +124,12 @@ namespace HPCloud\Services;
  *
  * <b>Serializing</b>
  *
- * IdentityServices has been intentionally built to serialize well.
- * This allows implementors to cache IdentityServices objects rather
+ * IdentityService has been intentionally built to serialize well.
+ * This allows implementors to cache IdentityService objects rather
  * than make repeated requests for identity information.
  *
  */
-class IdentityServices /*implements Serializable*/ {
+class IdentityService /*implements Serializable*/ {
   /**
    * The version of the API currently supported.
    */
@@ -179,7 +179,7 @@ class IdentityServices /*implements Serializable*/ {
   protected $userDetails;
 
   /**
-   * Build a new IdentityServices object.
+   * Build a new IdentityService object.
    *
    * Each object is bound to a particular identity services endpoint.
    *
@@ -194,7 +194,7 @@ class IdentityServices /*implements Serializable*/ {
    *
    * @code
    * <?php
-   * $cs = new \HPCloud\Services\IdentityServices('http://example.com');
+   * $cs = new \OpenStack\Services\IdentityService('http://example.com');
    * $token = $cs->authenticateAsAccount($accountId, $accessKey);
    * ?>
    * @endcode
@@ -241,7 +241,7 @@ class IdentityServices /*implements Serializable*/ {
    * the authenticate() method:
    * @code
    * <?php
-   * $cs = new \HPCloud\Services\IdentityServices($url);
+   * $cs = new \OpenStack\Services\IdentityService($url);
    * $ops = array(
    *   'passwordCredentials' => array(
    *     'username' => $username,
@@ -263,9 +263,9 @@ class IdentityServices /*implements Serializable*/ {
    *   The token. This is returned for simplicity. The full response is used
    *   to populate this object's service catalog, etc. The token is also
    *   retrievable with token().
-   * @throws HPCloud::Transport::AuthorizationException
+   * @throws OpenStack::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws HPCloud::Exception
+   * @throws OpenStack::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -285,7 +285,7 @@ class IdentityServices /*implements Serializable*/ {
 
     //print $body . PHP_EOL;
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
 
     $response = $client->doRequest($url, 'POST', $headers, $body);
 
@@ -299,9 +299,9 @@ class IdentityServices /*implements Serializable*/ {
    * Authenticate to Identity Services with username, password, and either 
    * tenant ID or tenant Name.
    *
-   * Given an HPCloud username and password, authenticate to Identity Services.
+   * Given a OpenStack username and password, authenticate to Identity Services.
    * Identity Services will then issue a token that can be used to access other
-   * HPCloud services.
+   * OpenStack services.
    *
    * If a tenant ID is provided, this will also associate the user with the
    * given tenant ID. If a tenant Name is provided, this will associate the user
@@ -322,13 +322,13 @@ class IdentityServices /*implements Serializable*/ {
    *   A password string.
    * @param string $tenantId
    *   The tenant ID for this account. This can be obtained through the
-   *   HPCloud console.
+   *   OpenStack console.
    * @param string $tenantName
    *   The tenant Name for this account. This can be obtained through the
-   *   HPCloud console.
-   * @throws HPCloud::Transport::AuthorizationException
+   *   OpenStack console.
+   * @throws OpenStack::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws HPCloud::Exception
+   * @throws OpenStack::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -352,11 +352,11 @@ class IdentityServices /*implements Serializable*/ {
     return $this->authenticate($ops);
   }
   /**
-   * Authenticate to HPCloud using your account ID and access key.
+   * Authenticate to OpenStack using your account ID and access key.
    *
    * Given an account ID and and access key (secret key), authenticate
    * to Identity Services. Identity Services will then issue a token that can be
-   * used with other HPCloud services, such as Object Storage (aka Swift).
+   * used with other OpenStack services, such as Object Storage (aka Swift).
    *
    * The account ID and access key information can be found in the account
    * section of the console.
@@ -383,13 +383,13 @@ class IdentityServices /*implements Serializable*/ {
    *   with this token.
    * @param string $tenantName
    *   The tenant Name for this account. This can be obtained through the
-   *   HPCloud console.
+   *   OpenStack console.
    * @retval string
    * @return string
    *   The auth token.
-   * @throws HPCloud::Transport::AuthorizationException
+   * @throws OpenStack::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws HPCloud::Exception
+   * @throws OpenStack::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -673,9 +673,9 @@ class IdentityServices /*implements Serializable*/ {
    * @return array
    *   An indexed array of tenant info. Each entry will be an associative
    *   array containing tenant details.
-   * @throws HPCloud::Transport::AuthorizationException
+   * @throws OpenStack::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws HPCloud::Exception
+   * @throws OpenStack::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -692,7 +692,7 @@ class IdentityServices /*implements Serializable*/ {
       //'Content-Type' => 'application/json',
     );
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $response = $client->doRequest($url, 'GET', $headers);
 
     $raw = $response->content();
@@ -703,7 +703,7 @@ class IdentityServices /*implements Serializable*/ {
   }
 
   /**
-   * @see HPCloud::Services::IdentityServices::rescopeUsingTenantId()
+   * @see OpenStack::Services::IdentityService::rescopeUsingTenantId()
    * @deprecated
    */
   public function rescope($tenantId) {
@@ -735,9 +735,9 @@ class IdentityServices /*implements Serializable*/ {
    * @retval string
    * @return string
    *   The authentication token.
-   * @throws HPCloud::Transport::AuthorizationException
+   * @throws OpenStack::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws HPCloud::Exception
+   * @throws OpenStack::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -761,7 +761,7 @@ class IdentityServices /*implements Serializable*/ {
       //'X-Auth-Token' => $token,
     );
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $response = $client->doRequest($url, 'POST', $headers, $body);
     $this->handleResponse($response);
 
@@ -793,9 +793,9 @@ class IdentityServices /*implements Serializable*/ {
    * @retval string
    * @return string
    *   The authentication token.
-   * @throws HPCloud::Transport::AuthorizationException
+   * @throws OpenStack::Transport::AuthorizationException
    *   If authentication failed.
-   * @throws HPCloud::Exception
+   * @throws OpenStack::Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -819,7 +819,7 @@ class IdentityServices /*implements Serializable*/ {
       //'X-Auth-Token' => $token,
     );
 
-    $client = \HPCloud\Transport::instance();
+    $client = \OpenStack\Transport::instance();
     $response = $client->doRequest($url, 'POST', $headers, $body);
     $this->handleResponse($response);
 
@@ -832,11 +832,11 @@ class IdentityServices /*implements Serializable*/ {
    * This parses the JSON data and parcels out the data to the appropriate
    * fields.
    *
-   * @param object $response HPCloud::Transport::Response
+   * @param object $response OpenStack::Transport::Response
    *   A response object.
    *
-   * @retval HPCloud::Services::IdentityServices
-   * @return \HPCloud\Services\IdentityServices
+   * @retval OpenStack::Services::IdentityService
+   * @return \OpenStack\Services\IdentityService
    *   $this for the current object so it can be used in chaining.
    */
   protected function handleResponse($response) {

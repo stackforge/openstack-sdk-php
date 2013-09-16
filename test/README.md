@@ -82,11 +82,11 @@ Your settings should look something like this:
 
 hpcloud.swift.container = "I♡HPCloud"
 
-hpcloud.identity.url = https://region-a.geo-1.idenity.hpcloudsvc.com
-hpcloud.identity.tenantId = 12345
-hpcloud.identity.username = butcher@hp.com
-hpcloud.identity.password = secret
-hpcloud.identity.account =  54321
+openstack.identity.url = https://region-a.geo-1.idenity.hpcloudsvc.com
+openstack.identity.tenantId = 12345
+openstack.identity.username = butcher@hp.com
+openstack.identity.password = secret
+openstack.identity.access =  54321
 hpcloud.identity.key = 9878787
 ```
 
