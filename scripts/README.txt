@@ -1,1 +1,1 @@
-Executable scripts for HPCloud-PHP.
+Executable scripts for the OpenStack PHP-Client.
