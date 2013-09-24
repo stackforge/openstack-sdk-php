@@ -179,13 +179,13 @@ class Bootstrap {
    */
   public static function useStreamWrappers() {
     $swift = stream_wrapper_register(
-      \HPCloud\Storage\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
-      '\HPCloud\Storage\ObjectStorage\StreamWrapper'
+      \OpenStack\Storage\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
+      '\OpenStack\Storage\ObjectStorage\StreamWrapper'
     );
 
     $swiftfs = stream_wrapper_register(
-      \HPCloud\Storage\ObjectStorage\StreamWrapperFS::DEFAULT_SCHEME,
-      '\HPCloud\Storage\ObjectStorage\StreamWrapperFS'
+      \OpenStack\Storage\ObjectStorage\StreamWrapperFS::DEFAULT_SCHEME,
+      '\OpenStack\Storage\ObjectStorage\StreamWrapperFS'
     );
 
     return ($swift && $swiftfs);
