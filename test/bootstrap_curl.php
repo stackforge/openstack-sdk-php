@@ -6,5 +6,5 @@
  */
 
 $bootstrap_settings = array(
-  'transport' => '\HPCloud\Transport\CURLTransport',
+  'transport' => '\OpenStack\Transport\CURLTransport',
 );

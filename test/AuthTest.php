@@ -27,22 +27,22 @@ SOFTWARE.
  */
 
 $base = dirname(__DIR__);
-require_once $base . '/src/HPCloud/Bootstrap.php';
+require_once $base . '/src/OpenStack/Bootstrap.php';
 
-use \HPCloud\Storage\ObjectStorage;
-use \HPCloud\Services\IdentityServices;
+use \OpenStack\Storage\ObjectStorage;
+use \OpenStack\Services\IdentityService;
 
 $config = array(
-  'transport' => '\HPCloud\Transport\CURLTransport',
+  'transport' => '\OpenStack\Transport\CURLTransport',
   'transport.timeout' => 240,
   //'transport.debug' => 1,
   'transport.ssl.verify' => 0,
 );
 
-\HPCloud\Bootstrap::useAutoloader();
-\HPCloud\Bootstrap::setConfiguration($config);
+\OpenStack\Bootstrap::useAutoloader();
+\OpenStack\Bootstrap::setConfiguration($config);
 
-$help = "Authenticate against HPCloud Identity Services.
+$help = "Authenticate against OpenStack Identity Service.
 
 You can authenticate either by account number and access key, or (by using the
 -u flag) by username, password.
@@ -86,7 +86,7 @@ $store = ObjectStorage::newFromSwiftAuth($user, $key, $uri);
 
 $token = $store->token();
  */
-$cs = new IdentityServices($uri);
+$cs = new IdentityService($uri);
 
 if ($asUser) {
   $token = $cs->authenticateAsUser($user, $key, $tenantId);

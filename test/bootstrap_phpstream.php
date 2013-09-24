@@ -6,5 +6,5 @@
  */
 
 $bootstrap_settings = array(
-  'transport' => '\HPCloud\Transport\PHPStreamTransport',
+  'transport' => '\OpenStack\Transport\PHPStreamTransport',
 );

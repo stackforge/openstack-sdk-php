@@ -1,10 +1,10 @@
-# Running Tests for the HPCloud-PHP bindings
+# Running Tests for the PHP-Client bindings
 
 This file explains how to configured your environment for running the
-HPCloud automated testing.
+PHP-Client automated testing.
 
-The HPCloud bindings offer a few stand-alone tests for testing basic
-connectivity to the HPCloud services, but most tests are of the
+The OpenStack bindings offer a few stand-alone tests for testing basic
+connectivity to OpenStack services, but most tests are of the
 automated variety.
 
 *IMPORTANT*: Make sure your settings.ini file is up-to-date! Options
@@ -18,7 +18,7 @@ the libary are met.
 ### AuthTest.php
 
 The AuthTest test is a simple commandline program that allows you to
-verify that your PHP client can successfully connect to the HP Cloud. To
+verify that your PHP client can successfully connect to OpenStack. To
 run this test, do the following:
 
 1. Begin from the root directory of this project, where you should see
@@ -32,18 +32,13 @@ $ php test/AuthTest.php
 This will instruct you to use a more complete version of the command,
 including:
 
-* ID: The ID given to you by HP Cloud.
+* ID: The ID given to you.
 * KEY: Your account's key.
 * TENANT ID: Your account's tenant ID.
 * URL: The Endpoint URL.
 
-All four pieces of information can be found by logging into [the
-console](https://console.hpcloud.com) and going to the section called
-*Storage*. There should be a link on that page that says *Get
-Storage API Keys*. That page displays all four pieces of required
-information.
-
-From there, you can execute a command like this:
+All four pieces of information can be found by logging into the
+console. From there, you can execute a command like this:
 
 ```
 $ php test/AuthTest.php 123made-up-key  456made-up-secret https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/ 1234567
@@ -56,7 +51,7 @@ the services in your service catalog.
 ## Unit Tests
 
 Unit and behavioral tests are built using [PHPUnit](http://www.phpunit.de/). Before you can
-test this package, you will need to [install that tool](http://www.phpunit.de/manual/3.6/en/installation.html).
+test this package, you will need to [install that tool](http://www.phpunit.de/manual/3.7/en/installation.html).
 
 Next, you need to create your own `settings.ini` file to contain your HP
 Cloud credentials, along with your preferred testing parameters.
@@ -72,34 +67,9 @@ $ cp example.settings.ini settings.ini
 $ edit settings.ini
 ```
 
-Your settings should look something like this:
-
-```
-; Settings to work with swift:
-; openstack.swift.account = 12345678:87654321
-; openstack.swift.key = abcdef123456
-; openstack.swift.url = https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/
-
-openstack.swift.container = "I♡HPCloud"
-
-openstack.identity.url = https://region-a.geo-1.idenity.hpcloudsvc.com
-openstack.identity.tenantId = 12345
-openstack.identity.username = butcher@hp.com
-openstack.identity.password = secret
-openstack.identity.access =  54321
-hpcloud.identity.key = 9878787
-```
-
-You will need to add all of the `hpcloud.identity` settings, and all of
-this information can be found on your console.
-
-The openstack.swift.account, key, and url params are no longer required
-for the basic tests, but are required if you are also running the tests
-in the group `deprecated`.
-
 ### Running Tests with Make
 
-The `Makefile` included with the HPCloud library can run the tests.
+The `Makefile` included with the PHP-Client library can run the tests.
 Beginning from the root directory of the project, simply type the
 following:
 
@@ -142,7 +112,7 @@ This should generate output looking something like this:
 
 ```
 phpunit test/Tests
-PHPUnit 3.6.3 by Sebastian Bergmann.
+PHPUnit 3.7.24 by Sebastian Bergmann.
 
 ..................................................
 
@@ -172,4 +142,3 @@ The different namespacing is an historical relic resulting from two things:
 
 Eventually, the namespaces for the unit tests will all be standardized,
 too.
-
