@@ -66,8 +66,8 @@ this is [explained elsewhere](@ref styleguide).
 
 ## Step 1: Getting the Library
 
-You can get the OpenStack PHP-CLient library at the [HPCloud GitHub
-Repository](https://github.com/hpcloud). The latest code is always
+You can get the OpenStack PHP-CLient library at the [OpenStack PHP-Client
+Repository](https://FIXME). The latest code is always
 available there.
 
 The project also uses [Composer](http://packagist.org/), and this is the
@@ -491,7 +491,7 @@ surface of what the OpenStack PHP-Client library does. But hopefully this is
 enough to get you started with the library.
 
 The entire library is well documented, and the documentation is
-[available online](https://github.com/hpcloud). You can also build a
+[available online](https://FIXME). You can also build a
 local copy by installing [doxygen](http://www.stack.nl/~dimitri/doxygen)
 (if you haven't already) and running `make docs` in the root of the
 OpenStack PHP-Client project. This will place the generated documents in

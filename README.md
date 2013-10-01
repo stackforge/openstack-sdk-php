@@ -87,4 +87,4 @@ This library provides access to those services.
 
 The best source of documentation is the official API documentation,
 which is available at
-http://hpcloud.github.com/HPCloud-PHP/doc/api/html/index.html
+http://FIXME
