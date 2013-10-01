@@ -1,10 +1,10 @@
 {
-  "name": "hpcloud/hpcloud-php",
-  "description": "Access HPCloud and OpenStack services in PHP.",
+  "name": "openstack/php-client",
+  "description": "Access OpenStack services in PHP.",
   "type": "library",
-  "keywords": ["openstack","hpcloud","cloud","swift","nova"],
+  "keywords": ["openstack","keystone","cloud","swift","nova"],
   "license": "MIT",
-  "homepage": "http://hpcloud.com",
+  "homepage": "http://www.openstack.org",
   "authors": [
     {
       "name": "M Butcher",
