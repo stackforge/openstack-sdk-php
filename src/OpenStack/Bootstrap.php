@@ -21,9 +21,9 @@ SOFTWARE.
 ============================================================================ */
 /**
  * @file
- * HP Cloud configuration.
+ * OpenStacl PHP-Client configuration.
  *
- * This file contains the HP Cloud autoloader. It also automatically
+ * This file contains the PHP-Client autoloader. It also automatically
  * register the OpenStack stream wrappers.
  */
 

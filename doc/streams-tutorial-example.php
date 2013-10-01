@@ -1,11 +1,11 @@
 <?php
-require_once __DIR__ . '/../src/HPCloud/Bootstrap.php';
+require_once __DIR__ . '/../src/OpenStack/Bootstrap.php';
 
-use \HPCloud\Bootstrap;
+use \OpenStack\Bootstrap;
 Bootstrap::useAutoloader();
 Bootstrap::useStreamWrappers();
 
-$ini = parse_ini_file(getenv('HOME') . '/.hpcloud.ini');
+$ini = parse_ini_file(getenv('HOME') . '/.OpenStack.ini');
 $settings = array(
   'account' => $ini['account'],
   'key' => $ini['secret'],

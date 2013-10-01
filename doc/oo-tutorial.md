@@ -1,12 +1,10 @@
-Tutorial: Using HPCloud-PHP           {#oo-tutorial}
+Tutorial: Using OpenStack PHP-Client
 =================
 
-HPCloud-PHP provides PHP language bindings for the HPCloud APIs. HPCloud
-is an OpenStack-based cloud service offering a wide (and ever-expanding)
-variety of services.
+PHP-Client provides PHP language bindings for the OpenStack APIs.
 
 In this tutorial, we will walk through the process of creating a simple
-tool that interacts with HP Cloud's Object Storage. The emphasis in this
+tool that interacts with OpenStack's Object Storage. The emphasis in this
 article is on getting started and learning the concepts, not building a
 polished product.
 
@@ -16,7 +14,7 @@ covered in [another tutorial](@ref streams-tutorial).
 
 ## Pre-flight Check
 
-HPCloud-PHP has been developed to require PHP 5.3 or later. You are
+PHP-Client has been developed to require PHP 5.3 or later. You are
 strongly encouraged to also install the CURL PHP extension. Many
 distributions of PHP come with this enabled. Sometimes, though, you may
 need to do something like `apt-get php5-curl` or similar. (Don't take
@@ -30,7 +28,7 @@ You can check for both of these conditions by checking the output of
 In our pre-flight check, we would be remiss if we didn't point out that
 there are some requirements for the pilot (that's you), too.
 
-The HPCloud library is composed of two parts:
+The PHP-Client library is composed of two parts:
 
 1. The Object-Oriented part, which is the subject of this tutorial.
 2. The Stream Wrapper, which is the subject of another tutorial.
@@ -38,14 +36,12 @@ The HPCloud library is composed of two parts:
 The object-oriented library makes ample use of PHP namespaces. If you've
 never seen these before, they look like this:
 
-~~~{.php}
-<?php
-\HPCloud\Storage\ObjectStorage\RemoteObject
-?>
-~~~
+	<?php
+	\OpenStack\Storage\ObjectStorage\RemoteObject
+	?>
 
 The namespace above is read like this: "The RemoteObject class is part
-of the ObjectStorage package in the Storage package in the base HPCloud
+of the ObjectStorage package in the Storage package in the base OpenStack
 package." Those familiar with Java, Python, and other languages will
 recognize this way of talking (though the backslash is an unfortunate
 symbol choice).
@@ -53,9 +49,7 @@ symbol choice).
 For our library, we followed the recommendation of SPR-0, which means
 that the class above can be found in the file at:
 
-~~~
-src/HPCloud/Storage/ObjectStorage/RemoteObject.php
-~~~
+	src/OpenStack/Storage/ObjectStorage/RemoteObject.php
 
 The pattern of matching namespace to file name should (we hope) make it
 easier for you to navigate our code.
@@ -67,51 +61,47 @@ do anything really fancy with namespaces.
 
 **In this document, we sometimes replace the backslash (\\) with double
 colons (`::`) so that links are automatically generated.** So
-`\HPCloud\Bootstrap` may appear as HPCloud::Bootstrap. The reason for
+`\OpenStack\Bootstrap` may appear as OpenStack::Bootstrap. The reason for
 this is [explained elsewhere](@ref styleguide).
 
 ## Step 1: Getting the Library
 
-You can get the HPCloud-PHP library at the [HPCloud GitHub
+You can get the OpenStack PHP-CLient library at the [HPCloud GitHub
 Repository](https://github.com/hpcloud). The latest code is always
 available there.
 
 The project also uses [Composer](http://packagist.org/), and this is the
-best method for adding HPCloud-PHP to your PHP project.
+best method for adding PHP-Client to your PHP project.
 
 For our example, we will assume that the library is accessible in the
 default include path, so the following line will include the
 `Bootstrap.php` file:
 
-~~~{.php}
-include 'HPCloud/Bootstrap.php';
-~~~
+	include 'OpenStack/Bootstrap.php';
 
 ## Step 2: Bootstrap the Library
 
-The first thing to do in your application is make sure the HPCloud
+The first thing to do in your application is make sure the OpenStack
 library is bootstrapped. When we say "bootstrap", what we really mean is
 letting the library initialize itself.
 
 Bootstrapping does not always involve any manual interaction on your
-part. If you are using an SPR-0 autoloader that knows of the HPCloud
+part. If you are using an PSR-0 autoloader that knows of the OpenStack
 directory, that is enough for the system to initialize itself.
 
-Sometimes, though, you will need to bootstrap HPCloud in your own code,
+Sometimes, though, you will need to bootstrap OpenStack in your own code,
 and this is done as follows:
 
-~~~{.php}
-<?php
-require_once 'HPCloud/Bootstrap.php';
+	<?php
+	require_once 'OpenStack/Bootstrap.php';
 
-use \HPCloud\Bootstrap;
-use \HPCloud\Services\IdentityServices;
-use \HPCloud\Storage\ObjectStorage;
-use \HPCloud\Storage\ObjectStorage\Object;
+	use \OpenStack\Bootstrap;
+	use \OpenStack\Services\IdentityService;
+	use \OpenStack\Storage\ObjectStorage;
+	use \OpenStack\Storage\ObjectStorage\Object;
 
-\HPCloud\Bootstrap::useAutoloader();
-?>
-~~~
+	\OpenStack\Bootstrap::useAutoloader();
+	?>
 
 The first line should be self-explanatory: We require the main
 `Bootstrap.php` file (which contains the `Bootstrap` class).
@@ -120,12 +110,12 @@ After that, we declare a list of namespaced objects that we will use.
 This way we can refer to them by their short name, rather than by their
 fully qualified name.
 
-The last line initializes the built-in HPCloud autoloader. What does
+The last line initializes the built-in OpenStack autoloader. What does
 this mean? It means that this is the only `require` or `include`
 statement you need in your code. The library does the rest of the
 including for you, on demand, in a performance-sensitive way.
 
-There are some other fancy things that HPCloud::Bootstrap can do for
+There are some other fancy things that OpenStack::Bootstrap can do for
 you. Most notably, you can pass configuration parameters into it. But
 for the time being, we are good to go.
 
@@ -134,29 +124,28 @@ Our library is boostrapped. Next up: Let's connect to our account.
 ## Step 3: Connecting
 
 Our programming goal, in this tutorial, is to interact with the Object
-Storage service on HP Cloud. (Object Storage is, for all intents and
+Storage service on OpenStack. (Object Storage is, for all intents and
 purposes, basically a service for storing files in the cloud.)
 
 But before we can interact directly with Object Storage, we need to
 authenticate to the system. And to do this, we need the following four
 pieces of information:
 
-- Account ID: The account number.
-- Secret key: The shared secret that, when paired with account number,
-  authenticates the client.
+- Username: The username for an account.
+- Password: The password associated with the username.
 - Tenant ID: An identifier that maps an account to a set of services.
   (In theory at least, one account can have multiple tenant IDs, and one 
   tenant ID can be linked to multiple accounts.)
-- Endpoint URL: The URL to the Identity Services endpoint at HPCloud.
+- Endpoint URL: The URL to the Identity Services endpoint for OpenStack.
 
 Before you issue a forlorn sigh, envisioning some laborious task, let us
 point out that all of this information is available in one place, Log
-into [the console](https://console.hpcloud.com) and go to the `API Keys`
+into the console and go to the `API Keys`
 page. It's all there.
 
 ### Identity Services
 
-The HPCloud is composed of numerous services. There's the Compute
+OpenStack is composed of numerous services. There's the Compute
 service, the Object Storage service... and so on.
 
 Authenticating separately to each of these would be a collosal waste of
@@ -174,11 +163,11 @@ it works as follows:
 
 The *token* is valid for some fixed period of time (say, 30 minutes),
 during which time it can be used for every other service. Each request
-to an HPCloud service should send (along with other info) the token. The
+to an OpenStack service should send (along with other info) the token. The
 remote service then validates the token with identity services, saving
 our app the trouble of making another round trip.
 
-The *service catalog* lists all of the HPCloud services that the present
+The *service catalog* lists all of the OpenStack services that the present
 account can access.
 
 ### Authenticating
@@ -186,50 +175,48 @@ account can access.
 With that little bit of theory behind us, we can now go about
 authenticating.
 
-~~~{.php}
-<?php
-$account = 'ADD ACCOUNT HERE';
-$key = 'ADD KEY HERE';
-$tenantId = 'ADD TENANT ID HERE';
-$endpoint = 'ADD ENDPOINT URL HERE';
+	<?php
+	$username = 'ADD USERNAME HERE';
+	$password = 'ADD PASSWORD HERE';
+	$tenantId = 'ADD TENANT ID HERE';
+	$endpoint = 'ADD ENDPOINT URL HERE';
 
-$idService = new \HPCloud\Services\IdentityServices($endpoint);
-$token = $idService->authenticateAsAccount($account, $key, $tenantId);
-?>
-~~~
+	$idService = new \OpenStack\Services\IdentityService($endpoint);
+	$token = $idService->authenticateAsUser($username, $password, $tenantId);
+	?>
 
 Assuming the variables above have been set to include valid data, this
-script can connect to HPCloud and authenticate.
+script can connect to OpenStack and authenticate.
 
-When we construct a new HPCloud::Services::IdentityServices object, we must pass it the
-endpoint URL for HPCloud Identity Services. Typically, that URL will
+When we construct a new OpenStack::Services::IdentityService object, we must pass it the
+endpoint URL for OpenStack Identity Service. Typically, that URL will
 look something like this:
 
 ~~~
 https://region-a.geo-1.identity.hpcloudsvc.com:35357
 ~~~
 
-The `authenticateAsAccount()` method will authenticate to the
+The `authenticateAsUser()` method will authenticate to the
 Identity Services endpoint. For convenience, it returns the
 authorization token (`$token`), though we can also get the token from
 `$idService->token()`.
 
-Note that the `IdentityServices` object may throw various exceptions
-(all subclasses of HPCloud::Exception) during authentication. Failed
-authentication results in an HPCloud::Transport::AuthorizationException, while
-a network failure may result in an HPCloud::Transport::ServerException.
+Note that the `IdentityService` object may throw various exceptions
+(all subclasses of OpenStack::Exception) during authentication. Failed
+authentication results in an OpenStack::Transport::AuthorizationException, while
+a network failure may result in an OpenStack::Transport::ServerException.
 
 Earlier, we talked about the service catalog. Once we've authenticated,
 we can get the service catalog from `$idService->serviceCatalog()`. It
 is an associative array, and you can get an idea of what it contains by
 dumping it with `var_dump()`, should you so desire.
 
-At this point, we have what we need from Identity Services. It's time to
+At this point, we have what we need from Identity Service. It's time to
 look at Object Storage.
 
-### IdentityServices in a Nutshell
+### IdentityService in a Nutshell
 
-Instances of HPCloud::Services::IdentityServices are responsible for:
+Instances of OpenStack::Services::IdentityService are responsible for:
 
 - Authentication
 - Accessing the service catalog
@@ -247,40 +234,38 @@ The Object Storage system is concerned with two classes of things:
 Your object storage can have any number of containers, and each
 container can have any number of objects.
 
-In the object model for the HPCloud PHP library, a top-level object
-called HPCloud::Storage::ObjectStorage provides access to the Object
+In the object model for the OpenStack PHP-Client library, a top-level object
+called OpenStack::Storage::ObjectStorage provides access to the Object
 Storage service. In this step, we will be working with that object.
 
 ### Getting an ObjectStorage Instance
 
-Earlier, we created an `IdentityServices` instance called `$idService`.
+Earlier, we created an `IdentityService` instance called `$idService`.
 We will use that here to get the service catalog. Once we have the
 catalog, we can have a new `ObjectStorage` instance created for us,
-configured to talk to our account's Object Storage instance in the
-HPCloud. Along with the service catalog, we also need our token that
+configured to talk to our account's Object Storage instance in
+OpenStack. Along with the service catalog, we also need our token that
 shows the Object Storage endpoint that we have already authenticated to
 Identity Services. Earlier, we captured that value in the `$token`
 variable.
 
-Now we can get a new HPCloud::Storage::ObjectStorage instance:
+Now we can get a new OpenStack::Storage::ObjectStorage instance:
 
-~~~{.php}
-<?php
-$catalog = $idService->serviceCatalog();
+	<?php
+	$catalog = $idService->serviceCatalog();
 
-$store = ObjectStorage::newFromServiceCatalog($catalog, $token);
+	$store = ObjectStorage::newFromServiceCatalog($catalog, $token);
 
-// UPDATE: As of Beta 6, you can use newFromIdentity():
-// $store = ObjectStorage::newFromIdentity($idService);
-?>
-~~~
+	// UPDATE: As of Beta 6, you can use newFromIdentity():
+	// $store = ObjectStorage::newFromIdentity($idService);
+	?>
 
 First we get the service catalog (`$catalog`), and then we use the
 `ObjectStorage::newFromServiceCatalog()` static method to create the new
 Object Storage instance.
 
 The pattern of using a constructor-like static function is used
-throughout the HPCloud PHP library. Inspired by Objective-C constructors 
+throughout the OpenStack PHP-Client library. Inspired by Objective-C constructors 
 and the Factory design pattern, it makes it possible for a single class
 to have multiple constructors.
 
@@ -290,12 +275,12 @@ how to construct instances from a service catalog, thus freeing the
 developer up from knowing the details of a service catalog entry.
 
 Now we have an `ObjectStorage` instance that is already configured to
-talk to our HPCloud object storage service. Next, we can create a
+talk to our OpenStack object storage service. Next, we can create a
 container.
 
 ### ObjectStorage in a Nutshell
 
-Instances of HPCloud::Storage::ObjectStorage are responsbile for:
+Instances of OpenStack::Storage::ObjectStorage are responsbile for:
 
 - Providing high-level information about the Object Storage service
 - Creating, deleting, loading, and listing Containers
@@ -309,22 +294,20 @@ numerous containers (and each container can have different access
 controls -- a topic we won't get into here).
 
 Containers are represented in the library by the
-HPCloud::Storage::ObjectStorage::Container class. And creating a
+OpenStack::Storage::ObjectStorage::Container class. And creating a
 container is done by a method on the `ObjectStorage` object that we
 created above:
 
-~~~{.php}
-<?php
-$store->createContainer('Example');
-$container = $store->container('Example');
-?>
-~~~
+	<?php
+	$store->createContainer('Example');
+	$container = $store->container('Example');
+	?>
 
 Recall that `$store` is the name of our `ObjectStorage` instance. In the
 first of the two lines above, we create a new container named `Example`.
 Then in the second line, we get that container.
 
-Why is this two steps? The answer is that the HPCloud PHP library mimics
+Why is this two steps? The answer is that the OpenStack PHP-Client library mimics
 the architecture of the underlying API. This is two operations (which
 means it requires two network requests to the remote host), and so we
 must perform two operations.
@@ -338,7 +321,7 @@ container. All of this information will be available on the `$container`
 instance.
 
 Our `$container` instance is an instance of
-HPCloud::Storage::ObjectStorage::Container. This object can be used not
+OpenStack::Storage::ObjectStorage::Container. This object can be used not
 only to find out about a container, but also to get information about
 the objects in that container.
 
@@ -348,7 +331,7 @@ Now that we have a `Container`, we can add an object.
 
 (Yes, we realize the irony of that title.)
 
-A HPCloud::Storage::ObjectStorage::Container instance is responsible for the following:
+A OpenStack::Storage::ObjectStorage::Container instance is responsible for the following:
 
 - Accessing information about the container
 - Creating, saving, deleting, and listing objects in the container
@@ -377,22 +360,20 @@ fetched the container. As we create an object, we are going to do the
 opposite: We will create a local object, and then save it to the remote
 storage. Later, we will fetch the remote object.
 
-~~~{.php}
-<?php
-$name = 'hello.txt';
-$content = 'Hello World';
-$mime = 'text/plain';
+	<?php
+	$name = 'hello.txt';
+	$content = 'Hello World';
+	$mime = 'text/plain';
 
-$localObject = new Object($name, $content, $mime);
-$container->save($localObject);
-?>
-~~~
+	$localObject = new Object($name, $content, $mime);
+	$container->save($localObject);
+	?>
 
 In the code above, we create `$localObject` with a `$name`, some
 `$content`, and a `$mime` type. Strictly speaking, only `$name` is
 required.
 
-The HPCloud::Storage::ObjectStorage::Object class is used primarily to
+The OpenStack::Storage::ObjectStorage::Object class is used primarily to
 describe a locally created object. Once we have our new `Object`, we can
 save it remotely using the `save()` method on our `$container` object.
 This will push the object to the remote object storage service.
@@ -414,7 +395,7 @@ Next let's turn to loading objects from the remote object storage.
 
 ### The Object in a Nutshell
 
-The HPCloud::Storage::ObjectStorage::Object instances are used for:
+The OpenStack::Storage::ObjectStorage::Object instances are used for:
 
 - Creating a local object to be stored remotely
 
@@ -431,19 +412,17 @@ the edgiest of edge cases, you would only create an instance of
 Containers not only provide the methods for saving objects, but also for
 loading objects. Thus, we can fetch the object that we just created:
 
-~~~{.php}
-<?php
-$object = $container->object('hello.txt');
+	<?php
+	$object = $container->object('hello.txt');
 
-printf("Name: %s \n", $object->name());
-printf("Size: %d \n", $object->contentLength());
-printf("Type: %s \n", $object->contentType());
-print $object->content() . PHP_EOL;
-?>
-~~~
+	printf("Name: %s \n", $object->name());
+	printf("Size: %d \n", $object->contentLength());
+	printf("Type: %s \n", $object->contentType());
+	print $object->content() . PHP_EOL;
+	?>
 
 The `$object` variable now references an instance of a
-HPCloud::Storage::ObjectStorage::RemoteObject that contains the entire
+OpenStack::Storage::ObjectStorage::RemoteObject that contains the entire
 object. `RemoteObject` represents an object that was loaded from the
 remote server. Along with providing the features of the `Object` class
 we saw earlier, it also provides numerous optimizations for working over
@@ -474,16 +453,14 @@ fetching the rest of the data until that data is actually needed.
 To fetch an object this way, we can just swap out one line in the
 example above:
 
-~~~{.php}
-<?php
-$object = $container->proxyObject('hello.txt');
+	<?php
+	$object = $container->proxyObject('hello.txt');
 
-printf("Name: %s \n", $object->name());
-printf("Size: %d \n", $object->contentLength());
-printf("Type: %s \n", $object->contentType());
-print $object->content() . PHP_EOL;
-?>
-~~~
+	printf("Name: %s \n", $object->name());
+	printf("Size: %d \n", $object->contentLength());
+	printf("Type: %s \n", $object->contentType());
+	print $object->content() . PHP_EOL;
+	?>
 
 Instead of using `object()`, we now use `proxyObject()`. This method
 immediately loads the core data about the remote object, but defers
@@ -495,7 +472,7 @@ called.
 
 ### The RemoteObject in a Nutshell
 
-Instances of a HPCloud::Storage::ObjectStorage::RemoteObject offer the following features:
+Instances of a OpenStack::Storage::ObjectStorage::RemoteObject offer the following features:
 
 - Access to an object stored on the remote object storage
 - A proxying mechanism for lazily loading objects
@@ -509,15 +486,15 @@ Instances of a HPCloud::Storage::ObjectStorage::RemoteObject offer the following
 ## Summary
 
 At this point we have created a very basic script that connects to
-HPCloud and works with object storage. Clearly, this only scratches the
-surface of what the HPCloud PHP library does. But hopefully this is
+OpenStack and works with object storage. Clearly, this only scratches the
+surface of what the OpenStack PHP-Client library does. But hopefully this is
 enough to get you started with the library.
 
 The entire library is well documented, and the documentation is
 [available online](https://github.com/hpcloud). You can also build a
 local copy by installing [doxygen](http://www.stack.nl/~dimitri/doxygen)
 (if you haven't already) and running `make docs` in the root of the
-HPCloud PHP project. This will place the generated documents in
+OpenStack PHP-Client project. This will place the generated documents in
 `docs/api/html`.
 
 \see oo-tutorial-code.php

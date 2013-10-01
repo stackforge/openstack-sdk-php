@@ -1,21 +1,21 @@
-# HPCloud-PHP
+# OpenStack PHP-Client
 
-This package provides PHP OpenStack bindings for the HP Cloud.
+This package provides PHP OpenStack bindings.
 
 You can use this library to:
 
-* Authenticate your application to the HP Cloud.
+* Authenticate your application to OpenStack.
 * Interact with Object Storage (aka Swift).
 
 Coming soon:
 
 * Intect with the Compute (Nova) manager.
-* Interact with other HP Cloud services
+* Interact with other OpenStack services
 
 ## Requirements
 
 * PHP 5.3
-* An active HPCloud account with the desired services.
+* An active OpenStack account with the desired services.
 
 ### Suggestions
 
@@ -37,7 +37,7 @@ builds because these cover our needs.
 #### Method #1:
 
 Use [Composer](http://getcomposer.org) to download and install the
-latest version of HPCloud-PHP.
+latest version of OpenStack.
 
 #### Method #2:
 
@@ -63,23 +63,23 @@ reading and writing files into object storage.
 
 #### Autoloading
 
-HPCloud is [PSR-0 compliant](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md),
+OpenStack PHP-Client is [PSR-0 compliant](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md),
 which means that it should work with any PSR-0 autoloader. However,
 it also comes with its own autoloader for apps that don't yet make use
 of a standard autoloader.
 
 #### Composer Support
 
-HPCloud-PHP is available as part of the Packagist archive, which means
+OpenStack PHP-Client is available as part of the Packagist archive, which means
 you can use Composer to automatically download, install, and manage
-revisions to HPCloud-PHP from within your project.
+revisions to OpenStack from within your project.
 
 We're big fans of [Composer](http://getcomposer.org).
 
 
 ## More information
 
-[HP Cloud](http://hpcloud.com) is a cloud computing platform that
+[OpenStack](http://OpenStack.org) is a cloud computing platform that
 provides many services, inlcuding compute installs, object and block
 storage, and a host of hosted services.
 
@@ -88,6 +88,3 @@ This library provides access to those services.
 The best source of documentation is the official API documentation,
 which is available at
 http://hpcloud.github.com/HPCloud-PHP/doc/api/html/index.html
-
-----
-HPCloud-PHP is maintained by the Developer Experience team at HP Cloud Services.

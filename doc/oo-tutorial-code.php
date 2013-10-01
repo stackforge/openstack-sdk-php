@@ -1,21 +1,21 @@
 <?php
-require_once __DIR__ . '/../src/HPCloud/Bootstrap.php';
+require_once __DIR__ . '/../src/OpenStack/Bootstrap.php';
 
-use \HPCloud\Bootstrap;
-use \HPCloud\Services\IdentityServices;
-use \HPCloud\Storage\ObjectStorage;
-use \HPCloud\Storage\ObjectStorage\Object;
+use \OpenStack\Bootstrap;
+use \OpenStack\Services\IdentityService;
+use \OpenStack\Storage\ObjectStorage;
+use \OpenStack\Storage\ObjectStorage\Object;
 
 Bootstrap::useAutoloader();
 
 // Load these from an ini file.
-$ini = parse_ini_file(getenv('HOME') . '/.hpcloud.ini');
+$ini = parse_ini_file(getenv('HOME') . '/.OpenStack.ini');
 $account = $ini['account'];
 $key = $ini['secret'];
 $tenantId = $ini['tenantId'];
 $endpoint = $ini['url'];
 
-$idService = new IdentityServices($endpoint);
+$idService = new IdentityService($endpoint);
 $token = $idService->authenticateAsAccount($account, $key, $tenantId);
 
 $catalog = $idService->serviceCatalog();

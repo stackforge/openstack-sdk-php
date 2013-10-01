@@ -31,7 +31,7 @@ namespace OpenStack\Transport;
  *
  * When one of the transporters makes a request, it will
  * return one of these as a response. The response is simplified
- * to the needs of the HP Cloud services and isn't a
+ * to the needs of the OpenStack services and isn't a
  * general purpose HTTP response object.
  *
  * The transport wraps three pieces of information:

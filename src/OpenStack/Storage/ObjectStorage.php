@@ -102,14 +102,10 @@ class ObjectStorage {
    * To use the legacy Object Storage authentication mechanism, you will
    * need the follwing pieces of information:
    *
-   * - Account ID: Your account username or ID. For HP Cloud customers,
-   *   this is typically a long string of numbers and letters.
-   * - Key: Your secret key. For HP Customers, this is a string of
-   *   random letters and numbers.
+   * - Account ID: This will typically be a combination of your tenantId and
+   *   username.
+   * - Key: Typically this will be your password.
    * - Endpoint URL: The URL given to you by your service provider.
-   *
-   * HP Cloud users can find all of this information on your Object
-   * Storage account dashboard.
    *
    * @param string $account
    *   Your account name.

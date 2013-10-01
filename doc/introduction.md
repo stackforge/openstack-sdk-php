@@ -1,11 +1,11 @@
-# Using the HPCloud PHP API
+# Using the OpenStack PHP-CLient API
 
-This tutorial explains how you can use the PHP API to connect to your HP
-Cloud services and interact programmatically.
+This tutorial explains how you can use the PHP API to connect to your OpenStack
+services and interact programmatically.
 
 ## Object Storage (Swift)
 
-One of the services that HP Cloud offers is called "Object Storage".
+One of the services that OpenStack offers is called "Object Storage".
 This service provides a useful means of storing objects (usually files)
 on a service that you control, but that is available to other services
 in your cloud (and optionally is availably publically).
@@ -18,28 +18,26 @@ interact with the Object Storage service.
 There are two ways to authenticate to Object Storage:
 
 - Legacy Swift authentication
-- Control Services authentication (Coming soon!)
+- Control Services authentication
 
-For legacy swift authentication, you will need to use your Account ID
-and your secret Key, along with the URL to the Object Storage endpoint.
-If you are an existing HP Cloud customer, you can find all of this
-information on your console dashboard.
+For legacy swift authentication, you will need to use your Tenant ID, your username,
+and your password, along with the URL to the Object Storage endpoint.
 
 ### Using Stream Wrappers
 
-There are two main methods for accessing HPCloud through this library.
+There are two main methods for accessing OpenStack through this library.
 The first is through PHP *stream wrappers*. In PHP, stream wrappers
 provide a facility with which you can access various data streams (like
-a webpage, the data in a ZIP file, or an HP Cloud object store) as if
+a webpage, the data in a ZIP file, or an OpenStack object store) as if
 they were local files on your file system.
 
 Stream wrappers have a huge advantage for you: You can use the normal
 file system functions (`fread()`, `mkdir()`, `file_get_contents()`, etc)
-to access things not necessarily on your local filesystem. The HP Cloud
+to access things not necessarily on your local filesystem. The PHP-Client
 library integrates with this facility of PHP.
 
 
-### Using the HPCloud Classes
+### Using the PHP-Client Classes
 
 While the stream wrappers are a fantastic way to accomplish many common
 tasks, sometimes you need a finer level of control, or you wish to use
@@ -54,14 +52,14 @@ data-access layer.
 
 #### Main Classes
 
-- \HPCloud\Bootstrap: Provides services for bootstrapping the library.
+- \OpenStack\Bootstrap: Provides services for bootstrapping the library.
   It's not necessary, but it can be helpful.
-- \HPCloud\ObjectStorage: The main interface to the OpenStack object
+- \OpenStack\ObjectStorage: The main interface to the OpenStack object
   storage.
 
 ## Slightly Irreverant Glossary
 
-*Account ID:* You service provider (ahem, HPCloud) will provide you with
+*Tenant ID:* You service provider will provide you with
 an account ID and a secret key, along with a URL, that can be used to
 access the cloud APIs.
 
@@ -69,9 +67,8 @@ access the cloud APIs.
 space with pseudo-containment logical units. Or, a directory. (see
 _Object Storage_)
 
-*Object Storage:* A service provided by OpenStack (and implemented by
-HPCloud) that allows you to store entire files on the cloud. Files can
-be organized into _containers_, which are rough analogs to file system
-directories (or folders).
+*Object Storage:* A service provided by OpenStack that allows you to store
+entire files on the cloud. Files can be organized into _containers_, which are
+rough analogs to file system directories (or folders).
 
 
