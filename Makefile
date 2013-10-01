@@ -1,11 +1,9 @@
-PROJ := 'hpcloud-php'
+PROJ := 'openstack-php-client'
 SRCDIR := src
 TESTS := test/Tests
 VERSION := 'DEV'
 DATE := `date "+%Y%m%d"`
 GROUP := 'deprecated'
-
-VFILES = src/HPCloud
 
 docs :
 	@cat ./config.doxy | sed 's/-UNSTABLE%/$(VERSION)/' | doxygen -

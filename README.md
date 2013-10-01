@@ -52,7 +52,7 @@ Authenticate, authorize service usage, and retrieve account information.
 
 #### Object Storage
 
-Store files or other data objects in containers on your HP Cloud object
+Store files or other data objects in containers on your OpenStack object
 storage instance. Create, modify and delete containers. Manage ACLs.
 Read, write, and delete objects. Expose objects in your object storage
 to other services.
