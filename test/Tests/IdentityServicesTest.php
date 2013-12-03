@@ -386,26 +386,15 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $details = $service->tokenDetails();
     $this->assertFalse(isset($details['tenant']));
 
-    // With no tenant ID, there should be only
-    // one entry in the catalog.
-    $catalog = $service->serviceCatalog();
-    $this->assertEquals(1, count($catalog));
-
     $service->rescopeUsingTenantId($tenantId);
 
     $details = $service->tokenDetails();
     $this->assertEquals($tenantId, $details['tenant']['id']);
 
-    $catalog = $service->serviceCatalog();
-    $this->assertGreaterThan(1, count($catalog));
-
     // Test unscoping
     $service->rescopeUsingTenantId('');
     $details = $service->tokenDetails();
     $this->assertFalse(isset($details['tenant']));
-    $catalog = $service->serviceCatalog();
-    $this->assertEquals(1, count($catalog));
-
   }
 
   /**
@@ -426,26 +415,15 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $details = $service->tokenDetails();
     $this->assertFalse(isset($details['tenant']));
 
-    // With no tenant ID, there should be only
-    // one entry in the catalog.
-    $catalog = $service->serviceCatalog();
-    $this->assertEquals(1, count($catalog));
-
     $service->rescopeUsingTenantName($tenantName);
 
     $details = $service->tokenDetails();
     $this->assertEquals($tenantName, $details['tenant']['name']);
 
-    $catalog = $service->serviceCatalog();
-    $this->assertGreaterThan(1, count($catalog));
-
     // Test unscoping
     $service->rescope('');
     $details = $service->tokenDetails();
     $this->assertFalse(isset($details['tenant']));
-    $catalog = $service->serviceCatalog();
-    $this->assertEquals(1, count($catalog));
-
   }
 
   /**
