@@ -32,6 +32,9 @@ require_once 'test/TestCase.php';
 use \OpenStack\Transport;
 use \OpenStack\Transport\CURLTransport;
 
+/**
+ * @group curl
+ */
 class CURLTransportTest extends \OpenStack\Tests\TestCase {
 
   public static function tearDownAfterClass() {
