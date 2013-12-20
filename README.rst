@@ -42,13 +42,13 @@ PEAR and Phar releases, but have currently limited to only Composer and
 builds because these cover our needs.
 
 Method #1:
-^^^^^^^^^^
+~~~~~~~~~~
 
 Use `Composer <http://getcomposer.org>`__ to download and install the
 latest version of OpenStack.
 
 Method #2:
-^^^^^^^^^^
+~~~~~~~~~~
 
 Download a tagged release and include it in your project.
 
@@ -56,12 +56,12 @@ Features
 --------
 
 Identity Services
-^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~
 
 Authenticate, authorize service usage, and retrieve account information.
 
 Object Storage
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 Store files or other data objects in containers on your OpenStack object
 storage instance. Create, modify and delete containers. Manage ACLs.
