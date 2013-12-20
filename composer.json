@@ -5,16 +5,6 @@
   "keywords": ["openstack","keystone","cloud","swift","nova"],
   "license": "MIT",
   "homepage": "http://www.openstack.org",
-  "authors": [
-    {
-      "name": "M Butcher",
-      "email": "technosophos@gmail.com"
-    },
-    {
-      "name": "Matt Farina",
-      "email": "matthew.farina@hp.com"
-    }
-  ],
   "require": {
     "php": ">=5.3.0"
   },
