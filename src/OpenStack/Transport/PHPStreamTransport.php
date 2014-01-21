@@ -233,8 +233,19 @@ class PHPStreamTransport implements Transporter {
    * stream context. This builds the context.
    */
   protected function buildStreamContext($method, $headers, $body) {
+    
+    // HTTP 1.1 does persistent connections by default where it was opt-in for
+    // HTTP 1.0. In HTTP 1.1 when you want to close a connection you need to
+    // specify a header named Connection with a value of close. We set this as
+    // the default value that can be overridden. Only override this value if
+    // you know what you are doing. For more details see section 14.10 of RFC 2616.
+    if ($this->httpVersion > 1.0) {
+      $headers += array(
+        'Connection' => 'close'
+      );
+    }
+
     // Construct the stream options.
-    $headers['Connection'] = 'close';
     $config = array(
       'http' => array(
         'protocol_version' => $this->httpVersion,
