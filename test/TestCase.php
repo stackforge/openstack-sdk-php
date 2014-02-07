@@ -30,6 +30,7 @@
 namespace OpenStack\Tests;
 
 require_once 'PHPUnit/Autoload.php';
+require_once 'src/OpenStack/Autoloader.php';
 require_once 'src/OpenStack/Bootstrap.php';
 
 /**
@@ -66,7 +67,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     }
 
 
-    \OpenStack\Bootstrap::useAutoloader();
+    \OpenStack\Autoloader::useAutoloader();
     \OpenStack\Bootstrap::setConfiguration(self::$settings);
 
     //parent::__construct($score, $locale, $adapter);
