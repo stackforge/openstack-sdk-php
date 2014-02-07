@@ -1,5 +1,5 @@
 {
-  "name": "openstack/php-client",
+  "name": "openstack/openstack-sdk-php",
   "description": "Access OpenStack services in PHP.",
   "type": "library",
   "keywords": ["openstack","keystone","cloud","swift","nova"],
