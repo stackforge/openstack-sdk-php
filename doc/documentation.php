@@ -54,11 +54,11 @@
  * <?php
  * // This is only required if you don't have a PSR-0
  * // autoloader to do the hard work for you.
- * require 'OpenStack/Bootstrap.php';
+ * require 'OpenStack/Autoloader.php';
  *
  * // If you aren't using a PSR-0 autoloader,
  * // you might want to use this:
- * \OpenStack\Bootstrap::useAutoloader();
+ * \OpenStack\Autoloader::useAutoloader();
  *
  * // Turn on stream wrappers.
  * \OpenStack\Bootstrap::useStreamWrappers();
@@ -104,11 +104,11 @@
  * <?php
  * // This is only required if you don't have a PSR-0
  * // autoloader to do the hard work for you.
- * require 'OpenStack/Bootstrap.php';
+ * require 'OpenStack/Autoloader.php';
  *
  * // If you aren't using a PSR-0 autoloader,
  * // you might want to use this:
- * \OpenStack\Bootstrap::useAutoloader();
+ * \OpenStack\Autoloader::useAutoloader();
  *
  * use \OpenStack\Services\IdentityService;
  *

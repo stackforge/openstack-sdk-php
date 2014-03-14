@@ -18,8 +18,7 @@
  * @file
  * OpenStacl PHP-Client configuration.
  *
- * This file contains the PHP-Client autoloader. It also automatically
- * register the OpenStack stream wrappers.
+ * It also automatically register the OpenStack stream wrappers.
  */
 
 namespace OpenStack;
@@ -33,8 +32,7 @@ use OpenStack\Exception;
  * There is no requirement that this class be used. OpenStack is
  * built to be flexible, and any individual component can be
  * used directly, with one caveat: No explicit @c require or
- * @c include calls are made. See the "autoloaders" discussion
- * below.
+ * @c include calls are made.
  *
  * This class provides the following services:
  *
@@ -45,9 +43,6 @@ use OpenStack\Exception;
  * - <em>Stream Wrappers:</em> This class can initialize a set of stream
  *   wrappers which will make certain OpenStack services available
  *   through the core PHP stream support.
- * - <em>Autoloader:</em> It provides a special-purpose autoloader that can
- *   load the OpenStack classes, but which will not interfere with
- *   other autoloading facilities.
  *
  * <b>Configuration</b>
  *
@@ -78,26 +73,6 @@ use OpenStack\Exception;
  * ?>
  * @endcode
  *
- * <b>AUTOLOADING</b>
- *
- * OpenStack comes with a built-in autoloader that can be called like this:
- *
- * @code
- * Bootstrap::useAutoloader();
- * @endcode
- *
- * @attention
- * The structure of the OpenStack file hierarchy is PSR-0 compliant.
- * This means that you can use any standard PSR-0 classloader to
- * load all of the classes here.
- *
- * That said, many projects rely upon packages to handle their own
- * class loading. To provide this, this package contains a custom
- * classloader that will load JUST the OpenStack classes. See
- * the Bootstrap::useAutoloader() static method.
- *
- * See https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
- *
  * <b>STREAM WRAPPERS</b>
  *
  * Stream wrappers allow you to use the built-in file manipulation
@@ -110,11 +85,6 @@ use OpenStack\Exception;
  *
  */
 class Bootstrap {
-
-  /**
-   * The directory where OpenStack is located.
-   */
-  public static $basedir = __DIR__;
 
   public static $config = array(
     // The transport implementation. By default, we use the PHP stream
@@ -131,24 +101,6 @@ class Bootstrap {
    * @var object OpenStack::Services::IdentityService
    */
   public static $identity = NULL;
-
-  /**
-   * Add the autoloader to PHP's autoloader list.
-   *
-   * This will add the internal special-purpose
-   * autoloader to the list of autoloaders that PHP will
-   * leverage to resolve class paths.
-   *
-   * Because OpenStack is PSR-0 compliant, any
-   * full PSR-0 classloader should be capable of loading
-   * these classes witout issue. You may prefer to use
-   * a standard PSR-0 loader instead of this one.
-   *
-   * @see https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
-   */
-  public static function useAutoloader() {
-    spl_autoload_register(__NAMESPACE__ . '\Bootstrap::autoload');
-  }
 
   /**
    * Register stream wrappers for OpenStack.
@@ -230,57 +182,6 @@ class Bootstrap {
    */
   public static function setConfiguration($array) {
     self::$config = $array + self::$config;
-  }
-
-  /**
-   * OpenStack autoloader.
-   *
-   * An implementation of a PHP autoload function. Use
-   * OpenStack::useAutoloader() if you want PHP to automatically
-   * load classes using this autoloader.
-   *
-   * @code
-   * // Enable the autoloader.
-   * Bootstrap::useAutoloader();
-   * @endcode
-   *
-   * This is a special-purpose autoloader for loading
-   * only the OpenStack classes. It will not attempt to
-   * autoload anything outside of the OpenStack namespace.
-   *
-   * Because this is a special-purpose autoloader, it
-   * should be safe to use with other special-purpose
-   * autoloaders (and also projects that don't
-   * rely upon autoloaders).
-   *
-   * @param string $klass
-   *   The fully qualified name of the class to be autoloaded.
-   */
-  public static function autoload($klass) {
-    $components = explode('\\', $klass);
-    if (empty($components[0])) {
-      array_shift($components);
-    }
-
-    // This class loader ONLY loads
-    // our classes. A general purpose
-    // classloader should be used for
-    // more sophisticated needs.
-    if ($components[0] != 'OpenStack') {
-      return;
-    }
-
-    // We need the path up to, but not including, the root OpenStack dir:
-    $loc = DIRECTORY_SEPARATOR . 'OpenStack';
-    $local_path = substr(self::$basedir, 0, strrpos(self::$basedir, $loc));
-
-    array_unshift($components, $local_path);
-    $path = implode(DIRECTORY_SEPARATOR, $components) . '.php';
-
-    if (file_exists($path)) {
-      require $path;
-      return;
-    }
   }
 
   /**

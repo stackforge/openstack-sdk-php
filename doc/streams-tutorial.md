@@ -40,9 +40,9 @@ setup code.
 
 ### Loading Classes
 
-The OpenStack PHP-Client library is structured following SPR-0 recommendations.
+The OpenStack PHP-Client library is structured following PSR-0 recommendations.
 Practically speaking, what this means is that applications that use an
-SPR-0 autoloader may be able to automatically load the OpenStack PHP-Client.
+PSR-0 autoloader may be able to automatically load the OpenStack PHP-Client.
 
 However, we'll assume that that is not the case. We'll assume that the
 library needs to be initialized manually.
@@ -51,20 +51,20 @@ What we will do is first load the PHP-Client Bootstrap.php file, and then
 use the autoloader in that file to load the rest of the library:
 
     <?php
-    require_once '/OpenStack/Bootstrap.php';
+    require_once '/OpenStack/Autoloader.php';
 
+    use \OpenStack\Autoloader;
     use \OpenStack\Bootstrap;
-    Bootstrap::useAutoloader();
+    Autoloader::useAutoloader();
     Bootstrap::useStreamWrappers();
     ?>
 
-The first thing the example above does is require the Bootstrap.php
-file, which contains code necessary for initializing the OpenStack
-PHP-Client.
+The first thing the example above does is require the Autoloader.php
+file, which contains code necessary to autoload anything else we will need.
 
-Next, we call two static methods on the OpenStack::Bootstrap object:
+Next, we call two static methods:
 
-- Bootstrap::useAutoLoader(): This tells the PHP-Client to load any other
+- Autoloader::useAutoLoader(): This tells the PHP-Client to load any other
   classes on demand. Since we use this, we don't need any more `require`
   or `include` statements.
 - Bootstrap::useStreamWrappers(): This tells OpenStack to register its
@@ -181,10 +181,11 @@ tokens in a database and re-using them).
 Here's how a stream context is used:
 
     <?php
-    require_once __DIR__ . '/../src/OpenStack/Bootstrap.php';
+    require_once __DIR__ . '/../src/OpenStack/Autoloader.php';
 
+    use \OpenStack\Autoloader;
     use \OpenStack\Bootstrap;
-    Bootstrap::useAutoloader();
+    Autoloader::useAutoloader();
     Bootstrap::useStreamWrappers();
 
     $cxt = stream_context_create(array(

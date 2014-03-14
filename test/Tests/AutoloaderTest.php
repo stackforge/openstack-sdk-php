@@ -1,6 +1,6 @@
 <?php
 /* ============================================================================
-(c) Copyright 2012-2014 Hewlett-Packard Development Company, L.P.
+(c) Copyright 2014 Hewlett-Packard Development Company, L.P.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,18 +17,32 @@
 /**
  * @file
  *
- * Unit tests for the Bootstrap.
+ * Unit tests for the Autoloader.
  */
 namespace OpenStack\Tests;
 
+require_once 'src/OpenStack/Autoloader.php';
 require_once 'test/TestCase.php';
 
-class BootstrapTest extends \OpenStack\Tests\TestCase {
+class AutoloaderTest extends \OpenStack\Tests\TestCase {
 
   /**
-   * Canary test.
+   * Test the BaseDir.
    */
-  public function testSettings() {
-    $this->assertTrue(!empty(self::$settings));
+  public function testBasedir() {
+    $basedir = \OpenStack\Autoloader::$basedir;
+    $this->assertRegExp('/OpenStack/', $basedir);
+  }
+
+  /**
+   * Test the autoloader.
+   */
+  public function testAutoloader() {
+    \OpenStack\Autoloader::useAutoloader();
+
+    // If we can construct a class, we are okay.
+    $test = new \OpenStack\Exception("TEST");
+
+    $this->assertInstanceOf('\OpenStack\Exception', $test);
   }
 }

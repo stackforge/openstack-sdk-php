@@ -93,14 +93,15 @@ Sometimes, though, you will need to bootstrap OpenStack in your own code,
 and this is done as follows:
 
 	<?php
-	require_once 'OpenStack/Bootstrap.php';
+	require_once 'OpenStack/Autoloader.php';
 
+	use \OpenStack\Autoloader;
 	use \OpenStack\Bootstrap;
 	use \OpenStack\Services\IdentityService;
 	use \OpenStack\Storage\ObjectStorage;
 	use \OpenStack\Storage\ObjectStorage\Object;
 
-	\OpenStack\Bootstrap::useAutoloader();
+	\OpenStack\Autoloader::useAutoloader();
 	?>
 
 The first line should be self-explanatory: We require the main
