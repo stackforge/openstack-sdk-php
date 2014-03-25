@@ -75,9 +75,9 @@ and writing files into object storage.
 Autoloading
 ^^^^^^^^^^^
 
-OpenStack PHP-Client is `PSR-0
-compliant <https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md>`__,
-which means that it should work with any PSR-0 autoloader. However, it
+OpenStack SDK for PHP is `PSR-4
+compliant <https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4.md>`__,
+which means that it should work with any PSR-4 autoloader. However, it
 also comes with its own autoloader for apps that don't yet make use of a
 standard autoloader.
 

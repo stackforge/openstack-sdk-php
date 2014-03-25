@@ -86,7 +86,7 @@ library is bootstrapped. When we say "bootstrap", what we really mean is
 letting the library initialize itself.
 
 Bootstrapping does not always involve any manual interaction on your
-part. If you are using an PSR-0 autoloader that knows of the OpenStack
+part. If you are using an PSR-4 autoloader that knows of the OpenStack
 directory, that is enough for the system to initialize itself.
 
 Sometimes, though, you will need to bootstrap OpenStack in your own code,
