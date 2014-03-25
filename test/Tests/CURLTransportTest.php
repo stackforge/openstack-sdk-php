@@ -21,7 +21,6 @@
  */
 namespace OpenStack\Tests\Transport;
 
-require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
 use \OpenStack\Transport;

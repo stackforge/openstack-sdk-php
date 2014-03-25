@@ -21,7 +21,6 @@
  */
 namespace OpenStack\Tests\Services;
 
-require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
 use \OpenStack\Services\IdentityService;

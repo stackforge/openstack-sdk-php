@@ -1,8 +1,10 @@
 bin/build/*
 dist/*
+build/
 mageekguy.atoum.phar
 test/settings.ini*
 .DS_Store
 doc/api
 curl-output.txt
 vendor
+composer.lock

@@ -21,7 +21,6 @@
  */
 namespace OpenStack\Tests\Storage\ObjectStorage;
 
-require_once 'src/OpenStack/Bootstrap.php';
 require_once 'test/TestCase.php';
 
 use \OpenStack\Storage\ObjectStorage\StreamWrapper;

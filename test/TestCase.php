@@ -29,10 +29,6 @@
 
 namespace OpenStack\Tests;
 
-require_once 'PHPUnit/Autoload.php';
-require_once 'src/OpenStack/Autoloader.php';
-require_once 'src/OpenStack/Bootstrap.php';
-
 /**
  * @ingroup Tests
  */
