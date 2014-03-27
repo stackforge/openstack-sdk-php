@@ -52,11 +52,11 @@
  *
  * @code
  * <?php
- * // This is only required if you don't have a PSR-0
+ * // This is only required if you don't have a PSR-4
  * // autoloader to do the hard work for you.
  * require 'OpenStack/Autoloader.php';
  *
- * // If you aren't using a PSR-0 autoloader,
+ * // If you aren't using a PSR-4 autoloader,
  * // you might want to use this:
  * \OpenStack\Autoloader::useAutoloader();
  *
@@ -102,11 +102,11 @@
  *
  * @code
  * <?php
- * // This is only required if you don't have a PSR-0
+ * // This is only required if you don't have a PSR-4
  * // autoloader to do the hard work for you.
  * require 'OpenStack/Autoloader.php';
  *
- * // If you aren't using a PSR-0 autoloader,
+ * // If you aren't using a PSR-4 autoloader,
  * // you might want to use this:
  * \OpenStack\Autoloader::useAutoloader();
  *

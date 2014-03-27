@@ -40,9 +40,9 @@ setup code.
 
 ### Loading Classes
 
-The OpenStack PHP-Client library is structured following PSR-0 recommendations.
+The OpenStack PHP-Client library is structured following PSR-4 recommendations.
 Practically speaking, what this means is that applications that use an
-PSR-0 autoloader may be able to automatically load the OpenStack PHP-Client.
+PSR-4 autoloader may be able to automatically load the OpenStack PHP-Client.
 
 However, we'll assume that that is not the case. We'll assume that the
 library needs to be initialized manually.

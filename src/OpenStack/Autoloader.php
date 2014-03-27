@@ -25,7 +25,7 @@ namespace OpenStack;
  * Autoload the OpenStack library.
  *
  * The OpenStack library is natively designed to be available via Composer. When
- * Composer is not available and there is not another PSR-0 compatible autoloader
+ * Composer is not available and there is not another PSR-4 compatible autoloader
  * to use, this one can be used.
  *
  * The autoloader can be used like:
@@ -35,8 +35,8 @@ namespace OpenStack;
  * @endcode
  *
  * @attention
- * The structure of the OpenStack file hierarchy is PSR-0 compliant.
- * This means that you can use any standard PSR-0 classloader to
+ * The structure of the OpenStack file hierarchy is PSR-4 compliant.
+ * This means that you can use any standard PSR-4 classloader to
  * load all of the classes here.
  *
  * That said, many projects rely upon packages to handle their own
@@ -44,7 +44,7 @@ namespace OpenStack;
  * classloader that will load JUST the OpenStack classes. See
  * the Autoloader::useAutoloader() static method.
  *
- * See https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
+ * See https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4.md
  */
 Class Autoloader {
 
@@ -60,12 +60,12 @@ Class Autoloader {
    * autoloader to the list of autoloaders that PHP will
    * leverage to resolve class paths.
    *
-   * Because OpenStack is PSR-0 compliant, any
-   * full PSR-0 classloader should be capable of loading
+   * Because OpenStack is PSR-4 compliant, any
+   * full PSR-4 classloader should be capable of loading
    * these classes witout issue. You may prefer to use
-   * a standard PSR-0 loader instead of this one.
+   * a standard PSR-4 loader instead of this one.
    *
-   * @see https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
+   * @see https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4.md
    */
   public static function useAutoloader() {
     spl_autoload_register(__NAMESPACE__ . '\Autoloader::autoload');
