@@ -99,8 +99,8 @@ use \OpenStack\Storage\ObjectStorage;
  *     // Set up the context.
  *     $context = stream_context_create(
  *       array('swift' => array(
- *         'account' => ACCOUNT_NUMBER,
- *         'secret' => SECRET_KEY,
+ *         'username' => USERNAME,
+ *         'password' => PASSWORD,
  *         'tenantid' => TENANT_ID,
  *         'tenantname' => TENANT_NAME, // Optional instead of tenantid.
  *         'endpoint' => AUTH_ENDPOINT_URL,
@@ -151,8 +151,8 @@ use \OpenStack\Storage\ObjectStorage;
  * - You must use Bootstrap::setConfiguration() to pass in all of the values you
  *   would normally pass into a stream context:
  *   * endpoint
- *   * account
- *   * secret
+ *   * username
+ *   * password
  * - Most of the information from this family of calls can also be obtained using
  *   fstat(). If you were going to open a stream anyway, you might as well use
  *   fopen()/fstat().
@@ -205,7 +205,6 @@ use \OpenStack\Storage\ObjectStorage;
  * You are required to pass in authentication information. This
  * comes in one of three forms:
  *
- * -# API keys: acccount, secret, tenantid, endpoint
  * -# User login: username, password, tenantid, endpoint
  * -# Existing (valid) token: token, swift_endpoint
  *
@@ -213,7 +212,7 @@ use \OpenStack\Storage\ObjectStorage;
  *
  * The third method (token) can be used when the application has already
  * authenticated. In this case, a token has been generated and assigned
- * to an account and tenant.
+ * to an user and tenant.
  *
  * The following parameters may be set either in the stream context
  * or through OpenStack\Bootstrap::setConfiguration():
@@ -225,8 +224,6 @@ use \OpenStack\Storage\ObjectStorage;
  *     'token' is set. Otherwise it is ignored.
  * - username: A username. MUST be accompanied by 'password' and 'tenantid' (or 'tenantname').
  * - password: A password. MUST be accompanied by 'username' and 'tenantid' (or 'tenantname').
- * - account: An account ID. MUST be accompanied by a 'secret' and 'tenantid' (or 'tenantname').
- * - secret: A secret key. MUST be accompanied by an 'account' and 'tenantid' (or 'tenantname').
  * - endpoint: The URL to the authentication endpoint. Necessary if you are not
  *     using a 'token' and 'swift_endpoint'.
  * - use_swift_auth: If this is set to TRUE, it will force the app to use
@@ -234,7 +231,7 @@ use \OpenStack\Storage\ObjectStorage;
  *     In general, you should avoid using this.
  * - content_type: This is effective only when writing files. It will
  *     set the Content-Type of the file during upload.
- * - tenantid: The tenant ID for the services you will use. (An account may
+ * - tenantid: The tenant ID for the services you will use. (A user may
  *     have multiple tenancies associated.)
  * - tenantname: The tenant name for the services you will use. You may use
  *     this in lieu of tenant ID.
@@ -506,8 +503,8 @@ class StreamWrapper {
    *     Bootstrap::setConfiguration(array(
    *       'tenantname' => 'foo@example.com',
    *       // 'tenantid' => '1234', // You can use this instead of tenantname
-   *       'account' => '1234',
-   *       'secret' => '4321',
+   *       'username' => 'foobar',
+   *       'password' => 'baz',
    *       'endpoint' => 'https://auth.example.com',
    *     ));
    *
@@ -690,9 +687,9 @@ class StreamWrapper {
    *
    *     <?php
    *     $cxt = stream_context_create(array(
-   *       'account' => '1bc123456',
+   *       'username' => 'foobar',
    *       'tenantid' => '987654321',
-   *       'secret' => 'eieio',
+   *       'password' => 'eieio',
    *       'endpoint' => 'https://auth.example.com',
    *     ));
    *     ?>
@@ -953,7 +950,7 @@ class StreamWrapper {
    *     ?>
    *
    * To use standard `stat()` on a Swift stream, you will
-   * need to set account information (tenant ID, account ID, secret,
+   * need to set account information (tenant ID, username, password,
    * etc.) through \OpenStack\Bootstrap::setConfiguration().
    *
    * @return array The stats array.
@@ -1400,8 +1397,6 @@ class StreamWrapper {
    *     'token' is set. Otherwise it is ignored.
    * - username: A username. MUST be accompanied by 'password' and 'tenantname'.
    * - password: A password. MUST be accompanied by 'username' and 'tenantname'.
-   * - account: An account ID. MUST be accompanied by a 'secret' and 'tenantname'.
-   * - secret: A secret key. MUST be accompanied by an 'account' and 'tenantname'.
    * - endpoint: The URL to the authentication endpoint. Necessary if you are not
    *     using a 'token' and 'swift_endpoint'.
    * - use_swift_auth: If this is set to TRUE, it will force the app to use
@@ -1416,10 +1411,6 @@ class StreamWrapper {
   protected function initializeObjectStorage() {
 
     $token = $this->cxt('token');
-
-    $account = $this->cxt('account');
-    // Legacy support for old 'key' param.
-    $key = $this->cxt('key', $this->cxt('secret'));
 
     $tenantId = $this->cxt('tenantid');
     $tenantName = $this->cxt('tenantname');
@@ -1436,15 +1427,6 @@ class StreamWrapper {
     // If context has the info we need, start from there.
     if (!empty($token) && !empty($endpoint)) {
       $this->store = new \OpenStack\Storage\ObjectStorage($token, $endpoint);
-    }
-    // DEPRECATED: For old swift auth.
-    elseif ($this->cxt('use_swift_auth', FALSE)) {
-
-      if (empty($authUrl) || empty($account) || empty($key)) {
-        throw new \OpenStack\Exception('account, endpoint, key are required stream parameters.');
-      }
-      $this->store = \OpenStack\Storage\ObjectStorage::newFromSwiftAuth($account, $key, $authUrl);
-
     }
     // If we get here and tenant ID is not set, we can't get a container.
     elseif (empty($tenantId) && empty($tenantName)) {
@@ -1484,10 +1466,6 @@ class StreamWrapper {
     $username = $this->cxt('username');
     $password = $this->cxt('password');
 
-    $account = $this->cxt('account');
-    // Legacy support for old 'key' param.
-    $key = $this->cxt('key', $this->cxt('secret'));
-
     $tenantId = $this->cxt('tenantid');
     $tenantName = $this->cxt('tenantname');
     $authUrl = $this->cxt('endpoint');
@@ -1499,11 +1477,8 @@ class StreamWrapper {
     if (!empty($username) && !empty($password)) {
       $token = $ident->authenticateAsUser($username, $password, $tenantId, $tenantName);
     }
-    elseif (!empty($account) && !empty($key)) {
-      $token = $ident->authenticateAsAccount($account, $key, $tenantId, $tenantName);
-    }
     else {
-      throw new \OpenStack\Exception('Either username/password or account/key must be provided.');
+      throw new \OpenStack\Exception('Username/password must be provided.');
     }
     // Cache the service catalog.
     self::$serviceCatalogCache[$token] = $ident->serviceCatalog();

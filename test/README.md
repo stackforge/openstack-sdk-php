@@ -32,16 +32,16 @@ $ php test/AuthTest.php
 This will instruct you to use a more complete version of the command,
 including:
 
-* ID: The ID given to you.
-* KEY: Your account's key.
-* TENANT ID: Your account's tenant ID.
+* USERNAME: The username given to you.
+* PASSWORD: The password associated with the username.
 * URL: The Endpoint URL.
+* TENANT ID: Your users's tenant ID.
 
 All four pieces of information can be found by logging into the
 console. From there, you can execute a command like this:
 
 ```
-$ php test/AuthTest.php 123made-up-key  456made-up-secret https://region-a.geo-1.objects.hpcloudsvc.com/auth/v1.0/ 1234567
+$ php test/AuthTest.php myusername apassword https://region-a.geo-1.identity.hpcloudsvc.com:35357/v2.0/ 1234567
 
 ```
 

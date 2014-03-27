@@ -11,13 +11,13 @@ Autoloader::useAutoloader();
 
 // Load these from an ini file.
 $ini = parse_ini_file(getenv('HOME') . '/.OpenStack.ini');
-$account = $ini['account'];
-$key = $ini['secret'];
+$username = $ini['username'];
+$password = $ini['password'];
 $tenantId = $ini['tenantId'];
 $endpoint = $ini['url'];
 
 $idService = new IdentityService($endpoint);
-$token = $idService->authenticateAsAccount($account, $key, $tenantId);
+$token = $idService->authenticateAsUser($username, $password, $tenantId);
 
 $catalog = $idService->serviceCatalog();
 

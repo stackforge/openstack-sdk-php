@@ -163,7 +163,7 @@ class ObjectStorage {
    * Given a service catalog and an token, create an ObjectStorage instance.
    *
    * The IdentityServices object contains a service catalog listing all of the
-   * services to which the present account has access.
+   * services to which the present user has access.
    *
    * This builder can scan the catalog and generate a new ObjectStorage
    * instance pointed to the first object storage endpoint in the catalog.
@@ -226,10 +226,10 @@ class ObjectStorage {
   }
 
   /**
-   * Fetch a list of containers for this account.
+   * Fetch a list of containers for this user.
    *
    * By default, this fetches the entire list of containers for the
-   * given account. If you have more than 10,000 containers (who
+   * given user. If you have more than 10,000 containers (who
    * wouldn't?), you will need to use $marker for paging.
    *
    * If you want more controlled paging, you can use $limit to indicate
@@ -352,7 +352,7 @@ class ObjectStorage {
    * cases.
    *
    * - Make the resource private: This grants read and write access to
-   *   ONLY the creating account. This is the default; it can also be
+   *   ONLY the creating user tenant. This is the default; it can also be
    *   specified with ACL::makeNonPublic().
    * - Make the resource public: This grants READ permission to any
    *   requesting host, yet only allows the creator to WRITE to the

@@ -110,8 +110,8 @@ class Bootstrap {
    *     // Create a context resource.
    *     $cxt = stream_context_create(array(
    *       'tenantid' => '12de21',
-   *       'account' => '123454321',
-   *       'secret' => 'f78saf7hhlll',
+   *       'username' => 'foobar',
+   *       'password' => 'f78saf7hhlll',
    *       'endpoint' => 'https://identity.hpcloud.com' // <-- not real URL!
    *     ));
    *
@@ -155,7 +155,6 @@ class Bootstrap {
    * - 'transport.ssl.verify': Set this to FALSE to turn off SSL certificate
    *   verification. This is NOT recommended, but is sometimes necessary for
    *   certain proxy configurations.
-   * - 'account' and 'secret'
    * - 'username' and 'password'
    * - 'tenantid'
    * - 'endpoint': The full URL to identity services. This is used by stream
@@ -244,11 +243,10 @@ class Bootstrap {
         throw new Exception('Unable to authenticate. No endpoint supplied.');
       }
 
-      // Neither user nor account can be an empty string, so we need
+      // User cannot be an empty string, so we need
       // to do more checking than self::hasConfig(), which returns TRUE
       // if an item exists and is an empty string.
       $user = self::config('username', NULL);
-      $account = self::config('account', NULL);
 
       // Check if we have a username/password
       if (!empty($user) && self::hasConfig('password')) {
@@ -257,15 +255,8 @@ class Bootstrap {
         self::$identity = $is;
       }
 
-      // Otherwise we go with access/secret keys
-      elseif (!empty($account) && self::hasConfig('secret')) {
-        $is = new IdentityService(self::config('endpoint'));
-        $is->authenticateAsAccount($account, self::config('secret'), self::config('tenantid', NULL), self::config('tenantname', NULL));
-        self::$identity = $is;
-      }
-
       else {
-        throw new Exception('Unable to authenticate. No account credentials supplied.');
+        throw new Exception('Unable to authenticate. No user credentials supplied.');
       }
     }
 

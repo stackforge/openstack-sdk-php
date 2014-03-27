@@ -121,19 +121,19 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase {
    * swauth.
    */
   protected function authSwiftContext($add = array(), $scheme = NULL) {
-    $cname   = self::$settings['openstack.swift.container'];
-    $account = self::$settings['openstack.identity.access'];
-    $key     = self::$settings['openstack.identity.secret'];
-    $tenant  = self::$settings['openstack.identity.tenantId'];
-    $baseURL = self::$settings['openstack.identity.url'];
+    $cname    = self::$settings['openstack.swift.container'];
+    $username = self::$settings['openstack.identity.username'];
+    $password = self::$settings['openstack.identity.password'];
+    $tenant   = self::$settings['openstack.identity.tenantId'];
+    $baseURL  = self::$settings['openstack.identity.url'];
 
     if (empty($scheme)) {
       $scheme = StreamWrapper::DEFAULT_SCHEME;
     }
 
     $params = $add + array(
-      'account' => $account,
-      'key' => $key,
+      'username' => $username,
+      'password' => $password,
       'endpoint' => $baseURL,
       'tenantid' => $tenant,
       'content_type' => self::FTYPE,
@@ -155,8 +155,8 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase {
    */
   protected function addBootstrapConfig() {
     $opts = array(
-      'account' => self::$settings['openstack.identity.access'],
-      'key'     => self::$settings['openstack.identity.secret'],
+      'username' => self::$settings['openstack.identity.username'],
+      'password' => self::$settings['openstack.identity.password'],
       'endpoint' => self::$settings['openstack.identity.url'],
       'tenantid' => self::$settings['openstack.identity.tenantId'],
       'token' => $this->objectStore()->token(),

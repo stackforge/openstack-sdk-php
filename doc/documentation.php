@@ -116,16 +116,15 @@
  * // go to authenticate. This URL can be found in your console.
  * $identity = new IdentityService('http://get.url.from.hpcloud.com');
  *
- * // You can authenticate either with username/password (IdentityService::authenticateAsUser())
- * // or as an account/secret key (IdentityService::authenticateAsAccount()). In either
- * // case you can get the info you need from the console.
- * $account = '123456789098765';
- * $secret = 'dgasgasd';
+ * // You can authenticate with a username/password (IdentityService::authenticateAsUser()).
+ * // In either case you can get the info you need from the console.
+ * $username = 'foobar';
+ * $password = 'dgasgasd';
  * $tenantId = '56545654';
  *
  * // $token will be your authorization key when you connect to other
  * // services. You can also get it from $identity->token().
- * $token = $identity->authenticateAsAccount($account, $secret, $tenantId);
+ * $token = $identity->authenticateAsUser($username, $password, $tenantId);
  *
  * // Get a listing of all of the services you currently have configured in
  * // OpenStack.
@@ -145,8 +144,6 @@
  *   - OpenStack::Services::IdentityService::__construct() tells the object where to connect.
  *   - OpenStack::Services::IdentityService::authenticateAsUser() lets you log
  *     in with username and password.
- *   - OpenStack::Services::IdentityService::authenticateAsAccount() lets you log
- *     in with account number and secret key.
  *   - OpenStack::Services::IdentityService::serviceCatalog() tells you about
  *     the services you have activated on this account.
  *

@@ -21,32 +21,31 @@
  */
 
 $base = dirname(__DIR__);
-require_once $base . '/src/OpenStack/Bootstrap.php';
+require_once $base . '/src/OpenStack/Autoloader.php';
 
 use \OpenStack\Storage\ObjectStorage;
 use \OpenStack\Services\IdentityService;
 
 $config = array(
-  'transport' => '\OpenStack\Transport\CURLTransport',
+  'transport' => '\OpenStack\Transport\PHPStreamTransport',
   'transport.timeout' => 240,
   //'transport.debug' => 1,
   'transport.ssl.verify' => 0,
 );
 
-\OpenStack\Bootstrap::useAutoloader();
+\OpenStack\Autoloader::useAutoloader();
 \OpenStack\Bootstrap::setConfiguration($config);
 
 $help = "Authenticate against OpenStack Identity Service.
 
-You can authenticate either by account number and access key, or (by using the
--u flag) by username, password.
+You can authenticate using a username and password.
 
 While Tenant ID is optional, it is recommended.
 
 In both cases, you must supply a URL to the Identity Services endpoint.
 ";
 
-$usage = "php {$argv[0]} [-u] ID SECRET URL [TENANT_ID]";
+$usage = "php {$argv[0]} USERNAME PASSWORD URL [TENANT_ID]";
 
 if ($argc > 1 && $argv[1] == '--help') {
   print PHP_EOL . "\t" . $usage . PHP_EOL;
@@ -54,20 +53,15 @@ if ($argc > 1 && $argv[1] == '--help') {
   exit(1);
 }
 elseif ($argc < 4) {
-  print 'ID, Key, and URL are all required.' . PHP_EOL;
+  print 'USERNAME, PASSWORD, and URL are all required.' . PHP_EOL;
   print $usage . PHP_EOL;
   exit(1);
 }
 
-$asUser = FALSE;
 $offset = 0;
-if ($argv[1] == '-u') {
-  $asUser = TRUE;
-  ++$offset;
-}
 
 $user = $argv[1 + $offset];
-$key = $argv[2 + $offset];
+$password = $argv[2 + $offset];
 $uri = $argv[3 + $offset];
 
 $tenantId = NULL;
@@ -82,12 +76,7 @@ $token = $store->token();
  */
 $cs = new IdentityService($uri);
 
-if ($asUser) {
-  $token = $cs->authenticateAsUser($user, $key, $tenantId);
-}
-else {
-  $token = $cs->authenticateAsAccount($user, $key, $tenantId);
-}
+$token = $cs->authenticateAsUser($user, $password, $tenantId);
 
 if (empty($token)) {
   print "Authentication seemed to succeed, but no token was returned." . PHP_EOL;
@@ -100,7 +89,7 @@ $user = $cs->user();
 
 printf($t, $user['name'], $cs->token(), $tokenDetails['expires']);
 
-print "The following services are available on this account:" . PHP_EOL;
+print "The following services are available on this user:" . PHP_EOL;
 
 $services = $cs->serviceCatalog();
 foreach ($services as $service) {

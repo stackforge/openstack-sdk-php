@@ -37,7 +37,7 @@ namespace OpenStack\Services;
  *
  * The authentication process consists of a single transaction during which the
  * client (us) submits credentials and the server verifies those credentials,
- * returning a token (for subsequent requests), account information, and the
+ * returning a token (for subsequent requests), user information, and the
  * service catalog.
  *
  * Authentication credentials:
@@ -67,11 +67,11 @@ namespace OpenStack\Services;
  *
  * There are two notable places to get this information:
  *
- * A list of tenants associated with this account can be obtain programatically
+ * A list of tenants associated with this user can be obtain programatically
  * using the tenants() method on this object.
  *
  * OpenStack users can find their tenant ID in the console along with their
- * account ID and secret key.
+ * username and password.
  *
  * @b EXAMPLE
  *
@@ -113,7 +113,6 @@ namespace OpenStack\Services;
  *
  * - authenticate()
  * - authenticateAsUser()
- * - authenticateAsAccount()
  * - tenants()
  * - rescope()
  *
@@ -146,8 +145,8 @@ class IdentityService /*implements Serializable*/ {
    *
    * The exact details of this array will differ depending on what type of
    * authentication is used. For example, authenticating by username and
-   * password will set tenant information. Authenticating by account ID and
-   * secret, however, will leave the tenant section empty.
+   * password will set tenant information. Authenticating by username and
+   * password, however, will leave the tenant section empty.
    *
    * This is an associative array looking like this:
    *
@@ -190,7 +189,7 @@ class IdentityService /*implements Serializable*/ {
    * @code
    * <?php
    * $cs = new \OpenStack\Services\IdentityService('http://example.com');
-   * $token = $cs->authenticateAsAccount($accountId, $accessKey);
+   * $token = $cs->authenticateAsUser($username, $password);
    * ?>
    * @endcode
    *
@@ -229,8 +228,8 @@ class IdentityService /*implements Serializable*/ {
    * Send an authentication request.
    *
    * @remark EXPERT: This allows authentication requests at a low level. For simple
-   * authentication requests using account number or username, see the
-   * authenticateAsUser() and authenticateAsAccount() methods.
+   * authentication requests using a username, see the
+   * authenticateAsUser() method.
    *
    * Here is an example of username/password-based authentication done with
    * the authenticate() method:
@@ -307,8 +306,6 @@ class IdentityService /*implements Serializable*/ {
    * rescope() the request (See also tenants()).
    *
    * Other authentication methods:
-   *
-   * - authenticateAsAccount()
    * - authenticate()
    *
    * @param string $username
@@ -316,10 +313,10 @@ class IdentityService /*implements Serializable*/ {
    * @param string $password
    *   A password string.
    * @param string $tenantId
-   *   The tenant ID for this account. This can be obtained through the
+   *   The tenant ID. This can be obtained through the
    *   OpenStack console.
    * @param string $tenantName
-   *   The tenant Name for this account. This can be obtained through the
+   *   The tenant Name. This can be obtained through the
    *   OpenStack console.
    * @throws OpenStack::Transport::AuthorizationException
    *   If authentication failed.
@@ -346,66 +343,6 @@ class IdentityService /*implements Serializable*/ {
 
     return $this->authenticate($ops);
   }
-  /**
-   * Authenticate to OpenStack using your account ID and access key.
-   *
-   * Given an account ID and and access key (secret key), authenticate
-   * to Identity Services. Identity Services will then issue a token that can be
-   * used with other OpenStack services, such as Object Storage (aka Swift).
-   *
-   * The account ID and access key information can be found in the account
-   * section of the console.
-   *
-   * The third and fourth paramaters allow you to specify a tenant ID or 
-   * tenantName. In order to access services, this object will need a tenant ID
-   * or tenant name. If none is specified, it can be set later using rescope().
-   * The tenants() method can be used to get a list of all available tenant IDs
-   * for this token.
-   *
-   * Other authentication methods:
-   *
-   * - authenticateAsUser()
-   * - authenticate()
-   *
-   * @param string $account
-   *   The account ID. It should look something like this:
-   *   1234567890:abcdef123456.
-   * @param string $key
-   *   The access key (i.e. secret key), which should be a series of
-   *   ASCII letters and digits.
-   * @param string $tenantId
-   *   A valid tenant ID. This will be used to associate a tenant's services
-   *   with this token.
-   * @param string $tenantName
-   *   The tenant Name for this account. This can be obtained through the
-   *   OpenStack console.
-   * @retval string
-   * @return string
-   *   The auth token.
-   * @throws OpenStack::Transport::AuthorizationException
-   *   If authentication failed.
-   * @throws OpenStack::Exception
-   *   For abnormal network conditions. The message will give an indication as
-   *   to the underlying problem.
-   */
-  public function authenticateAsAccount($account, $key, $tenantId = NULL, $tenantName = NULL) {
-    $ops = array(
-      'apiAccessKeyCredentials' => array(
-        'accessKey' => $account,
-        'secretKey' => $key,
-      ),
-    );
-
-    if (!empty($tenantId)) {
-      $ops['tenantId'] = $tenantId;
-    }
-    elseif (!empty($tenantName)) {
-      $ops['tenantName'] = $tenantName;
-    }
-
-    return $this->authenticate($ops);
-  }
-
 
   /**
    * Get the token.
@@ -529,9 +466,10 @@ class IdentityService /*implements Serializable*/ {
    * The service catalog contains information about what services (if any) are
    * available for the present user. Object storage (Swift) Compute instances
    * (Nova) and other services will each be listed here if they are enabled
-   * on your account. Only services that have been turned on for the account
-   * will be available. (That is, even if you *can* create a compute instance,
-   * until you have actually created one, it will not show up in this list.)
+   * for your user in the current tenant. Only services that have been turned on
+   * for the user on the tenant will be available. (That is, even if you *can*
+   * create a compute instance, until you have actually created one, it will not
+   * show up in this list.)
    *
    * One of the authentication methods MUST be run before obtaining the service
    * catalog.

@@ -62,8 +62,6 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
       'openstack.identity.username',
       'openstack.identity.password',
       'openstack.identity.tenantId',
-      'openstack.identity.access',
-      'openstack.identity.secret',
     );
     foreach ($settings as $setting) {
       $this->assertNotEmpty(self::conf($setting), "Required param: " . $setting);
@@ -95,20 +93,6 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     );
     $tok = $service->authenticate($auth);
     $this->assertNotEmpty($tok);
-
-
-    // Test account ID/secret key auth.
-    $auth = array(
-      'apiAccessKeyCredentials' => array(
-        'accessKey' => self::conf('openstack.identity.access'),
-        'secretKey' => self::conf('openstack.identity.secret'),
-      ),
-    );
-    $service = new IdentityService(self::conf('openstack.identity.url'));
-    $tok3 = $service->authenticate($auth);
-
-    $this->assertNotEmpty($tok3);
-
   }
 
   /**
@@ -131,41 +115,19 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
 
     $details = $service->tokenDetails();
     $this->assertFalse(isset($details['tenant']));
-  }
-
-  /**
-   * @depends testAuthenticate
-   */
-  public function testAuthenticateAsAccount() {
-    $service = new IdentityService(self::conf('openstack.identity.url'));
-
-    $account = self::conf('openstack.identity.access');
-    $secret = self::conf('openstack.identity.secret');
-    $tenantId = self::conf('openstack.identity.tenantId');
-
-    // No tenant ID.
-    $tok = $service->authenticateAsAccount($account, $secret);
-    $this->assertNotEmpty($tok);
-    $this->assertEmpty($service->tenantId());
-
-    // No tenant ID.
-    $service = new IdentityService(self::conf('openstack.identity.url'));
-    $tok = $service->authenticateAsAccount($account, $secret, $tenantId);
-    $this->assertNotEmpty($tok);
-    $this->assertEquals($tenantId, $service->tenantId());
 
     return $service;
   }
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    */
   public function testToken($service) {
     $this->assertNotEmpty($service->token());
   }
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    */
   public function testIsExpired($service) {
     $this->assertFalse($service->isExpired());
@@ -175,11 +137,9 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
   }
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    */
   public function testTenantName() {
-    $account = self::conf('openstack.identity.access');
-    $secret = self::conf('openstack.identity.secret');
     $user = self::conf('openstack.identity.username');
     $pass = self::conf('openstack.identity.password');
     $tenantName = self::conf('openstack.identity.tenantName');
@@ -196,18 +156,10 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
 
     $service = new IdentityService(self::conf('openstack.identity.url'));
     $this->assertNull($service->tenantName());
-
-    $service->authenticateAsAccount($account, $secret);
-    $this->assertEmpty($service->tenantName());
-
-    $service = new IdentityService(self::conf('openstack.identity.url'));
-    $ret = $service->authenticateAsAccount($account, $secret, NULL, $tenantName);
-    $this->assertNotEmpty($service->tenantName());
-    $this->assertEquals($tenantName, $service->tenantName());
   }
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    */
   public function testTenantId() {
     $user = self::conf('openstack.identity.username');
@@ -226,7 +178,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
   }
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    */
   public function testTokenDetails() {
     $now = time();
@@ -237,7 +189,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $service = new IdentityService(self::conf('openstack.identity.url'));
     $service->authenticateAsUser($user, $pass);
 
-    // Details for account auth.
+    // Details for user auth.
     $details = $service->tokenDetails();
     $this->assertNotEmpty($details['id']);
     $this->assertFalse(isset($details['tenant']));
@@ -265,7 +217,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
   }
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    */
   public function testServiceCatalog($service) {
     $catalog = $service->serviceCatalog();
@@ -299,7 +251,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
 
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    */
   public function testUser($service) {
     $user = $service->user();
@@ -309,7 +261,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
   }
 
   /**
-   * @depends testAuthenticateAsAccount
+   * @depends testAuthenticateAsUser
    * @group serialize
    */
   public function testSerialization($service) {
@@ -420,7 +372,6 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
 
   /**
    * Test the bootstrap identity factory.
-   * @depends testAuthenticateAsAccount
    * @depends testAuthenticateAsUser
    */
   function testBootstrap() {
@@ -443,20 +394,6 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $is = Bootstrap::identity(TRUE);
     $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
 
-    Bootstrap::$config = $reset;
-
-    // Test authenticating as an account.
-    $settings = array(
-      'account' => self::conf('openstack.identity.access'),
-      'secret' => self::conf('openstack.identity.secret'),
-      'endpoint' => self::conf('openstack.identity.url'),
-      'tenantid' => self::conf('openstack.identity.tenantId'),
-    );
-    Bootstrap::setConfiguration($settings);
-
-    $is = Bootstrap::identity(TRUE);
-    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
-
     // Test getting a second instance from the cache.
     $is2 = Bootstrap::identity();
     $this->assertEquals($is, $is2);
@@ -468,17 +405,6 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     Bootstrap::$config = $reset;
 
     // Test with tenant name
-    $settings = array(
-      'account' => self::conf('openstack.identity.access'),
-      'secret' => self::conf('openstack.identity.secret'),
-      'endpoint' => self::conf('openstack.identity.url'),
-      'tenantname' => self::conf('openstack.identity.tenantName'),
-    );
-    Bootstrap::setConfiguration($settings);
-
-    $is = Bootstrap::identity(TRUE);
-    $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
-
     $settings = array(
       'username' => self::conf('openstack.identity.username'),
       'password' => self::conf('openstack.identity.password'),
