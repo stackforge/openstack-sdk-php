@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Contains the class for ObjectStorage Container objects.
  */
 
@@ -37,28 +35,26 @@ namespace OpenStack\Storage\ObjectStorage;
  * They are retrieved using ObjectStorage::container() or
  * ObjectStorage::containers().
  *
- * @code
- * <?php
- * use \OpenStack\Storage\ObjectStorage;
- * use \OpenStack\Storage\ObjectStorage\Container;
- * use \OpenStack\Storage\ObjectStorage\Object;
+ *     <?php
+ *     use \OpenStack\Storage\ObjectStorage;
+ *     use \OpenStack\Storage\ObjectStorage\Container;
+ *     use \OpenStack\Storage\ObjectStorage\Object;
  *
- * // Create a new ObjectStorage instance, logging in with older Swift
- * // credentials.
- * $store = ObjectStorage::newFromSwiftAuth('user', 'key', 'http://example.com');
+ *     // Create a new ObjectStorage instance, logging in with older Swift
+ *     // credentials.
+ *     $store = ObjectStorage::newFromSwiftAuth('user', 'key', 'http://example.com');
  *
- * // Get the container called 'foo'.
- * $container = $store->container('foo');
+ *     // Get the container called 'foo'.
+ *     $container = $store->container('foo');
  *
- * // Create an object.
- * $obj = new Object('bar.txt');
- * $obj->setContent('Example content.', 'text/plain');
+ *     // Create an object.
+ *     $obj = new Object('bar.txt');
+ *     $obj->setContent('Example content.', 'text/plain');
  *
- * // Save the new object in the container.
- * $container->save($obj);
+ *     // Save the new object in the container.
+ *     $container->save($obj);
  *
- * ?>
- * @endcode
+ *     ?>
  *
  * Once you have a Container, you manipulate objects inside of the
  * container.
@@ -92,16 +88,13 @@ class Container implements \Countable, \IteratorAggregate {
    *
    * This is used when storing an object in a container.
    *
-   * @param array $metadata
-   *   An associative array of metadata. Metadata is not escaped in any
-   *   way (there is no codified spec by which to escape), so make sure
-   *   that keys are alphanumeric (dashes allowed) and values are
+   * @param array $metadata An associative array of metadata. Metadata is not
+   *   escaped in any way (there is no codified spec by which to escape), so
+   *   make sure that keys are alphanumeric (dashes allowed) and values are
    *   ASCII-armored with no newlines.
-   * @param string $prefix
-   *   A prefix for the metadata headers.
-   * @retval array
-   * @return array
-   *   An array of headers.
+   * @param string $prefix A prefix for the metadata headers.
+   *
+   * @return array An array of headers.
    * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e635
    * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e700
    */
@@ -124,19 +117,15 @@ class Container implements \Countable, \IteratorAggregate {
    * (namely slashes (`/`)) that are normally URLencoded when they appear
    * inside of path sequences.
    *
-   * @note
-   * Swift does not distinguish between @c %2F and a slash character, so
+   * Swift does not distinguish between `%2F` and a slash character, so
    * this is not strictly necessary.
    *
-   * @param string $base
-   *   The base URL. This is not altered; it is just prepended to
-   *   the returned string.
-   * @param string $oname
-   *   The name of the object.
-   * @retval string
-   * @return string
-   *   The URL to the object. Characters that need escaping will be escaped,
-   *   while slash characters are not. Thus, the URL will look pathy.
+   * @param string $base The base URL. This is not altered; it is just prepended
+   *   to the returned string.
+   * @param string $oname The name of the object.
+   *
+   * @return string The URL to the object. Characters that need escaping will be
+   *   escaped, while slash characters are not. Thus, the URL will look pathy.
    */
   public static function objectUrl($base, $oname) {
     if (strpos($oname, '/') === FALSE) {
@@ -152,7 +141,6 @@ class Container implements \Countable, \IteratorAggregate {
     return $base . '/' . $newname;
   }
 
-
   /**
    * Extract object attributes from HTTP headers.
    *
@@ -166,13 +154,10 @@ class Container implements \Countable, \IteratorAggregate {
    * value data, so it is left up to implementors to choose their own
    * strategy.
    *
-   * @param array $headers
-   *   An associative array of HTTP headers.
-   * @param string $prefix
-   *   The prefix on metadata headers.
-   * @retval array
-   * @return array
-   *   An associative array of name/value attribute pairs.
+   * @param array $headers An associative array of HTTP headers.
+   * @param string $prefix The prefix on metadata headers.
+   *
+   * @return array An associative array of name/value attribute pairs.
    */
   public static function extractHeaderAttributes($headers, $prefix = NULL) {
     if (empty($prefix)) {
@@ -197,17 +182,13 @@ class Container implements \Countable, \IteratorAggregate {
    * This is used in lieue of a standard constructor when
    * fetching containers from ObjectStorage.
    *
-   * @param array $jsonArray
-   *   An associative array as returned by json_decode($foo, TRUE);
-   * @param string $token
-   *   The auth token.
-   * @param string $url
-   *   The base URL. The container name is automatically appended to 
-   *   this at construction time.
+   * @param array $jsonArray An associative array as returned by
+   *   json_decode($foo, TRUE);
+   * @param string $token The auth token.
+   * @param string $url The base URL. The container name is automatically
+   *   appended to this at construction time.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Comtainer
-   * @return \OpenStack\Storage\ObjectStorage\Container
-   *   A new container object.
+   * @return \OpenStack\Storage\ObjectStorage\Container A new container object.
    */
   public static function newFromJSON($jsonArray, $token, $url) {
     $container = new Container($jsonArray['name']);
@@ -240,18 +221,14 @@ class Container implements \Countable, \IteratorAggregate {
    * cases, the standard constructor is preferred for client-size
    * Container initialization.
    *
-   * @param string $name
-   *   The name of the container.
-   * @param object $response OpenStack::Transport::Response
-   *   The HTTP response object from the Transporter layer
-   * @param string $token
-   *   The auth token.
-   * @param string $url
-   *   The base URL. The container name is automatically appended to
-   *   this at construction time.
-   * @retval OpenStack::Storage::ObjectStorage::Container
-   * @return \OpenStack\Storage\ObjectStorage\Container
-   *   The Container object, initialized and ready for use.
+   * @param string $name The name of the container.
+   * @param object $response \OpenStack\Transport\Response The HTTP response object from the Transporter layer
+   * @param string $token The auth token.
+   * @param string $url The base URL. The container name is automatically
+   *   appended to this at construction time.
+   *
+   * @return \OpenStack\Storage\ObjectStorage\Container The Container object,
+   *   initialized and ready for use.
    */
   public static function newFromResponse($name, $response, $token, $url) {
     $container = new Container($name);
@@ -273,7 +250,6 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Construct a new Container.
    *
-   * @attention
    * Typically a container should be created by ObjectStorage::createContainer().
    * Get existing containers with ObjectStorage::container() or
    * ObjectStorage::containers(). Using the constructor directly has some
@@ -307,13 +283,9 @@ class Container implements \Countable, \IteratorAggregate {
    * - When in doubt, use the ObjectStorage methods. That is always the safer
    *   option.
    *
-   * @param string $name
-   *   The name.
-   * @param string $url
-   *   The full URL to the container.
-   * @param string $token
-   *   The auth token.
-   *
+   * @param string $name The name.
+   * @param string $url The full URL to the container.
+   * @param string $token The auth token.
    */
   public function __construct($name , $url = NULL, $token = NULL) {
     $this->name = $name;
@@ -324,9 +296,7 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Get the name of this container.
    *
-   * @retval string
-   * @return string
-   *   The name of the container.
+   * @return string The name of the container.
    */
   public function name() {
     return $this->name;
@@ -335,9 +305,7 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Get the number of bytes in this container.
    *
-   * @retval int
-   * @return int
-   *   The number of bytes in this container.
+   * @return int The number of bytes in this container.
    */
   public function bytes() {
     if (is_null($this->bytes)) {
@@ -361,9 +329,7 @@ class Container implements \Countable, \IteratorAggregate {
    * listings do not supply the metadata, while loading a container
    * directly does.
    *
-   * @retval array
-   * @return array
-   *   An array of metadata name/value pairs.
+   * @return array An array of metadata name/value pairs.
    */
   public function metadata() {
 
@@ -373,7 +339,6 @@ class Container implements \Countable, \IteratorAggregate {
     }
     return $this->metadata;
   }
-
 
   /**
    * Set the tags on the container.
@@ -393,9 +358,8 @@ class Container implements \Countable, \IteratorAggregate {
    * more than 256. UTF-8 or ASCII characters are allowed, though ASCII
    * seems to be preferred.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Container
-   * @return \OpenStack\Storage\ObjectStorage\Container
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Container $this so the method can
+   *   be used in chaining.
    */
   public function setMetadata($metadata) {
     $this->metadata = $metadata;
@@ -406,18 +370,14 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Get the number of items in this container.
    *
-   * Since Container implements Countable, the PHP builtin
-   * count() can be used on a Container instance:
+   * Since Container implements Countable, the PHP builtin count() can be used
+   * on a Container instance:
    *
-   * @code
-   * <?php
-   * count($container) === $container->count();
-   * ?>
-   * @endcode
+   *     <?php
+   *     count($container) === $container->count();
+   *     ?>
    *
-   * @retval int
-   * @return int
-   *   The number of items in this container.
+   * @return int The number of items in this container.
    */
   public function count() {
     if (is_null($this->count)) {
@@ -429,28 +389,24 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Save an Object into Object Storage.
    *
-   * This takes an OpenStack::Storage::ObjectStorage::Object
+   * This takes an \OpenStack\Storage\ObjectStorage\Object
    * and stores it in the given container in the present
    * container on the remote object store.
    *
-   * @param object $obj OpenStack::Storage::ObjectStorage::Object
-   *   The object to store.
-   * @param resource $file
-   *   An optional file argument that, if set, will be treated as the
-   *   contents of the object.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the object was saved.
-   * @throws OpenStack::Transport::LengthRequiredException
-   *   if the Content-Length could not be determined and chunked
-   *   encoding was not enabled. This should not occur for this class,
-   *   which always automatically generates Content-Length headers.
-   *   However, subclasses could generate this error.
-   * @throws OpenStack::Transport::UnprocessableEntityException
-   *   if the checksome passed here does not match the checksum
-   *   calculated remotely.
-   * @throws OpenStack::Exception when an unexpected (usually
-   *   network-related) error condition arises.
+   * @param object $obj \OpenStack\Storage\ObjectStorage\Object The object to
+   *   store.
+   * @param resource $file An optional file argument that, if set, will be
+   *   treated as the contents of the object.
+   *
+   * @return boolean TRUE if the object was saved.
+   * @throws \OpenStack\Transport\LengthRequiredException if the Content-Length
+   *   could not be determined and chunked encoding was not enabled. This should
+   *   not occur for this class, which always automatically generates
+   *   Content-Length headers. However, subclasses could generate this error.
+   * @throws \OpenStack\Transport\UnprocessableEntityException if the checksum
+   *   passed here does not match the checksum calculated remotely.
+   * @throws \OpenStack\Exception when an unexpected (usually network-related)
+   *   error condition arises.
    */
   public function save(Object $obj, $file = NULL) {
 
@@ -555,15 +511,12 @@ class Container implements \Countable, \IteratorAggregate {
    * particularly in cases where custom headers have been set.
    * Use with caution.
    *
-   * @param object $obj OpenStack::Storage::ObjectStorage::Object
-   *   The object to update.
+   * @param object $obj \OpenStack\Storage\ObjectStorage\Object The object to
+   *   update.
    *
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the metadata was updated.
-   *
-   * @throws OpenStack::Transport::FileNotFoundException
-   *   if the object does not already exist on the object storage.
+   * @return boolean TRUE if the metadata was updated.
+   * @throws \OpenStack\Transport\FileNotFoundException if the object does not
+   *   already exist on the object storage.
    */
   public function updateMetadata(Object $obj) {
     //$url = $this->url . '/' . rawurlencode($obj->name());
@@ -605,20 +558,16 @@ class Container implements \Countable, \IteratorAggregate {
    * Note that there is no MOVE operation. You must copy and then DELETE
    * in order to achieve that.
    *
-   * @param object $obj OpenStack::Storage::ObjectStorage::Object
-   *   The object to copy. This object MUST already be saved on the
-   *   remote server. The body of the object is not sent. Instead, the
-   *   copy operation is performed on the remote server. You can, and
-   *   probably should, use a RemoteObject here.
-   * @param string $newName
-   *   The new name of this object. If you are copying across
-   *   containers, the name can be the same. If you are copying within
+   * @param object $obj \OpenStack\Storage\ObjectStorage::Object The object to
+   *   copy. This object MUST already be saved on the remote server. The body of
+   *   the object is not sent. Instead, the copy operation is performed on the
+   *   remote server. You can, and probably should, use a RemoteObject here.
+   * @param string $newName The new name of this object. If you are copying a
+   *   cross containers, the name can be the same. If you are copying within
    *   the same container, though, you will need to supply a new name.
-   * @param string $container
-   *   The name of the alternate container. If this is set, the object
-   *   will be saved into this container. If this is not sent, the copy
-   *   will be performed inside of the original container.
-   *
+   * @param string $container The name of the alternate container. If this is
+   *   set, the object will be saved into this container. If this is not sent,
+   *   the copy will be performed inside of the original container.
    */
   public function copy(Object $obj, $newName, $container = NULL) {
     //$sourceUrl = $obj->url(); // This doesn't work with Object; only with RemoteObject.
@@ -655,11 +604,11 @@ class Container implements \Countable, \IteratorAggregate {
    * This fetches a single object with the given name. It downloads the
    * entire object at once. This is useful if the object is small (under
    * a few megabytes) and the content of the object will be used. For
-   * example, this is the right operation for accessing a text file 
+   * example, this is the right operation for accessing a text file
    * whose contents will be processed.
    *
-   * For larger files or files whose content may never be accessed, use 
-   * remoteObject(), which delays loading the content until one of its 
+   * For larger files or files whose content may never be accessed, use
+   * remoteObject(), which delays loading the content until one of its
    * content methods (e.g. RemoteObject::content()) is called.
    *
    * This does not yet support the following features of Swift:
@@ -668,11 +617,10 @@ class Container implements \Countable, \IteratorAggregate {
    * - If-Modified-Since/If-Unmodified-Since
    * - If-Match/If-None-Match
    *
-   * @param string $name
-   *   The name of the object to load.
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   A remote object with the content already stored locally.
+   * @param string $name The name of the object to load.
+   *
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject A remote object with
+   *   the content already stored locally.
    */
   public function object($name) {
 
@@ -720,11 +668,10 @@ class Container implements \Countable, \IteratorAggregate {
    * though, that calling RemoteObject::content() will initiate another
    * network operation.
    *
-   * @param string $name
-   *   The name of the object to fetch.
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   A remote object ready for use.
+   * @param string $name The name of the object to fetch.
+   *
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject A remote object ready
+   *   for use.
    */
   public function proxyObject($name) {
     $url = self::objectUrl($this->url, $name);
@@ -749,6 +696,7 @@ class Container implements \Countable, \IteratorAggregate {
   }
   /**
    * This has been replaced with proxyObject().
+   *
    * @deprecated
    */
   public function remoteObject($name) {
@@ -758,10 +706,9 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Get a list of objects in this container.
    *
-   * This will return a list of objects in the container. With no
-   * parameters, it will attempt to return a listing of <i>all</i>
-   * objects in the container. However, by setting contraints, you can
-   * retrieve only a specific subset of objects.
+   * This will return a list of objects in the container. With no parameters, it
+   * will attempt to return a listing of all objects in the container. However,
+   * by setting contraints, you can retrieve only a specific subset of objects.
    *
    * Note that OpenStacks Swift will return no more than 10,000 objects
    * per request. When dealing with large datasets, you are encouraged
@@ -776,15 +723,12 @@ class Container implements \Countable, \IteratorAggregate {
    * will begin with the next item after the marker (assuming the marker
    * is found.)
    *
-   * @param int $limit
-   *   An integer indicating the maximum number of items to return. This 
-   *   cannot be greater than the Swift maximum (10k).
-   * @param string $marker
-   *   The name of the object to start with. The query will begin with
-   *   the next object AFTER this one.
-   * @retval array
-   * @return array
-   *   List of RemoteObject or Subdir instances.
+   * @param int $limit An integer indicating the maximum number of items to
+   *   return. This cannot be greater than the Swift maximum (10k).
+   * @param string $marker The name of the object to start with. The query will
+   *   begin with the next object AFTER this one.
+   *
+   * @return array List of RemoteObject or Subdir instances.
    */
   public function objects($limit = NULL, $marker = NULL) {
     $params = array();
@@ -834,19 +778,15 @@ class Container implements \Countable, \IteratorAggregate {
    * delimiters other than '/', you need to be very consistent with your
    * usage or else you may get surprising results.
    *
-   * @param string $prefix
-   *   The leading prefix.
-   * @param string $delimiter
-   *   The character used to delimit names. By default, this is '/'.
-   * @param int $limit
-   *   An integer indicating the maximum number of items to return. This
-   *   cannot be greater than the Swift maximum (10k).
-   * @param string $marker
-   *   The name of the object to start with. The query will begin with
-   *   the next object AFTER this one.
-   * @retval array
-   * @return array
-   *   List of RemoteObject or Subdir instances.
+   * @param string $prefix The leading prefix.
+   * @param string $delimiter The character used to delimit names. By default,
+   *   this is '/'.
+   * @param int $limit An integer indicating the maximum number of items to
+   *   return. This cannot be greater than the Swift maximum (10k).
+   * @param string $marker The name of the object to start with. The query will
+   *   begin with the next object AFTER this one.
+   *
+   * @return array List of RemoteObject or Subdir instances.
    */
   public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $marker = NULL) {
     $params = array(
@@ -867,12 +807,10 @@ class Container implements \Countable, \IteratorAggregate {
    * directory-like. You create it exactly as you create any other file.
    * Typically, it is 0 bytes long.
    *
-   * @code
-   * <?php
-   * $dir = new Object('a/b/c', '');
-   * $container->save($dir);
-   * ?>
-   * @endcode
+   *     <?php
+   *     $dir = new Object('a/b/c', '');
+   *     $container->save($dir);
+   *     ?>
    *
    * Using objectsByPath() with directory markers will return a list of
    * Object instances, some of which are regular files, and some of
@@ -884,16 +822,13 @@ class Container implements \Countable, \IteratorAggregate {
    * method was legacy. More recent versions of the documentation no
    * longer indicate this.
    *
-   * @param string $path
-   *   The path prefix.
-   * @param string $delimiter
-   *   The character used to delimit names. By default, this is '/'.
-   * @param int $limit
-   *   An integer indicating the maximum number of items to return. This
-   *   cannot be greater than the Swift maximum (10k).
-   * @param string $marker
-   *   The name of the object to start with. The query will begin with
-   *   the next object AFTER this one.
+   * @param string $path The path prefix.
+   * @param string $delimiter The character used to delimit names. By default,
+   *   this is '/'.
+   * @param int $limit An integer indicating the maximum number of items to
+   *   return. This cannot be greater than the Swift maximum (10k).
+   * @param string $marker The name of the object to start with. The query will
+   *   begin with the next object AFTER this one.
    */
   public function objectsByPath($path, $delimiter = '/', $limit = NULL, $marker = NULL) {
     $params = array(
@@ -907,12 +842,10 @@ class Container implements \Countable, \IteratorAggregate {
    * Get the URL to this container.
    *
    * Any container that has been created will have a valid URL. If the
-   * Container was set to be public (See 
+   * Container was set to be public (See
    * ObjectStorage::createContainer()) will be accessible by this URL.
    *
-   * @retval string
-   * @return string
-   *   The URL.
+   * @return string The URL.
    */
   public function url() {
     return $this->url;
@@ -932,9 +865,9 @@ class Container implements \Countable, \IteratorAggregate {
    * ObjectStorage methods.
    *
    * @todo Determine how to get the ACL from JSON data.
-   * @retval \OpenStack\Storage\ObjectStorage\ACL
-   * @return OpenStack::Storage::ObjectStorage::ACL
-   *   An ACL, or NULL if the ACL could not be retrieved.
+   *
+   * @return \OpenStack\Storage\ObjectStorage\ACL An ACL, or NULL if the ACL
+   *   could not be retrieved.
    */
   public function acl() {
     if (!isset($this->acl)) {
@@ -949,7 +882,6 @@ class Container implements \Countable, \IteratorAggregate {
    * Not all containers come fully instantiated. This method is sometimes
    * called to "fill in" missing fields.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Comtainer
    * @return \OpenStack\Storage\ObjectStorage\Container
    */
   protected function loadExtraData() {
@@ -1039,26 +971,23 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Return the iterator of contents.
    *
-   * A Container is Iterable. This means that you can use a container in 
+   * A Container is Iterable. This means that you can use a container in
    * a `foreach` loop directly:
    *
-   * @code
-   * <?php
-   * foreach ($container as $object) {
-   *  print $object->name();
-   * }
-   * ?>
-   * @endcode
+   *     <?php
+   *     foreach ($container as $object) {
+   *      print $object->name();
+   *     }
+   *     ?>
    *
    * The above is equivalent to doing the following:
-   * @code
-   * <?php
-   * $objects = $container->objects();
-   * foreach ($objects as $object) {
-   *  print $object->name();
-   * }
-   * ?>
-   * @endcode
+   *
+   *     <?php
+   *     $objects = $container->objects();
+   *     foreach ($objects as $object) {
+   *      print $object->name();
+   *     }
+   *     ?>
    *
    * Note that there is no way to pass any constraints into an iterator.
    * You cannot limit the number of items, set an marker, or add a
@@ -1071,11 +1000,10 @@ class Container implements \Countable, \IteratorAggregate {
   /**
    * Remove the named object from storage.
    *
-   * @param string $name
-   *   The name of the object to remove.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the file was deleted, FALSE if no such file is found.
+   * @param string $name The name of the object to remove.
+   *
+   * @return boolean TRUE if the file was deleted, FALSE if no such file is
+   *   found.
    */
   public function delete($name) {
     $url = self::objectUrl($this->url, $name);

@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Contains the RemoteObject class.
  */
 
@@ -27,7 +25,7 @@ namespace OpenStack\Storage\ObjectStorage;
  *
  * A remote object is one whose canonical copy is stored in a remote
  * object storage. It represents a local (and possibly partial) copy of
- * an object. (Contrast this with OpenStack::Storage::ObjectStorage::Object)
+ * an object. (Contrast this with \OpenStack\Storage\ObjectStorage\Object)
  *
  * Depending on how the object was constructed, it may or may not have a
  * local copy of the entire contents of the file. It may only have the
@@ -37,8 +35,8 @@ namespace OpenStack\Storage\ObjectStorage;
  *
  * Remote objects can be modified locally. Simply modifying an object
  * will not result in those modifications being stored on the remote
- * server. The object must be saved (see 
- * OpenStack::Storage::ObjectStorage::Container::save()). When an
+ * server. The object must be saved (see
+ * \OpenStack\Storage\ObjectStorage\Container::save()). When an
  * object is modified so that its local contents differ from the remote
  * stored copy, it is marked dirty (see isDirty()).
  */
@@ -65,12 +63,9 @@ class RemoteObject extends Object {
   /**
    * Create a new RemoteObject from JSON data.
    *
-   * @param array $data
-   *   The JSON data as an array.
-   * @param string $token
-   *   The authentication token.
-   * @param $url
-   *   The URL to the object on the remote server
+   * @param array $data The JSON data as an array.
+   * @param string $token The authentication token.
+   * @param $url The URL to the object on the remote server
    */
   public static function newFromJSON($data, $token, $url) {
 
@@ -96,20 +91,15 @@ class RemoteObject extends Object {
    * This is used to create objects from GET and HEAD requests, which
    * return all of the metadata inside of the headers.
    *
-   * @param string $name
-   *   The name of the object.
-   * @param array $headers
-   *   An associative array of HTTP headers in the exact format 
-   *   documented by OpenStack's API docs.
-   * @param string $token
-   *   The current auth token (used for issuing subsequent requests).
-   * @param string $url
-   *   The URL to the object in the object storage. Used for issuing
-   *   subsequent requests.
+   * @param string $name The name of the object.
+   * @param array $headers An associative array of HTTP headers in the exact
+   *   format documented by OpenStack's API docs.
+   * @param string $token The current auth token (used for issuing subsequent
+   *   requests).
+   * @param string $url The URL to the object in the object storage. Used for
+   *   issuing subsequent requests.
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   A new RemoteObject.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject A new RemoteObject.
    */
   public static function newFromHeaders($name, $headers, $token, $url) {
     $object = new RemoteObject($name);
@@ -155,7 +145,6 @@ class RemoteObject extends Object {
    * If this object has been stored remotely, it will have
    * a valid URL.
    *
-   * @retval string
    * @return string
    *   A URL to the object. The following considerations apply:
    *   - If the container is public, this URL can be loaded without
@@ -203,9 +192,8 @@ class RemoteObject extends Object {
   /**
    * Set the headers
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   $this for the current object so it can be used in chaining methods.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this for the current
+   *   object so it can be used in chaining methods.
    */
   public function setHeaders($headers) {
     $this->allHeaders = array();
@@ -222,14 +210,12 @@ class RemoteObject extends Object {
   /**
    * Get the HTTP headers sent by the server.
    *
-   * @attention EXPERT.
+   * EXPERT.
    *
    * This returns the array of minimally processed HTTP headers that
    * were sent from the server.
    *
-   * @retval array
-   * @return array
-   *   An associative array of header names and values.
+   * @return array An associative array of header names and values.
    */
   public function headers() {
     return $this->allHeaders;
@@ -252,7 +238,7 @@ class RemoteObject extends Object {
   }
 
   protected $reservedHeaders = array(
-    'etag' => TRUE, 'content-length' => TRUE, 
+    'etag' => TRUE, 'content-length' => TRUE,
     'x-auth-token' => TRUE,
     'transfer-encoding' => TRUE,
     'x-trans-id' => TRUE,
@@ -261,9 +247,8 @@ class RemoteObject extends Object {
   /**
    * Filter the headers.
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   $this for the current object so it can be used in chaining methods.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this for the current
+   *   object so it can be used in chaining methods.
    */
   public function filterHeaders(&$headers) {
     $unset = array();
@@ -290,17 +275,14 @@ class RemoteObject extends Object {
    * Note that you cannot remove metadata through this mechanism,
    * as it is managed using the metadata() methods.
    *
-   * @attention
-   *   Many headers are generated automatically, such as
-   *   Content-Type and Content-Length. Removing these
-   *   will simply result in their being regenerated.
+   * Many headers are generated automatically, such as
+   * Content-Type and Content-Length. Removing these
+   * will simply result in their being regenerated.
    *
-   * @param array $keys
-   *   The header names to be removed.
+   * @param array $keys The header names to be removed.
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   $this for the current object so it can be used in chaining methods.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this for the current
+   *   object so it can be used in chaining methods.
    */
   public function removeHeaders($keys) {
     foreach ($keys as $key) {
@@ -326,15 +308,11 @@ class RemoteObject extends Object {
    *
    * Be wary of using this method with large files.
    *
-   * @retval string
-   * @return string
-   *   The contents of the file as a string.
-   * @throws \OpenStack\Transport\FileNotFoundException
-   *   when the requested content cannot be located on the remote
-   *   server.
-   * @throws \OpenStack\Exception
-   *   when an unknown exception (usually an abnormal network condition)
-   *   occurs.
+   * @return string The contents of the file as a string.
+   * @throws \OpenStack\Transport\FileNotFoundException when the requested
+   *   content cannot be located on the remote server.
+   * @throws \OpenStack\Exception when an unknown exception (usually an abnormal
+   *   network condition) occurs.
    */
   public function content() {
 
@@ -389,14 +367,12 @@ class RemoteObject extends Object {
    *
    * The stream is read-only.
    *
-   * @param boolean $refresh
-   *   If this is set to TRUE, any existing local modifications will be ignored
-   *   and the content will be refreshed from the server. Any
-   *   local changes to the object will be discarded.
-   * @retval resource
-   * @return resource
-   *   A handle to the stream, which is already opened and positioned at
-   *   the beginning of the stream.
+   * @param boolean $refresh If this is set to TRUE, any existing local
+   *   modifications will be ignored and the content will be refreshed from the
+   *   server. Any local changes to the object will be discarded.
+   *
+   * @return resource A handle to the stream, which is already opened and
+   *   positioned at the beginning of the stream.
    */
   public function stream($refresh = FALSE) {
 
@@ -443,13 +419,11 @@ class RemoteObject extends Object {
    * existing cached content will not be removed if caching is turned
    * off.
    *
-   * @param boolean $enabled
-   *   If this is TRUE, caching will be enabled. If this is FALSE,
-   *   caching will be disabled.
+   * @param boolean $enabled If this is TRUE, caching will be enabled. If this
+   *   is FALSE, caching will be disabled.
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this so the method
+   *   can be used in chaining.
    */
   public function setCaching($enabled) {
     $this->caching = $enabled;
@@ -459,12 +433,10 @@ class RemoteObject extends Object {
   /**
    * Indicates whether this object caches content.
    *
-   * Importantly, this indicates whether the object <i>will</i> cache
+   * Importantly, this indicates whether the object will cache
    * its contents, not whether anything is actually cached.
    *
-   * @retval boolean
-   * @return boolean
-   *   TRUE if caching is enabled, FALSE otherwise.
+   * @return boolean TRUE if caching is enabled, FALSE otherwise.
    */
   public function isCaching() {
     return $this->caching;
@@ -488,14 +460,12 @@ class RemoteObject extends Object {
    * also provide a small performance improvement on large files, but at
    * the expense of security.
    *
-   * @param boolean $enabled
-   *   If this is TRUE, content verification is performed. The content
-   *   is hashed and checked against a server-supplied MD5 hashcode. If
-   *   this is FALSE, no checking is done.
+   * @param boolean $enabled If this is TRUE, content verification is performed.
+   *   The content is hashed and checked against a server-supplied MD5 hashcode.
+   *   If this is FALSE, no checking is done.
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this so the method
+   *   can be used in chaining.
    */
   public function setContentVerification($enabled) {
     $this->contentVerification = $enabled;
@@ -510,9 +480,7 @@ class RemoteObject extends Object {
    * returned by the remote server, and comparing that to the server's
    * supplied ETag hash.
    *
-   * @retval boolean
-   * @return boolean
-   *   TRUE if this is verifying, FALSE otherwise.
+   * @return boolean TRUE if this is verifying, FALSE otherwise.
    */
   public function isVerifyingContent() {
     return $this->contentVerification;
@@ -539,6 +507,8 @@ class RemoteObject extends Object {
    * written to the remote server when desired.
    *
    * To replace dirty content with a clean copy, see refresh().
+   *
+   * @return boolean Whether or not there are unsaved changes.
    */
   public function isDirty() {
 
@@ -566,12 +536,11 @@ class RemoteObject extends Object {
    * WARNING: This will destroy any unsaved local changes. You can use
    * isDirty() to determine whether or not a local change has been made.
    *
-   * @param boolean $fetchContent
-   *   If this is TRUE, the content will be downloaded as well.
+   * @param boolean $fetchContent If this is TRUE, the content will be
+   *   downloaded as well.
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   $this for the current object so it can be used in chaining methods.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this for the current
+   *   object so it can be used in chaining methods.
    */
   public function refresh($fetchContent = FALSE) {
 
@@ -591,15 +560,13 @@ class RemoteObject extends Object {
   /**
    * Helper function for fetching an object.
    *
-   * @param boolean $fetchContent
-   *   If this is set to TRUE, a GET request will be issued, which will
-   *   cause the remote host to return the object in the response body.
-   *   The response body is not handled, though. If this is set to
-   *   FALSE, a HEAD request is sent, and no body is returned.
-   * @retval OpenStack::Transport::Response
-   * @return \OpenStack\Transport\Response
-   *   containing the object metadata and (depending on the
-   *   $fetchContent flag) optionally the data.
+   * @param boolean $fetchContent If this is set to TRUE, a GET request will be
+   *   issued, which will cause the remote host to return the object in the
+   *   response body. The response body is not handled, though. If this is set
+   *   to FALSE, a HEAD request is sent, and no body is returned.
+   *
+   * @return \OpenStack\Transport\Response containing the object metadata and
+   *   (depending on the $fetchContent flag) optionally the data.
    */
   protected function fetchObject($fetchContent = FALSE) {
     $method = $fetchContent ? 'GET' : 'HEAD';
@@ -625,9 +592,8 @@ class RemoteObject extends Object {
    *
    * This is used internally to set object properties from headers.
    *
-   * @retval OpenStack::Storage::ObjectStorage::RemoteObject
-   * @return \OpenStack\Storage\ObjectStorage\RemoteObject
-   *   $this for the current object so it can be used in chaining methods.
+   * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this for the current
+   *   object so it can be used in chaining methods.
    */
   protected function extractFromHeaders($response) {
     $this->setContentType($response->header('Content-Type', $this->contentType()));
@@ -642,6 +608,5 @@ class RemoteObject extends Object {
     $this->setMetadata(Container::extractHeaderAttributes($response->headers()));
 
     return $this;
-
   }
 }

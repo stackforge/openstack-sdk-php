@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * This file provides the ObjectStorage class, which is the primary
  * representation of the ObjectStorage system.
  *
@@ -39,7 +37,7 @@ use OpenStack\Storage\ObjectStorage\ACL;
  *
  * There is also a stream wrapper interface that exposes ObjectStorage
  * to PHP's streams system. For common use of an object store, you may
- * prefer to use that system. (See OpenStack::Bootstrap).
+ * prefer to use that system. (@see \OpenStack\Bootstrap).
  *
  * When constructing a new ObjectStorage object, you will need to know
  * what kind of authentication you are going to perform. Older
@@ -47,8 +45,8 @@ use OpenStack\Storage\ObjectStorage\ACL;
  * mechanism for Swift. You can use ObjectStorage::newFromSwiftAuth() to
  * perform this type of authentication.
  *
- * Newer versions use the IdentityServices authentication mechanism (see
- * OpenStack::Services::IdentityServices). That method is the preferred
+ * Newer versions use the IdentityServices authentication mechanism (@see
+ * \OpenStack\Services\IdentityServices). That method is the preferred
  * method.
  *
  * Common Tasks
@@ -87,7 +85,7 @@ class ObjectStorage {
    * Create a new instance after getting an authenitcation token.
    *
    * THIS METHOD IS DEPRECATED. OpenStack now uses Keyston to authenticate.
-   * You should use OpenStack::Services::IdentityServices to authenticate.
+   * You should use \OpenStack\Services\IdentityServices to authenticate.
    * Then use this class's constructor to create an object.
    *
    * This uses the legacy Swift authentication facility to authenticate
@@ -102,18 +100,15 @@ class ObjectStorage {
    * - Key: Typically this will be your password.
    * - Endpoint URL: The URL given to you by your service provider.
    *
-   * @param string $account
-   *   Your account name.
-   * @param string $key
-   *   Your secret key.
-   * @param string $url
-   *   The URL to the object storage endpoint.
+   * @param string $account Your account name.
+   * @param string $key Your secret key.
+   * @param string $url The URL to the object storage endpoint.
    *
-   * @throws OpenStack::Transport::AuthorizationException if the
+   * @throws \OpenStack\Transport\AuthorizationException if the
    *   authentication failed.
-   * @throws OpenStack::Transport::FileNotFoundException if the URL is
+   * @throws \OpenStack\Transport\FileNotFoundException if the URL is
    *   wrong.
-   * @throws OpenStack::Exception if some other exception occurs.
+   * @throws \OpenStack\Exception if some other exception occurs.
    *
    * @deprecated Newer versions of OpenStack use Keystone auth instead
    * of Swift auth.
@@ -151,14 +146,12 @@ class ObjectStorage {
    * Given an IdentityServices instance, create an ObjectStorage instance.
    *
    * This constructs a new ObjectStorage from an authenticated instance
-   * of an OpenStack::Services::IdentityServices object.
+   * of an \OpenStack\Services\IdentityServices object.
    *
-   * @param OpenStack::Services::IdentityServices $identity
-   *   An identity services object that already has a valid token and a
-   *   service catalog.
-   * @retval OpenStack::Storage::ObjectStorage
-   * @return \OpenStack\Storage\ObjectStorage
-   *   A new ObjectStorage instance.
+   * @param \OpenStack\Services\IdentityServices $identity An identity services
+   *   object that already has a valid token and a service catalog.
+   *
+   * @return \OpenStack\Storage\ObjectStorage A new ObjectStorage instance.
    */
   public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION) {
     $cat = $identity->serviceCatalog();
@@ -175,15 +168,12 @@ class ObjectStorage {
    * This builder can scan the catalog and generate a new ObjectStorage
    * instance pointed to the first object storage endpoint in the catalog.
    *
-   * @param array $catalog
-   *   The serice catalog from IdentityServices::serviceCatalog(). This
-   *   can be either the entire catalog or a catalog filtered to
-   *   just ObjectStorage::SERVICE_TYPE.
-   * @param string $authToken
-   *   The auth token returned by IdentityServices.
-   * @retval OpenStack::Storage::ObjectStorage
-   * @return \OpenStack\Storage\ObjectStorage
-   *   A new ObjectStorage instance.
+   * @param array $catalog The serice catalog from IdentityServices::serviceCatalog().
+   *   This can be either the entire catalog or a catalog filtered to just
+   *   ObjectStorage::SERVICE_TYPE.
+   * @param string $authToken The auth token returned by IdentityServices.
+   *
+   * @return \OpenStack\Storage\ObjectStorage A new ObjectStorage instance.
    */
   public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION) {
     $c = count($catalog);
@@ -207,12 +197,10 @@ class ObjectStorage {
    *
    * Use this if newFromServiceCatalog() does not meet your needs.
    *
-   * @param string $authToken
-   *   A token that will be included in subsequent requests to validate
-   *   that this client has authenticated correctly.
-   * @param string $url
-   *   The URL to the endpoint. This typically is returned after
-   *   authentication.
+   * @param string $authToken A token that will be included in subsequent
+   *   requests to validate that this client has authenticated correctly.
+   * @param string $url The URL to the endpoint. This typically is returned
+   *   after authentication.
    */
   public function __construct($authToken, $url) {
     $this->token = $authToken;
@@ -222,9 +210,7 @@ class ObjectStorage {
   /**
    * Get the authentication token.
    *
-   * @retval string
-   * @return string
-   *   The authentication token.
+   * @return string The authentication token.
    */
   public function token() {
     return $this->token;
@@ -233,9 +219,7 @@ class ObjectStorage {
   /**
    * Get the URL endpoint.
    *
-   * @retval string
-   * @return string
-   *   The URL that is the endpoint for this service.
+   * @return string The URL that is the endpoint for this service.
    */
   public function url() {
     return $this->url;
@@ -263,20 +247,15 @@ class ObjectStorage {
    *   requested, it makes an additional round-trip to the server to
    *   fetch that data.
    *
-   * @param int $limit
-   *   The maximum number to return at a time. The default is -- brace
-   *   yourself -- 10,000 (as determined by OpenStack. Implementations
+   * @param int $limit The maximum number to return at a time. The default is
+   * -- brace yourself -- 10,000 (as determined by OpenStack. Implementations
    *   may vary).
-   * @param string $marker
-   *   The name of the last object seen. Used when paging.
+   * @param string $marker The name of the last object seen. Used when paging.
    *
-   * @retval array
-   * @return array
-   *   An associative array of containers, where the key is the
-   *   container's name and the value is an
-   *   OpenStack::Storage::ObjectStorage::Container object. Results are
-   *   ordered in server order (the order that the remote host puts them
-   *   in).
+   * @return array An associative array of containers, where the key is the
+   *   container's name and the value is an \OpenStack\Storage\ObjectStorage\Container
+   *   object. Results are ordered in server order (the order that the remote
+   *   host puts them in).
    */
   public function containers($limit = 0, $marker = NULL) {
 
@@ -305,13 +284,11 @@ class ObjectStorage {
    *
    * This loads only the named container from the remote server.
    *
-   * @param string $name
-   *   The name of the container to load.
-   * @retval OpenStack::Storage::ObjectStorage::Container
-   * @return \OpenStack\Storage\ObjectStorage\Container
-   *   A container.
-   * @throws OpenStack::Transport::FileNotFoundException
-   *   if the named container is not found on the remote server.
+   * @param string $name The name of the container to load.
+   *
+   * @return \OpenStack\Storage\ObjectStorage\Container A container.
+   * @throws \OpenStack\Transport\FileNotFoundException if the named container
+   *   is not found on the remote server.
    */
   public function container($name) {
 
@@ -332,17 +309,14 @@ class ObjectStorage {
   /**
    * Check to see if this container name exists.
    *
-   * This method directly checks the remote server. Calling container() 
-   * or containers() might be more efficient if you plan to work with 
+   * This method directly checks the remote server. Calling container()
+   * or containers() might be more efficient if you plan to work with
    * the resulting container.
    *
-   * @param string $name
-   *   The name of the container to test.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the container exists, FALSE if it does not.
-   * @throws OpenStack::Exception
-   *   If an unexpected network error occurs.
+   * @param string $name The name of the container to test.
+   *
+   * @return boolean TRUE if the container exists, FALSE if it does not.
+   * @throws \OpenStack\Exception If an unexpected network error occurs.
    */
   public function hasContainer($name) {
     try {
@@ -373,8 +347,8 @@ class ObjectStorage {
    * ACLs
    *
    * Swift supports an ACL stream that allows for specifying (with
-   * certain caveats) various levels of read and write access. However, 
-   * there are two standard settings that cover the vast majority of 
+   * certain caveats) various levels of read and write access. However,
+   * there are two standard settings that cover the vast majority of
    * cases.
    *
    * - Make the resource private: This grants read and write access to
@@ -388,34 +362,29 @@ class ObjectStorage {
    * container public will allow access to ALL objects inside of the
    * container.
    *
-   * To find out whether an existing container is public, you can 
+   * To find out whether an existing container is public, you can
    * write something like this:
    *
-   * @code
-   * <?php
-   * // Get the container.
-   * $container = $objectStorage->container('my_container');
+   *     <?php
+   *     // Get the container.
+   *     $container = $objectStorage->container('my_container');
    *
-   * //Check the permission on the ACL:
-   * $boolean = $container->acl()->isPublic();
-   * ?>
-   * @endcode
+   *     //Check the permission on the ACL:
+   *     $boolean = $container->acl()->isPublic();
+   *     ?>
    *
-   * For details on ACLs, see OpenStack::Storage::ObjectStorage::ACL.
+   * For details on ACLs, see \OpenStack\Storage\ObjectStorage\ACL.
    *
-   * @param string $name
-   *   The name of the container.
-   * @param object $acl OpenStack::Storage::ObjectStorage::ACL
-   *   An access control list object. By default, a container is
-   *   non-public (private). To change this behavior, you can add a
-   *   custom ACL. To make the container publically readable, you can
-   *   use this: OpenStack::Storage::ObjectStorage::ACL::makePublic().
-   * @param array $metadata
-   *   An associative array of metadata to attach to the container.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the container was created, FALSE if the container was not
-   *   created because it already exists.
+   * @param string $name The name of the container.
+   * @param object $acl \OpenStack\Storage\ObjectStorage\ACL An access control
+   *   list object. By default, a container is non-public (private). To change
+   *   this behavior, you can add a custom ACL. To make the container publically
+   *   readable, you can use this: \OpenStack\Storage\ObjectStorage\ACL::makePublic().
+   * @param array $metadata An associative array of metadata to attach to the
+   *   container.
+   *
+   * @return boolean TRUE if the container was created, FALSE if the container
+   *   was not created because it already exists.
    */
   public function createContainer($name, ACL $acl = NULL, $metadata = array()) {
     $url = $this->url() . '/' . rawurlencode($name);
@@ -471,14 +440,11 @@ class ObjectStorage {
    * implementation, which uses the same HTTP verb to create a container
    * and to set the ACL.)
    *
-   * @param string $name
-   *   The name of the container.
-   * @param object $acl OpenStack::Storage::ObjectStorage::ACL
-   *   An ACL. To make the container publically readable, use
-   *   ACL::makePublic().
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the cointainer was created, FALSE otherwise.
+   * @param string $name The name of the container.
+   * @param object $acl \OpenStack\Storage\ObjectStorage\ACL An ACL. To make the
+   *   container publically readable, use ACL::makePublic().
+   *
+   * @return boolean TRUE if the cointainer was created, FALSE otherwise.
    */
   public function changeContainerACL($name, ACL $acl) {
     // Oddly, the way to change an ACL is to issue the
@@ -493,18 +459,16 @@ class ObjectStorage {
    * the object storage.
    *
    * The container MUST be empty before it can be deleted. If it is not,
-   * an OpenStack::Storage::ObjectStorage::ContainerNotEmptyException will
+   * an \OpenStack\Storage\ObjectStorage\ContainerNotEmptyException will
    * be thrown.
    *
-   * @param string $name
-   *   The name of the container.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the container was deleted, FALSE if the container was not
-   *   found (and hence, was not deleted).
-   * @throws OpenStack::Storage::ObjectStorage::ContainerNotEmptyException
+   * @param string $name The name of the container.
+   *
+   * @return boolean TRUE if the container was deleted, FALSE if the container
+   *   was not found (and hence, was not deleted).
+   * @throws \OpenStack\Storage\ObjectStorage\ContainerNotEmptyException
    *   if the container is not empty.
-   * @throws OpenStack::Exception if an unexpected response code is returned.
+   * @throws \OpenStack\Exception if an unexpected response code is returned.
    *   While this should never happen on OpenStack servers, forks of
    *   OpenStack may choose to extend object storage in a way that
    *   results in a non-standard code.
@@ -545,14 +509,12 @@ class ObjectStorage {
    * - The total bytes used by this Object Storage instance (`bytes`).
    * - The number of containers (`count`).
    *
-   * @retval array
-   * @return array
-   *  An associative array of account info. Typical keys are:
+   * @return array An associative array of account info. Typical keys are:
    *  - bytes: Bytes consumed by existing content.
    *  - containers: Number of containers.
    *  - objects: Number of objects.
-   * @throws OpenStack::Transport::AuthorizationException
-   *   if the user credentials are invalid or have expired.
+   * @throws \OpenStack\Transport\AuthorizationException if the user credentials
+   *   are invalid or have expired.
    */
   public function accountInfo() {
     $url = $this->url();

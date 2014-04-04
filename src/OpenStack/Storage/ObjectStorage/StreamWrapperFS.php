@@ -15,12 +15,11 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * Contains the stream wrapper for `swiftfs://` URLs.
- * 
- * <b>Note, this stream wrapper is in early testing.</b>
- * 
- * The stream wrapper implemented in OpenStack\Storage\ObjectStorage\StreamWrapper
+ *
+ * Note, this stream wrapper is in early testing.
+ *
+ * The stream wrapper implemented in \OpenStack\Storage\ObjectStorage\StreamWrapper
  * only supports the elements of a stream that are implemented by object
  * storage. This is how the PHP documentation states a stream wrapper should be
  * created. Because some features do not exist, attempting to treat a stream
@@ -28,25 +27,25 @@
  * while there are not directories objects have pathy names (with / separators).
  * Directory calls to object storage with the default stream wrappers will not
  * operate how they would for a file system.
- * 
+ *
  * StreamWrapperFS is an attempt to make a filesystem like stream wrapper.
  * Hence the protocol is swiftfs standing for swift file system.
- * 
+ *
  * To understand how this stream wrapper works start by first reading the
- * documentation on the OpenStack::Storage::ObjectStorage::StreamWrapper.
- * 
- * <b>DIRECTORIES</b>
- * 
+ * documentation on the \OpenStack\Storage\ObjectStorage\StreamWrapper.
+ *
+ * DIRECTORIES
+ *
  * Because OpenStack Swift does not support directories the swift:// stream
  * wrapper does not support them. This stream wrapper attempts to fake them by
  * faking directory stats, mkdir, and rmdir. By default (see the options below
  * for how to change these) directories have permissions of 777, timestamps
  * close to that of the request, and the user and group called by php. We mock
  * these on the fly though information is stored in the PHP stat cache.
- * 
+ *
  * In addition to the parameters supported by StreamWrapper, the following
- * parameters may be set either in the stream context or through 
- * OpenStack::Bootstrap::setConfiguration():
+ * parameters may be set either in the stream context or through
+ * OpenStack\Bootstrap::setConfiguration():
  * - swiftfs_fake_stat_mode: Directories don't exist in swift. When stat() is
  *     is called on a directory we mock the stat information so functions like
  *     is_dir will work. The default file permissions is 0777. Though this
@@ -70,7 +69,6 @@ use \OpenStack\Storage\ObjectStorage;
  * This provides a full stream wrapper to expose `swiftfs://` URLs to the
  * PHP stream system.
  *
- *
  * @see http://us3.php.net/manual/en/class.streamwrapper.php
  */
 class StreamWrapperFS extends StreamWrapper {
@@ -93,7 +91,7 @@ class StreamWrapperFS extends StreamWrapper {
 
   /**
    * Fake Remove a directory.
-   * 
+   *
    * ObjectStorage has pathy objects not directories. If no objects with a path
    * prefix exist we can pass removing it. If objects with a path prefix exist
    * removing the directory will fail.
@@ -135,17 +133,15 @@ class StreamWrapperFS extends StreamWrapper {
 
   /**
    * Test if a path prefix (directory like) esits.
-   * 
+   *
    * ObjectStorage has pathy objects not directories. If objects exist with a
    * path prefix we can consider that the directory exists. For example, if
    * we have an object at foo/bar/baz.txt and test the existance of the
    * directory foo/bar/ we sould see it.
-   * 
-   * @param  string $path
-   *   The directory path to test.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the directory prefix exists and FALSE otherwise.
+   *
+   * @param  string $path The directory path to test.
+   *
+   * @return boolean TRUE if the directory prefix exists and FALSE otherwise.
    */
   protected function testDirectoryExists($path) {
     $url = $this->parseUrl($path);

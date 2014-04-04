@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * Contains the class Object for ObjectStorage.
  */
 
@@ -40,7 +39,7 @@ namespace OpenStack\Storage\ObjectStorage;
  * - Metadata: File attributes that are stored along with the file on
  *   object store.
  *
- * Objects are stored and retrieved <i>by name</i>. So it is assumed
+ * Objects are stored and retrieved by name. So it is assumed
  * that, per container, no more than one file with a given name exists.
  *
  * You may create Object instance and then store them in Containers.
@@ -66,6 +65,7 @@ class Object {
    * as they may prefer filesystem backing.
    */
   protected $content;
+
   /**
    * The content type.
    *
@@ -73,6 +73,7 @@ class Object {
    * a generic byte stream.
    */
   protected $contentType = self::DEFAULT_CONTENT_TYPE;
+
   /**
    * Associative array of stored metadata.
    */
@@ -86,18 +87,14 @@ class Object {
    */
   protected $additionalHeaders = array();
 
-
   /**
    * Construct a new object for storage.
    *
-   * @param string $name
-   *   A name (may be pathlike) for the object.
-   * @param string $content
-   *   Optional content to store in this object. This is the same
-   *   as calling setContent().
-   * @param string $type
-   *   Optional content type for this content. This is the same as
-   *   calling setContentType().
+   * @param string $name A name (may be pathlike) for the object.
+   * @param string $content Optional content to store in this object. This is
+   *   the same as calling setContent().
+   * @param string $type Optional content type for this content. This is the
+   *   same as calling setContentType().
    */
   public function __construct($name, $content = NULL, $type = NULL) {
     $this->name = $name;
@@ -140,16 +137,14 @@ class Object {
    * names so that the name is always given an initial capital leter.
    * That is, `foo` becomes `Foo`.
    *
-   * @param array $array
-   *   An associative array of metadata names to values.
+   * @param array $array An associative array of metadata names to values.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
+   *   used in chaining.
    */
   public function setMetadata(array $array) {
     $this->metadata = $array;
-    
+
     return $this;
   }
 
@@ -158,9 +153,7 @@ class Object {
    *
    * This returns an associative array of all metadata for this object.
    *
-   * @retval array
-   * @return array
-   *   An associative array of metadata. This may be empty.
+   * @return array An associative array of metadata. This may be empty.
    */
   public function metadata() {
     return $this->metadata;
@@ -169,20 +162,18 @@ class Object {
   /**
    * Override (change) the name of an object.
    *
-   * Note that this changes only the <i>local copy</i> of an object. It
+   * Note that this changes only the local copy of an object. It
    * does not rename the remote copy. In fact, changing the local name
    * and then saving it will result in a new object being created in the
    * object store.
    *
-   * To copy an object, see
-   * OpenStack::Storage::ObjectStorage::Container::copyObject().
+   * To copy an object:
+   * @see \OpenStack\Storage\ObjectStorage\Container::copyObject().
    *
-   * @param string $name
-   *   A file or object name.
+   * @param string $name A file or object name.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
+   *   used in chaining.
    */
   public function setName($name) {
     $this->name = $name;
@@ -195,9 +186,7 @@ class Object {
    * Returns the name of an object. If the name has been overwritten
    * using setName(), this will return the latest (overwritten) name.
    *
-   * @retval string
-   * @return string
-   *   The name of the object.
+   * @return string The name of the object.
    */
   public function name() {
     return $this->name;
@@ -216,23 +205,19 @@ class Object {
    * All HTTP type options are allowed. So, for example, you can add a
    * charset to a text type:
    *
-   * @code
-   * <?php
-   * $o = new Object('my.html');
-   * $o->setContentType('text/html; charset=iso-8859-13');
-   * ?>
-   * @endcode
+   *     <?php
+   *     $o = new Object('my.html');
+   *     $o->setContentType('text/html; charset=iso-8859-13');
+   *     ?>
    *
    * Content type is not parsed or verified locally (though it is
    * remotely). It can be dangerous, too, to allow users to specify a
    * content type.
    *
-   * @param string $type
-   *   A valid content type.
+   * @param string $type A valid content type.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
+   *   used in chaining.
    */
   public function setContentType($type) {
     $this->contentType = $type;
@@ -244,9 +229,7 @@ class Object {
    *
    * This returns the currently set content type.
    *
-   * @retval string
-   * @return string
-   *   The content type, including any additional options.
+   * @return string The content type, including any additional options.
    */
   public function contentType() {
     return $this->contentType;
@@ -255,10 +238,10 @@ class Object {
   /**
    * Set the content for this object.
    *
-   * Place the content into the object. Typically, this is string 
+   * Place the content into the object. Typically, this is string
    * content that will be stored remotely.
    *
-   * PHP's string is backed by a robust system that can accomodate 
+   * PHP's string is backed by a robust system that can accomodate
    * moderately sized files. However, it is best to keep strings short
    * (<2MB, for example -- test for your own system's sweet spot).
    * Larger data may be better handled with file system entries or
@@ -267,15 +250,12 @@ class Object {
    * Note that the OpenStack will not allow files larger than 5G, and
    * PHP will likely croak well before that marker. So use discretion.
    *
-   * @param string $content
-   *   The content of the object.
-   * @param string $type
-   *   The content type (MIME type). This can be set here for
+   * @param string $content The content of the object.
+   * @param string $type The content type (MIME type). This can be set here for
    *   convenience, or you can call setContentType() directly.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
+   *   used in chaining.
    */
   public function setContent($content, $type = NULL) {
     $this->content = $content;
@@ -303,9 +283,7 @@ class Object {
    * When extending this class, you should make sure that this function
    * returns the entire contents of an object.
    *
-   * @retval string
-   * @return string
-   *   The content of the file.
+   * @return string The content of the file.
    */
   public function content() {
     return $this->content;
@@ -314,7 +292,7 @@ class Object {
   /**
    * Calculate the content length.
    *
-   * This returns the number of <i>bytes</i> in a piece of content (not
+   * This returns the number of bytes in a piece of content (not
    * the number of characters). Among other things, it is used to let
    * the remote object store know how big of an object to expect when
    * transmitting data.
@@ -322,9 +300,7 @@ class Object {
    * When extending this class, you should make sure to calculate the
    * content length appropriately.
    *
-   * @retval int
-   * @return int
-   *   The length of the content, in bytes.
+   * @return int The length of the content, in bytes.
    */
   public function contentLength() {
     // strlen() is binary safe (or at least it seems to be).
@@ -340,9 +316,7 @@ class Object {
    * When extending this class, generate an ETag by creating an MD5 of
    * the entire object's content (but not the metadata or name).
    *
-   * @retval string
-   * @return string
-   *   An MD5 value as a string of 32 hex digits (0-9a-f).
+   * @return string An MD5 value as a string of 32 hex digits (0-9a-f).
    */
   public function eTag() {
     return md5($this->content);
@@ -364,12 +338,10 @@ class Object {
    * to "gzip". This allows many user agents to receive the compressed
    * data and automatically decompress them and display them correctly.
    *
-   * @param string $encoding
-   *   A valid encoding type.
+   * @param string $encoding A valid encoding type.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
+   *   used in chaining.
    */
   public function setEncoding($encoding) {
     $this->contentEncoding = $encoding;
@@ -383,9 +355,7 @@ class Object {
    * Encoding is used to indicate how a file was encoded or compressed.
    * See setEncoding() for more information.
    *
-   * @retval string
-   * @return string
-   *   The encoding type.
+   * @return string The encoding type.
    */
   public function encoding() {
     return $this->contentEncoding;
@@ -399,22 +369,19 @@ class Object {
    * a display.
    *
    * The typical value for this is:
-   * @code
-   * <?php
-   * $object->setDisposition('attachment; filename=foo.png');
-   * ?>
-   * @endcode
+   *
+   *     <?php
+   *     $object->setDisposition('attachment; filename=foo.png');
+   *     ?>
    *
    * A disposition string should not include any newline characters or
    * binary data.
    *
-   * @param string $disposition
-   *   A valid disposition declaration. These are defined in various
-   *   HTTP specifications.
+   * @param string $disposition A valid disposition declaration. These are
+   *   defined in various HTTP specifications.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
+   *   used in chaining.
    */
   public function setDisposition($disposition) {
     $this->contentDisposition = $disposition;
@@ -427,9 +394,7 @@ class Object {
    *
    * See setDisposition() for discussion.
    *
-   * @retval string
-   * @return string
-   *   The disposition string, or NULL if none is set.
+   * @return string The disposition string, or NULL if none is set.
    */
   public function disposition() {
     return $this->contentDisposition;
@@ -438,8 +403,8 @@ class Object {
   /**
    * Set additional headers for storage.
    *
-   * @attention EXPERT: You will need to understand OpenStack
-   * internals to use this effectively.
+   * EXPERT: You will need to understand OpenStack internals to use this
+   * effectively.
    *
    * Headers set here will be added to the HTTP request during save
    * operations. They are not merged into existing headers until
@@ -464,14 +429,12 @@ class Object {
    *   checking. You must ensure that the headers are in the proper
    *   format.
    *
-   * @param array $headers
-   *   An associative array where each name is an HTTP header name, and
-   *   each value is the HTTP header value. No encoding or escaping is
-   *   done.
+   * @param array $headers An associative array where each name is an HTTP
+   *   header name, and each value is the HTTP header value. No encoding or
+   *   escaping is done.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
+   *   used in chaining.
    */
   public function setAdditionalHeaders($headers) {
     $this->additionalHeaders = $headers;
@@ -496,17 +459,14 @@ class Object {
    * by setAdditionalHeaders() are removed from an Object.
    * (RemoteObject works differently).
    *
-   * @attention
-   *   Many headers are generated automatically, such as
-   *   Content-Type and Content-Length. Removing these
-   *   will simply result in their being regenerated.
+   * Many headers are generated automatically, such as
+   * Content-Type and Content-Length. Removing these
+   * will simply result in their being regenerated.
    *
-   * @param array $keys
-   *   The header names to be removed.
+   * @param array $keys The header names to be removed.
    *
-   * @retval OpenStack::Storage::ObjectStorage::Object
-   * @return \OpenStack\Storage\ObjectStorage\Object
-   *   $this for the current object so it can be used in chaining methods.
+   * @return \OpenStack\Storage\ObjectStorage\Object $this for the current
+   *   object so it can be used in chaining methods.
    */
   public function removeHeaders($keys) {
     foreach ($keys as $k) {
@@ -525,16 +485,14 @@ class Object {
    * This should be used when (a) the file size is large, or (b) the
    * exact size of the file is unknown.
    *
-   * If this returns TRUE, it does not <i>guarantee</i> that the data
+   * If this returns TRUE, it does not guarantee that the data
    * will be transmitted in chunks. But it recommends that the
    * underlying transport layer use chunked encoding.
    *
    * The contentLength() method is not called for chunked transfers. So
    * if this returns TRUE, contentLength() is ignored.
    *
-   * @retval boolean
-   * @return boolean
-   *   TRUE to recommend chunked transfer, FALSE otherwise.
+   * @return boolean TRUE to recommend chunked transfer, FALSE otherwise.
    */
   public function isChunked() {
     // Currently, this value is hard-coded. The default Object
