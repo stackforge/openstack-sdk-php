@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Unit tests for ObjectStorage ACLs.
  */
 namespace OpenStack\Tests\Storage\ObjectStorage;

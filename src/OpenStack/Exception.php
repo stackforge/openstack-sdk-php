@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * The parent exception class for OpenStack.
  */
 namespace OpenStack;

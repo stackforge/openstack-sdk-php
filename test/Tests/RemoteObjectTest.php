@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Unit tests for ObjectStorage RemoteObject.
  */
 namespace OpenStack\Tests\Storage\ObjectStorage;
@@ -210,7 +208,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase {
 
     $this->assertEquals(self::FCONTENT, $content);
 
-    // Finally, we redo the first part of the test to make sure that 
+    // Finally, we redo the first part of the test to make sure that
     // refreshing gets us a new copy:
 
     $res3 = $obj->stream(TRUE);
@@ -250,7 +248,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase {
     // remote, and the best way to find this out is by grabbing a
     // stream. The local copy will be in a php://temp stream.
     //
-    // The CURL, though, backs its up with a temp file wrapped in a PHP 
+    // The CURL, though, backs its up with a temp file wrapped in a PHP
     // stream. Other backends are likely to do the same. So this test
     // is weakened for CURL backends.
     $transport = \OpenStack\Bootstrap::config('transport');

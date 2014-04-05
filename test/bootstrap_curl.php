@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Helpers for testing using the CurlTransport.
  */
 

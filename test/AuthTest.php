@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * This is a simple command-line test for authentication.
  *
  * You can run the test with `php test/AuthTest.php username key`.

@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * A response from a transport.
  */
 namespace OpenStack\Transport;
@@ -57,18 +55,12 @@ class Response {
    * When a response is a failure, it should pass through this function,
    * which generates the appropriate exception and then throws it.
    *
-   * @param int $code
-   *   The HTTP status code, e.g. 404, 500.
-   * @param string $err
-   *   The error string, as bubbled up.
-   * @param string $uri
-   *   The URI.
-   * @param string $method
-   *   The HTTP method, e.g. 'HEAD', 'GET', 'DELETE'.
-   * @param string $extra
-   *   An extra string of debugging information. (NOT USED)
-   * @throws OpenStack::Exception
-   *   A wide variety of OpenStack::Transport exceptions.
+   * @param int $code The HTTP status code, e.g. 404, 500.
+   * @param string $err The error string, as bubbled up.
+   * @param string $uri The URI.
+   * @param string $method The HTTP method, e.g. 'HEAD', 'GET', 'DELETE'.
+   * @param string $extra An extra string of debugging information. (NOT USED)
+   * @throws \OpenStack\Exception A wide variety of \OpenStack\Transport exceptions.
    */
   public static function failure($code, $err = 'Unknown', $uri = '', $method = '', $extra = '') {
 
@@ -135,9 +127,7 @@ class Response {
    * the handle returned by file() will also be closed
    * (they are one and the same).
    *
-   * @retval resource
-   * @return resource
-   *   A file handle.
+   * @return resource A file handle.
    */
   public function file() {
     return $this->handle;
@@ -149,15 +139,12 @@ class Response {
    * This returns the body of the response (no HTTP headers)
    * as a single string.
    *
-   * @attention
    * IMPORTANT: This can only be called once. HTTP streams
    * handled by PHP's stream wrapper cannot be rewound, and
    * to keep memory usage low, we don't want to store the
    * entire content in a string.
    *
-   * @retval string
-   * @return string
-   *   The contents of the response body.
+   * @return string The contents of the response body.
    */
   public function content() {
     $out = '';
@@ -197,10 +184,8 @@ class Response {
    * Some return extra information on the processing of the
    * data.
    *
-   * @retval array
-   * @return array
-   *   An associative array of metadata about the
-   *   transaction resulting in this response.
+   * @return array An associative array of metadata about the transaction
+   *   resulting in this response.
    */
   public function metadata() {
     return $this->metadata;
@@ -209,14 +194,10 @@ class Response {
   /**
    * Convenience function to retrieve a single header.
    *
-   * @param string $name
-   *   The name of the header.
-   * @param mixed $default
-   *   An optional default value.
+   * @param string $name The name of the header.
+   * @param mixed $default An optional default value.
    *
-   * @retval mixed
-   * @return mixed
-   *   The value, if found, or the default, is specified, or NULL.
+   * @return mixed The value, if found, or the default, is specified, or NULL.
    */
   public function header($name, $default = NULL) {
     if (isset($this->headers[$name])) {
@@ -234,9 +215,7 @@ class Response {
    *
    * These are available even if the stream has been closed.
    *
-   * @retval array
-   * @return array
-   *   The array of headers.
+   * @return array The array of headers.
    */
   public function headers() {
     return $this->headers;
@@ -263,9 +242,7 @@ class Response {
    * Redirects are typically followed, and thus rarely (if ever)
    * appear in a Response object.
    *
-   * @retval int
-   * @return int
-   *   The HTTP code, e.g. 200 or 202.
+   * @return int The HTTP code, e.g. 200 or 202.
    */
   public function status() {
     return $this->code;
@@ -277,9 +254,7 @@ class Response {
    * Typically these follow the HTTP protocol specification's
    * recommendations. e.g. 200 returns 'OK'.
    *
-   * @retval string
-   * @return string
-   *  A server-generated status message.
+   * @return string A server-generated status message.
    */
   public function statusMessage() {
     return $this->message;
@@ -290,9 +265,7 @@ class Response {
    *
    * Example: HTTP/1.1
    *
-   * @retval string
-   * @return string
-   *   The protocol name and version.
+   * @return string The protocol name and version.
    */
   public function protocol() {
     return $this->protocol;
@@ -305,12 +278,10 @@ class Response {
   /**
    * Parse the HTTP headers.
    *
-   * @param array $headerArray
-   *   An indexed array of headers, as returned by the PHP stream
-   *   library.
-   * @retval array
-   * @return array
-   *   An associative array of header name/value pairs.
+   * @param array $headerArray An indexed array of headers, as returned by the
+   *   PHP stream library.
+   *
+   * @return array An associative array of header name/value pairs.
    */
   protected function parseHeaders($headerArray) {
     $ret = array_shift($headerArray);
@@ -323,7 +294,7 @@ class Response {
 
     // A CONTINUE response means that we will get
     // a second HTTP status code. Since we have
-    // shifted it off, we recurse. Note that 
+    // shifted it off, we recurse. Note that
     // only CURL returns the 100. PHP's stream
     // wrapper eats the 100 for us.
     if ($this->code == 100) {

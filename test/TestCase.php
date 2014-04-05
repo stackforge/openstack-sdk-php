@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * Base test case.
  */
 /**
@@ -104,12 +103,10 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    * Authentication is performed, and the returned
    * service has its tenant ID set already.
    *
-   * @code
-   * <?php
-   * // Get the current token.
-   * $this->identity()->token();
-   * ?>
-   * @endcode
+   *     <?php
+   *     // Get the current token.
+   *     $this->identity()->token();
+   *     ?>
    */
   protected function identity($reset = FALSE) {
 
@@ -172,13 +169,12 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   /**
    * Clear and destroy a container.
    *
-   * Destroy all of the files in a container, then destroy the 
+   * Destroy all of the files in a container, then destroy the
    * container.
    *
    * If the container doesn't exist, this will silently return.
    *
-   * @param string $cname
-   *   The name of the container.
+   * @param string $cname The name of the container.
    */
   protected function eradicateContainer($cname) {
     $store = $this->objectStore();

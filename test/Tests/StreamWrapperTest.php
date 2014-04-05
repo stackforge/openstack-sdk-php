@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Unit tests for the stream wrapper.
  */
 namespace OpenStack\Tests\Storage\ObjectStorage;
@@ -57,7 +55,7 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase {
 
     // Delete the container and all the contents.
     $cname = self::$settings['openstack.swift.container'];
-    
+
     try {
       $container = $store->container($cname);
     }

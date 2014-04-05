@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Unit tests for ObjectStorage Object.
  */
 namespace OpenStack\Tests\Storage;
@@ -37,8 +35,7 @@ class ObjectTest extends \OpenStack\Tests\TestCase {
    * This provides an Object initialized with the main constants defined
    * for this class. Use this as a fixture to avoid repetition.
    *
-   * @return Object
-   *   An initialized object.
+   * @return Object An initialized object.
    */
   public function basicObjectFixture() {
 

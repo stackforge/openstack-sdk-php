@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Unit tests for the Bootstrap.
  */
 namespace OpenStack\Tests;

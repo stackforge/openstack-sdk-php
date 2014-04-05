@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * An Autoloader to use for the case Composer isn't available.
  */
 
@@ -30,11 +29,8 @@ namespace OpenStack;
  *
  * The autoloader can be used like:
  *
- * @code
- * Autoloader::useAutoloader();
- * @endcode
+ *     Autoloader::useAutoloader();
  *
- * @attention
  * The structure of the OpenStack file hierarchy is PSR-4 compliant.
  * This means that you can use any standard PSR-4 classloader to
  * load all of the classes here.
@@ -44,12 +40,12 @@ namespace OpenStack;
  * classloader that will load JUST the OpenStack classes. See
  * the Autoloader::useAutoloader() static method.
  *
- * See https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4.md
+ * @see https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4.md
  */
 Class Autoloader {
 
   /**
-   * The directory where OpenStack is located.
+   * @var string The directory where OpenStack is located.
    */
   public static $basedir = __DIR__;
 
@@ -78,10 +74,8 @@ Class Autoloader {
    * OpenStack::useAutoloader() if you want PHP to automatically
    * load classes using this autoloader.
    *
-   * @code
-   * // Enable the autoloader.
-   * Autoloader::useAutoloader();
-   * @endcode
+   *     // Enable the autoloader.
+   *     Autoloader::useAutoloader();
    *
    * This is a special-purpose autoloader for loading
    * only the OpenStack classes. It will not attempt to
@@ -92,8 +86,7 @@ Class Autoloader {
    * autoloaders (and also projects that don't
    * rely upon autoloaders).
    *
-   * @param string $klass
-   *   The fully qualified name of the class to be autoloaded.
+   * @param string $klass The fully qualified name of the class to be autoloaded.
    */
   public static function autoload($klass) {
     $components = explode('\\', $klass);

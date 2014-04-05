@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * Implements a transporter with CURL.
  */
 
@@ -237,7 +236,6 @@ class CURLTransport implements Transporter {
       }
     }
 
-
     // Set all of the curl opts and then execute.
     curl_setopt_array($curl, $opts);
     $ret = $this->execCurl($curl);//curl_exec($curl);
@@ -260,7 +258,6 @@ class CURLTransport implements Transporter {
       Response::failure($status, $err, $info['url'], $method, $info);
     }
 
-
     rewind($out);
     // Now we need to build a response.
     $resp = new Response($out, $info, $responseHeaders);
@@ -272,7 +269,6 @@ class CURLTransport implements Transporter {
 
     return $resp;
   }
-
 
   /**
    * Poor man's connection pooling.
@@ -286,12 +282,10 @@ class CURLTransport implements Transporter {
    * We've noticed that this improves performance substantially, especially since
    * SSL requests only require the SSL handshake once.
    *
-   * @param resource $handle
-   *   A CURL handle from curl_init().
-   * @retval boolean
-   * @return boolean
-   *   Returns a boolean value indicating whether or not CURL could process the
-   *   request.
+   * @param resource $handle A CURL handle from curl_init().
+   *
+   * @return boolean Returns a boolean value indicating whether or not CURL
+   *   could process the request.
    */
   protected function execCurl($handle) {
     if (empty($this->multi)) {
@@ -332,11 +326,9 @@ class CURLTransport implements Transporter {
    * This format mataches the format returned by the stream handlers, so
    * we can re-use the header parsing logic in Response.
    *
-   * @param resource $file
-   *   A file pointer to the file that has the headers.
-   * @retval array
-   * @return array
-   *   An array of headers, one header per line.
+   * @param resource $file A file pointer to the file that has the headers.
+   *
+   * @return array An array of headers, one header per line.
    */
   protected function fetchHeaders($file) {
     $buffer = array();
@@ -356,15 +348,13 @@ class CURLTransport implements Transporter {
   /**
    * Set the appropriate constant on the CURL object.
    *
-   * Curl handles method name setting in a slightly counter-intuitive 
-   * way, so we have a special function for setting the method 
-   * correctly. Note that since we do not POST as www-form-*, we 
+   * Curl handles method name setting in a slightly counter-intuitive
+   * way, so we have a special function for setting the method
+   * correctly. Note that since we do not POST as www-form-*, we
    * use a custom post.
    *
-   * @param resource $curl
-   *   A curl object.
-   * @param string $method
-   *   An HTTP method name.
+   * @param resource $curl A curl object.
+   * @param string $method An HTTP method name.
    */
   protected function determineMethod($curl, $method) {
     $method = strtoupper($method);

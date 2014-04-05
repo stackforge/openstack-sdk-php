@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * The Transport class.
  */
 namespace OpenStack;
@@ -25,19 +24,17 @@ namespace OpenStack;
  * Interaction with the OpenStack services is handled via
  * HTTPS/REST requests. This class provides transport for requests.
  *
- * <b>Usage</b>
+ * Usage
  *
- * @code
- * <?php
- * // Create a new transport.
- * $client = Transport::instance();
+ *     <?php
+ *     // Create a new transport.
+ *     $client = Transport::instance();
  *
- * // Send a request.
- * $response = $client->doRequest($uri, $method, $headerArray, $body);
+ *     // Send a request.
+ *     $response = $client->doRequest($uri, $method, $headerArray, $body);
  *
- * print $response->content();
- * ?>
- * @endcode
+ *     print $response->content();
+ *     ?>
  *
  */
 class Transport {
@@ -47,28 +44,24 @@ class Transport {
   /**
    * Get an instance of a Transporter.
    *
-   * See OpenStack::Transport::CURLTransport and OpenStack::Transport::PHPStreamTransport
-   * for implementations of an OpenStack::Transport::Transporter.
+   * @see \OpenStack\Transport\CURLTransport and \OpenStack\Transport\PHPStreamTransport
+   * for implementations of an \OpenStack\Transport\Transporter.
    *
    * To set the transport, the suggested method is this:
    *
-   * @code
-   * <?php
-   * // Set the 'transport' config option.
-   * $settings = array(
-   *   // Make sure you use the entire namespace, and that
-   *   // your classloader can find this namespace.
-   *   'transport' => '\OpenStack\Transport\CURLTransport',
-   * );
+   *     <?php
+   *     // Set the 'transport' config option.
+   *     $settings = array(
+   *       // Make sure you use the entire namespace, and that
+   *       // your classloader can find this namespace.
+   *       'transport' => '\OpenStack\Transport\CURLTransport',
+   *     );
    *
-   * // Merge $settings into existing configuration.
-   * \OpenStack\Bootstrap::setConfiguration($settings);
-   * ?>
-   * @endcode
+   *     // Merge $settings into existing configuration.
+   *     \OpenStack\Bootstrap::setConfiguration($settings);
+   *     ?>
    *
-   * @retval OpenStack::Transport::Transporter
-   * @return \OpenStack\Transport\Transporter
-   *   An initialized transporter.
+   * @return \OpenStack\Transport\Transporter An initialized transporter.
    */
   public static function instance() {
 

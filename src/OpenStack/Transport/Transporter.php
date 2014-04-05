@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * This file contains the interface for transporters.
  */
 
@@ -44,14 +43,10 @@ interface Transporter {
    * transporter. The transporter MUST be capable of handling multiple
    * invocations of a doRequest() call.
    *
-   * @param string $uri
-   *   The target URI.
-   * @param string $method
-   *   The method to be sent.
-   * @param array $headers
-   *   An array of name/value header pairs.
-   * @param string $body
-   *   The string containing the request body.
+   * @param string $uri The target URI.
+   * @param string $method The method to be sent.
+   * @param array $headers An array of name/value header pairs.
+   * @param string $body The string containing the request body.
    */
   public function doRequest($uri, $method = 'GET', $headers = array(), $body = '');
 
@@ -61,7 +56,7 @@ interface Transporter {
    *
    * This is a special version of the doRequest() function.
    * It handles a very spefic case where...
-   * 
+   *
    * - The HTTP verb requires a body (viz. PUT, POST)
    * - The body is in a resource, not a string
    *
@@ -73,17 +68,13 @@ interface Transporter {
    *
    * Note that all parameters are required.
    *
-   * @param string $uri
-   *   The target URI.
-   * @param string $method
-   *   The method to be sent.
-   * @param array $headers
-   *   An array of name/value header pairs.
-   * @param mixed $resource
-   *   The string with a file path or a stream URL; or a file object resource.
-   *   If it is a string, then it will be opened with the default context.
-   *   So if you need a special context, you should open the file elsewhere
-   *   and pass the resource in here.
+   * @param string $uri The target URI.
+   * @param string $method The method to be sent.
+   * @param array $headers An array of name/value header pairs.
+   * @param mixed $resource The string with a file path or a stream URL; or a
+   *   file object resource. If it is a string, then it will be opened with the
+   *   default context. So if you need a special context, you should open the
+   *   file elsewhere and pass the resource in here.
    */
   public function doRequestWithResource($uri, $method, $headers, $resource);
 }

@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Unit tests for Containers.
  */
 namespace OpenStack\Tests\Storage\ObjectStorage;
@@ -70,8 +68,6 @@ class ContainerTest extends \OpenStack\Tests\TestCase {
     $this->assertEquals(5, count($container));
 
   }
-
-
 
   const FNAME = 'testSave';
   const FCONTENT = 'This is a test.';

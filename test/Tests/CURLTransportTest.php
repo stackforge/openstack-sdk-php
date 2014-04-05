@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Unit tests for ObjectStorage Object.
  */
 namespace OpenStack\Tests\Transport;

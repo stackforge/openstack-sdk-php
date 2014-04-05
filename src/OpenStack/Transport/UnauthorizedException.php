@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * The authorization exception.
  */
 namespace OpenStack\Transport;

@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * Implements a transporter with the PHP HTTP Stream Wrapper.
  */
 
@@ -34,10 +33,10 @@ namespace OpenStack\Transport;
  *
  * You can use a single PHPStreamTransport object to execute multiple requests.
  *
- * @attention This class should not be constructed directly.
- * Use OpenStack::Transport::instance() to get an instance.
+ * This class should not be constructed directly.
+ * Use \OpenStack\Transport::instance() to get an instance.
  *
- * See OpenStack::Transport and OpenStack::Bootstrap.
+ * @see \OpenStack\Transport and \OpenStack\Bootstrap.
  */
 class PHPStreamTransport implements Transporter {
 
@@ -184,8 +183,8 @@ class PHPStreamTransport implements Transporter {
    * of notifications. This function can be used to register an event
    * handler to listen for notifications.
    *
-   * @param callable $callable
-   *   Any callable, including an anonymous function or closure.
+   * @param callable $callable Any callable, including an anonymous function or
+   *   closure.
    *
    * @see http://us3.php.net/manual/en/function.stream-notification-callback.php
    */
@@ -199,11 +198,9 @@ class PHPStreamTransport implements Transporter {
    * This builds an HTTP header string in the form required by the HTTP stream
    * wrapper for PHP.
    *
-   * @param array $headers
-   *   An associative array of header names to header values.
-   * @retval string
-   * @return string
-   *   A string containing formatted headers.
+   * @param array $headers An associative array of header names to header values.
+   *
+   * @return string A string containing formatted headers.
    */
   protected function smashHeaders($headers) {
 
@@ -228,7 +225,7 @@ class PHPStreamTransport implements Transporter {
    * stream context. This builds the context.
    */
   protected function buildStreamContext($method, $headers, $body) {
-    
+
     // HTTP 1.1 does persistent connections by default where it was opt-in for
     // HTTP 1.0. In HTTP 1.1 when you want to close a connection you need to
     // specify a header named Connection with a value of close. We set this as
@@ -274,6 +271,7 @@ class PHPStreamTransport implements Transporter {
 
     return $context;
   }
+
   public function printNotifications($code, $severity, $msg, $msgcode, $bytes, $len) {
     static $filesize = 'Unknown';
 
