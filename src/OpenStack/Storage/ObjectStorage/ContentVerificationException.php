@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Contains the ContentVerificationException object.
  */
 namespace OpenStack\Storage\ObjectStorage;
@@ -27,6 +25,5 @@ namespace OpenStack\Storage\ObjectStorage;
  * This occurs when the server sends content whose value does
  * not match the supplied checksum. See
  * RemoteObject::setContentVerification().
- *
  */
 class ContentVerificationException extends \OpenStack\Exception {}

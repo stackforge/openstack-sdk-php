@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * Contains the Subdir class.
  */
 
@@ -24,14 +23,21 @@ namespace OpenStack\Storage\ObjectStorage;
 /**
  * Represent a subdirectory (subdir) entry.
  *
- * Depending on the method with which Swift container requests are 
+ * Depending on the method with which Swift container requests are
  * executed, Swift may return subdir entries instead of Objects.
  *
  * Subdirs are used for things that are directory-like.
  */
 class Subdir {
 
+  /**
+   * @var string The path string that this subdir describes
+   */
   protected $path;
+
+  /**
+   * @var string The delimiter used in this path
+   */
   protected $delimiter;
 
 
@@ -40,10 +46,8 @@ class Subdir {
    *
    * This represents a remote response's tag for a subdirectory.
    *
-   * @param string $path
-   *   The path string that this subdir describes.
-   * @param string $delimiter
-   *   The delimiter used in this path.
+   * @param string $path The path string that this subdir describes.
+   * @param string $delimiter The delimiter used in this path.
    */
   public function __construct($path, $delimiter = '/') {
     $this->path = $path;
@@ -55,9 +59,7 @@ class Subdir {
    *
    * The path is delimited using the string returned by delimiter().
    *
-   * @retval string
-   * @return string
-   *   The path.
+   * @return string The path
    */
   public function path() {
     return $this->path;
@@ -65,9 +67,7 @@ class Subdir {
   /**
    * Get the delimiter used by the server.
    *
-   * @retval string
-   * @return string
-   *   The value used as a delimiter.
+   * @return string The value used as a delimiter.
    */
   public function delimiter() {
     return $this->delimiter;

@@ -15,7 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
  * Contains the stream wrapper for `swift://` URLs.
  */
 
@@ -35,15 +34,15 @@ use \OpenStack\Storage\ObjectStorage;
  * unauthenticated access to files (which can be done using the HTTP
  * stream wrapper -- no need for swift-specific logic).
  *
- * <b>URL Structure</b>
+ * URL Structure
  *
  * This takes URLs of the following form:
  *
- * <tt>swift://CONTAINER/FILE</tt>
+ * `swift://CONTAINER/FILE`
  *
  * Example:
  *
- * <tt>swift://public/example.txt</tt>
+ * `swift://public/example.txt`
  *
  * The example above would access the `public` container and attempt to
  * retrieve the file named `example.txt`.
@@ -51,7 +50,7 @@ use \OpenStack\Storage\ObjectStorage;
  * Slashes are legal in Swift filenames, so a pathlike URL can be constructed
  * like this:
  *
- * <tt>swift://public/path/like/file/name.txt</tt>
+ * `swift://public/path/like/file/name.txt`
  *
  * The above would attempt to find a file in object storage named
  * `path/like/file/name.txt`.
@@ -61,7 +60,7 @@ use \OpenStack\Storage\ObjectStorage;
  * and object name (path) if there is any possibility that it will contain
  * UTF-8 characters.
  *
- * <b>Locking</b>
+ * Locking
  *
  * This library does not support locking (e.g. flock()). This is because the
  * OpenStack Object Storage implementation does not support locking. But there
@@ -73,7 +72,7 @@ use \OpenStack\Storage\ObjectStorage;
  *   TWO COPIES of the object. This can, of course, lead to nasty race
  *   conditions if each copy is modified.
  *
- * <b>Usage</b>
+ * Usage
  *
  * The principle purpose of this wrapper is to make it easy to access and
  * manipulate objects on a remote object storage instance. Managing
@@ -81,46 +80,43 @@ use \OpenStack\Storage\ObjectStorage;
  * the OpenStack API). Consequently, almost all actions done through the
  * stream wrapper are focused on objects, not containers, servers, etc.
  *
- * <b>Retrieving an Existing Object</b>
+ * Retrieving an Existing Object
  *
  * Retrieving an object is done by opening a file handle to that object.
  *
- * <b>Writing an Object</b>
+ * Writing an Object
  *
  * Nothing is written to the remote storage until the file is closed. This
  * keeps network traffic at a minimum, and respects the more-or-less stateless
  * nature of ObjectStorage.
  *
- * <b>USING FILE/STREAM RESOURCES</b>
+ * USING FILE/STREAM RESOURCES
  *
  * In general, you should access files like this:
  *
- * @code
- * <?php
- * \OpenStack\Bootstrap::useStreamWrappers();
- * // Set up the context.
- * $context = stream_context_create(
- *   array('swift' => array(
- *     'account' => ACCOUNT_NUMBER,
- *     'secret' => SECRET_KEY,
- *     'tenantid' => TENANT_ID,
- *     'tenantname' => TENANT_NAME, // Optional instead of tenantid.
- *     'endpoint' => AUTH_ENDPOINT_URL,
- *   )
- *  )
- * );
- * // Open the file.
- * $handle = fopen('swift://mycontainer/myobject.txt', 'r+', FALSE, $context);
+ *     <?php
+ *     \OpenStack\Bootstrap::useStreamWrappers();
+ *     // Set up the context.
+ *     $context = stream_context_create(
+ *       array('swift' => array(
+ *         'account' => ACCOUNT_NUMBER,
+ *         'secret' => SECRET_KEY,
+ *         'tenantid' => TENANT_ID,
+ *         'tenantname' => TENANT_NAME, // Optional instead of tenantid.
+ *         'endpoint' => AUTH_ENDPOINT_URL,
+ *       )
+ *      )
+ *     );
+ *     // Open the file.
+ *     $handle = fopen('swift://mycontainer/myobject.txt', 'r+', FALSE, $context);
  *
- * // You can get the entire file, or use fread() to loop through the file.
- * $contents = stream_get_contents($handle);
+ *     // You can get the entire file, or use fread() to loop through the file.
+ *     $contents = stream_get_contents($handle);
  *
- * fclose($handle);
- * ?>
- * @endcode
+ *     fclose($handle);
+ *     ?>
  *
- * @remarks
- *
+ * Remarks
  * - file_get_contents() works fine.
  * - You can write to a stream, too. Nothing is pushed to the server until
  *   fflush() or fclose() is called.
@@ -128,7 +124,7 @@ use \OpenStack\Storage\ObjectStorage;
  *   constraints are slightly relaxed to accomodate efficient local buffering.
  * - Files are buffered locally.
  *
- * <b>USING FILE-LEVEL FUNCTIONS</b>
+ * USING FILE-LEVEL FUNCTIONS
  *
  * PHP provides a number of file-level functions that stream wrappers can
  * optionally support. Here are a few such functions:
@@ -147,7 +143,7 @@ use \OpenStack\Storage\ObjectStorage;
  *   * An auth request
  *   * A request for the container (to get container permissions)
  *   * A request for the object
- * - <em>IMPORTANT:</em> Unlike the fopen()/fclose()... functions NONE of these functions
+ * - IMPORTANT: Unlike the fopen()/fclose()... functions NONE of these functions
  *   retrieves the body of the file. If you are working with large files, using
  *   these functions may be orders of magnitude faster than using fopen(), etc.
  *   (The crucial detail: These kick off a HEAD request, will fopen() does a
@@ -172,13 +168,13 @@ use \OpenStack\Storage\ObjectStorage;
  * - stat/fstat provide only one timestamp. Swift only tracks mtime, so mtime, atime,
  *   and ctime are all set to the last modified time.
  *
- * <b>DIRECTORIES</b>
+ * DIRECTORIES
  *
  * OpenStack Swift does not really have directories. Rather, it allows
  * characters such as '/' to be used to designate namespaces on object
  * names. (For simplicity, this library uses only '/' as a separator).
  *
- * This allows for simulated directory listings. Requesting 
+ * This allows for simulated directory listings. Requesting
  * `scandir('swift://foo/bar/')` is really a request to "find all of the items
  * in the 'foo' container whose names start with 'bar/'".
  *
@@ -194,35 +190,33 @@ use \OpenStack\Storage\ObjectStorage;
  * said markers ought to be created, they are not supported by the stream
  * wrapper.
  *
- * As usual, the underlying OpenStack::Storage::ObjectStorage::Container class
+ * As usual, the underlying \OpenStack\Storage\ObjectStorage\Container class
  * supports the full range of Swift features.
  *
- * <b>SUPPORTED CONTEXT PARAMETERS</b>
+ * SUPPORTED CONTEXT PARAMETERS
  *
- * This section details paramters that can be passed <i>either</i>
- * through a stream context <i>or</i> through
- * OpenStack::Bootstrap::setConfiguration().
+ * This section details paramters that can be passed either
+ * through a stream context or through
+ * \OpenStack\Bootstrap\setConfiguration().
  *
- * @attention
  * PHP functions that do not allow you to pass a context may still be supported
- * here <em>IF</em> you have set options using Bootstrap::setConfiguration().
+ * here IF you have set options using Bootstrap::setConfiguration().
  *
- * You are <i>required</i> to pass in authentication information. This
+ * You are required to pass in authentication information. This
  * comes in one of three forms:
  *
  * -# API keys: acccount, secret, tenantid, endpoint
  * -# User login: username, password, tenantid, endpoint
  * -# Existing (valid) token: token, swift_endpoint
  *
- * @attention
- *   As of 1.0.0-beta6, you may use `tenantname` instead of `tenantid`.
+ * As of 1.0.0-beta6, you may use `tenantname` instead of `tenantid`.
  *
  * The third method (token) can be used when the application has already
  * authenticated. In this case, a token has been generated and assigned
  * to an account and tenant.
  *
  * The following parameters may be set either in the stream context
- * or through OpenStack::Bootstrap::setConfiguration():
+ * or through OpenStack\Bootstrap::setConfiguration():
  *
  * - token: An auth token. If this is supplied, authentication is skipped and
  *     this token is used. NOTE: You MUST set swift_endpoint if using this
@@ -297,7 +291,7 @@ class StreamWrapper {
   /**
    * Indicate whether the local differs from remote.
    *
-   * When the file is modified in such a way that 
+   * When the file is modified in such a way that
    * it needs to be written remotely, the isDirty flag
    * is set to TRUE.
    */
@@ -337,19 +331,17 @@ class StreamWrapper {
    *
    * This closes a directory handle, freeing up the resources.
    *
-   * @code
-   * <?php
+   *     <?php
    *
-   * // Assuming a valid context in $cxt...
+   *     // Assuming a valid context in $cxt...
    *
-   * // Get the container as if it were a directory.
-   * $dir = opendir('swift://mycontainer', $cxt);
+   *     // Get the container as if it were a directory.
+   *     $dir = opendir('swift://mycontainer', $cxt);
    *
-   * // Do something with $dir
+   *     // Do something with $dir
    *
-   * closedir($dir);
-   * ?>
-   * @endcode
+   *     closedir($dir);
+   *     ?>
    *
    * NB: Some versions of PHP 5.3 don't clear all buffers when
    * closing, and the handle can occasionally remain accessible for
@@ -367,29 +359,24 @@ class StreamWrapper {
   /**
    * Open a directory for reading.
    *
-   * @code
-   * <?php
+   *     <?php
    *
-   * // Assuming a valid context in $cxt...
+   *     // Assuming a valid context in $cxt...
    *
-   * // Get the container as if it were a directory.
-   * $dir = opendir('swift://mycontainer', $cxt);
+   *     // Get the container as if it were a directory.
+   *     $dir = opendir('swift://mycontainer', $cxt);
    *
-   * // Do something with $dir
+   *     // Do something with $dir
    *
-   * closedir($dir);
-   * ?>
-   * @endcode
+   *     closedir($dir);
+   *     ?>
    *
    * See opendir() and scandir().
    *
-   * @param string $path
-   *   The URL to open.
-   * @param int $options
-   *   Unused.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the directory is opened, FALSE otherwise.
+   * @param string $path The URL to open.
+   * @param int $options Unused.
+   *
+   * @return boolean TRUE if the directory is opened, FALSE otherwise.
    */
   public function dir_opendir($path, $options) {
     $url = $this->parseUrl($path);
@@ -427,26 +414,23 @@ class StreamWrapper {
    * Read an entry from the directory.
    *
    * This gets a single line from the directory.
-   * @code
-   * <?php
    *
-   * // Assuming a valid context in $cxt...
+   *     <?php
    *
-   * // Get the container as if it were a directory.
-   * $dir = opendir('swift://mycontainer', $cxt);
+   *     // Assuming a valid context in $cxt...
    *
-   * while (($entry = readdir($dir)) !== FALSE) {
-   *   print $entry . PHP_EOL;
-   * }
+   *     // Get the container as if it were a directory.
+   *     $dir = opendir('swift://mycontainer', $cxt);
    *
-   * closedir($dir);
-   * ?>
-   * @endcode
+   *     while (($entry = readdir($dir)) !== FALSE) {
+   *       print $entry . PHP_EOL;
+   *     }
    *
-   * @retval string
-   * @return string
-   *   The name of the resource or FALSE when the directory has no more
-   *   entries.
+   *     closedir($dir);
+   *     ?>
+   *
+   * @return string The name of the resource or FALSE when the directory has no
+   *   more entries.
    */
   public function dir_readdir() {
     // If we are at the end of the listing, return FALSE.
@@ -469,33 +453,30 @@ class StreamWrapper {
       $fullpath = substr($fullpath, $len);
     }
     return $fullpath;
-
-
   }
 
   /**
    * Rewind to the beginning of the listing.
    *
    * This repositions the read pointer at the first entry in the directory.
-   * @code
-   * <?php
    *
-   * // Assuming a valid context in $cxt...
+   *     <?php
    *
-   * // Get the container as if it were a directory.
-   * $dir = opendir('swift://mycontainer', $cxt);
+   *     // Assuming a valid context in $cxt...
    *
-   * while (($entry = readdir($dir)) !== FALSE) {
-   *   print $entry . PHP_EOL;
-   * }
+   *     // Get the container as if it were a directory.
+   *     $dir = opendir('swift://mycontainer', $cxt);
    *
-   * rewinddir($dir);
+   *     while (($entry = readdir($dir)) !== FALSE) {
+   *       print $entry . PHP_EOL;
+   *     }
    *
-   * $first = readdir($dir);
+   *     rewinddir($dir);
    *
-   * closedir($dir);
-   * ?>
-   * @endcode
+   *     $first = readdir($dir);
+   *
+   *     closedir($dir);
+   *     ?>
    */
   public function dir_rewinddir() {
     $this->dirIndex = 0;
@@ -519,34 +500,29 @@ class StreamWrapper {
    *
    * This DOES support cross-container renaming.
    *
-   * See Container::copy().
+   * @see Container::copy().
    *
-   * @code
-   * <?php
-   * Bootstrap::setConfiguration(array(
-   *   'tenantname' => 'foo@example.com',
-   *   // 'tenantid' => '1234', // You can use this instead of tenantname
-   *   'account' => '1234',
-   *   'secret' => '4321',
-   *   'endpoint' => 'https://auth.example.com',
-   * ));
+   *     <?php
+   *     Bootstrap::setConfiguration(array(
+   *       'tenantname' => 'foo@example.com',
+   *       // 'tenantid' => '1234', // You can use this instead of tenantname
+   *       'account' => '1234',
+   *       'secret' => '4321',
+   *       'endpoint' => 'https://auth.example.com',
+   *     ));
    *
-   * $from = 'swift://containerOne/file.txt';
-   * $to = 'swift://containerTwo/file.txt';
+   *     $from = 'swift://containerOne/file.txt';
+   *     $to = 'swift://containerTwo/file.txt';
    *
-   *  // Rename can also take a context as a third param.
-   * rename($from, $to);
+   *      // Rename can also take a context as a third param.
+   *     rename($from, $to);
    *
-   * ?>
-   * @endcode
+   *     ?>
    *
-   * @param string $path_from
-   *   A swift URL that exists on the remote.
-   * @param string $path_to
-   *   A swift URL to another path.
-   * @retval boolean
-   * @return boolean
-   *   TRUE on success, FALSE otherwise.
+   * @param string $path_from A swift URL that exists on the remote.
+   * @param string $path_to A swift URL to another path.
+   *
+   * @return boolean TRUE on success, FALSE otherwise.
    */
   public function rename($path_from, $path_to) {
     $this->initializeObjectStorage();
@@ -592,9 +568,7 @@ class StreamWrapper {
    * the lower-level buffer objects, this function can have unexpected
    * side effects.
    *
-   * @retval resource
-   * @return resource
-   *   this returns the underlying stream.
+   * @return resource this returns the underlying stream.
    */
   public function stream_cast($cast_as) {
     return $this->objStream;
@@ -603,23 +577,21 @@ class StreamWrapper {
   /**
    * Close a stream, writing if necessary.
    *
-   * @code
-   * <?php
+   *     <?php
    *
-   * // Assuming $cxt has a valid context.
+   *     // Assuming $cxt has a valid context.
    *
-   * $file = fopen('swift://container/file.txt', 'r', FALSE, $cxt);
+   *     $file = fopen('swift://container/file.txt', 'r', FALSE, $cxt);
    *
-   * fclose($file);
+   *     fclose($file);
    *
    * ?>
-   * @endcode
    *
    * This will close the present stream. Importantly,
    * this will also write to the remote object storage if
    * any changes have been made locally.
    *
-   * See stream_open().
+   * @see stream_open().
    */
   public function stream_close() {
 
@@ -642,13 +614,11 @@ class StreamWrapper {
    * This checks whether the stream has reached the
    * end of the object's contents.
    *
-   * Called when \c feof() is called on a stream.
+   * Called when `feof()` is called on a stream.
    *
-   * See stream_seek().
+   * @see stream_seek().
    *
-   * @retval boolean
-   * @return boolean
-   *   TRUE if it has reached the end, FALSE otherwise.
+   * @return boolean TRUE if it has reached the end, FALSE otherwise.
    */
   public function stream_eof() {
     return feof($this->objStream);
@@ -660,7 +630,7 @@ class StreamWrapper {
    * If the local copy of this object has been modified,
    * it is written remotely.
    *
-   * Called when \c fflush() is called on a stream.
+   * Called when `fflush()` is called on a stream.
    */
   public function stream_flush() {
     try {
@@ -706,7 +676,7 @@ class StreamWrapper {
   /*
    * Locking is currently unsupported.
    *
-   * There is no remote support for locking a 
+   * There is no remote support for locking a
    * file.
   public function stream_lock($operation) {
 
@@ -718,23 +688,21 @@ class StreamWrapper {
    *
    * This opens a given stream resource and prepares it for reading or writing.
    *
-   * @code
-   * <?php
-   * $cxt = stream_context_create(array(
-   *   'account' => '1bc123456',
-   *   'tenantid' => '987654321',
-   *   'secret' => 'eieio',
-   *   'endpoint' => 'https://auth.example.com',
-   * ));
-   * ?>
+   *     <?php
+   *     $cxt = stream_context_create(array(
+   *       'account' => '1bc123456',
+   *       'tenantid' => '987654321',
+   *       'secret' => 'eieio',
+   *       'endpoint' => 'https://auth.example.com',
+   *     ));
+   *     ?>
    *
-   * $file = fopen('swift://myContainer/myObject.csv', 'rb', FALSE, $cxt);
-   * while ($bytes = fread($file, 8192)) {
-   *   print $bytes;
-   * }
-   * fclose($file);
-   * ?>
-   * @endcode
+   *     $file = fopen('swift://myContainer/myObject.csv', 'rb', FALSE, $cxt);
+   *     while ($bytes = fread($file, 8192)) {
+   *       print $bytes;
+   *     }
+   *     fclose($file);
+   *     ?>
    *
    * If a file is opened in write mode, its contents will be retrieved from the
    * remote storage and cached locally for manipulation. If the file is opened
@@ -744,21 +712,18 @@ class StreamWrapper {
    * During this operation, the remote host may need to be contacted for
    * authentication as well as for file retrieval.
    *
-   * @param string $path
-   *   The URL to the resource. See the class description for details, but
-   *   typically this expects URLs in the form <tt>swift://CONTAINER/OBJECT</tt>.
-   * @param string $mode
-   *   Any of the documented mode strings. See fopen(). For any file that is
-   *   in a writing mode, the file will be saved remotely on flush or close.
-   *   Note that there is an extra mode: 'nope'. It acts like 'c+' except
-   *   that it is never written remotely. This is useful for debugging the
-   *   stream locally without sending that data to object storage. (Note that
-   *   data is still fetched -- just never written.)
-   * @param int $options
-   *   An OR'd list of options. Only STREAM_REPORT_ERRORS has any meaning
-   *   to this wrapper, as it is not working with local files.
-   * @param string $opened_path
-   *   This is not used, as this wrapper deals only with remote objects.
+   * @param string $path The URL to the resource. See the class description for
+   *   details, but typically this expects URLs in the form `swift://CONTAINER/OBJECT`.
+   * @param string $mode Any of the documented mode strings. See fopen(). For
+   *   any file that is in a writing mode, the file will be saved remotely on
+   *   flush or close. Note that there is an extra mode: 'nope'. It acts like
+   *   'c+' except that it is never written remotely. This is useful for
+   *   debugging the stream locally without sending that data to object storage.
+   *   (Note that data is still fetched -- just never written.)
+   * @param int $options An OR'd list of options. Only STREAM_REPORT_ERRORS has
+   *   any meaning to this wrapper, as it is not working with local files.
+   * @param string $opened_path This is not used, as this wrapper deals only
+   *   with remote objects.
    */
   public function stream_open($path, $mode, $options, &$opened_path) {
 
@@ -837,7 +802,7 @@ class StreamWrapper {
     try{
       // Now we fetch the file. Only under certain circumstances do we generate
       // an error if the file is not found.
-      // FIXME: We should probably allow a context param that can be set to 
+      // FIXME: We should probably allow a context param that can be set to
       // mark the file as lazily fetched.
       $this->obj = $this->container->object($objectName);
       $stream = $this->obj->stream();
@@ -915,26 +880,22 @@ class StreamWrapper {
    * This will read up to the requested number of bytes. Or, upon
    * hitting the end of the file, it will return NULL.
    *
-   * See fread(), fgets(), and so on for examples.
+   * @see fread(), fgets(), and so on for examples.
    *
-   * @code
-   * <?php
-   * $cxt = stream_context_create(array(
-   *   'tenantname' => 'me@example.com',
-   *   'username' => 'me@example.com',
-   *   'password' => 'secret',
-   *   'endpoint' => 'https://auth.example.com',
-   * ));
+   *     <?php
+   *     $cxt = stream_context_create(array(
+   *       'tenantname' => 'me@example.com',
+   *       'username' => 'me@example.com',
+   *       'password' => 'secret',
+   *       'endpoint' => 'https://auth.example.com',
+   *     ));
    *
-   * $content = file_get_contents('swift://public/myfile.txt', FALSE, $cxt);
-   * ?>
-   * @endcode
+   *     $content = file_get_contents('swift://public/myfile.txt', FALSE, $cxt);
+   *     ?>
    *
-   * @param int $count
-   *   The number of bytes to read (usually 8192).
-   * @retval string
-   * @return string
-   *   The data read.
+   * @param int $count The number of bytes to read (usually 8192).
+   *
+   * @return string The data read.
    */
   public function stream_read($count) {
     return fread($this->objStream, $count);
@@ -943,12 +904,11 @@ class StreamWrapper {
   /**
    * Perform a seek.
    *
-   * This is called whenever \c fseek() or \c rewind() is called on a
+   * This is called whenever `fseek()` or `rewind()` is called on a
    * Swift stream.
    *
-   * @attention
    * IMPORTANT: Unlike the PHP core, this library
-   * allows you to fseek() inside of a file opened
+   * allows you to `fseek()` inside of a file opened
    * in append mode ('a' or 'a+').
    */
   public function stream_seek($offset, $whence) {
@@ -987,20 +947,16 @@ class StreamWrapper {
   /**
    * Perform stat()/lstat() operations.
    *
-   * @code
-   * <?php
-   *   $file = fopen('swift://foo/bar', 'r+', FALSE, $cxt);
-   *   $stats = fstat($file);
-   * ?>
-   * @endcode
+   *     <?php
+   *       $file = fopen('swift://foo/bar', 'r+', FALSE, $cxt);
+   *       $stats = fstat($file);
+   *     ?>
    *
-   * To use standard \c stat() on a Swift stream, you will
+   * To use standard `stat()` on a Swift stream, you will
    * need to set account information (tenant ID, account ID, secret,
-   * etc.) through OpenStack::Bootstrap::setConfiguration().
+   * etc.) through \OpenStack\Bootstrap::setConfiguration().
    *
-   * @retval array
-   * @return array
-   *   The stats array.
+   * @return array The stats array.
    */
   public function stream_stat() {
     $stat = fstat($this->objStream);
@@ -1015,11 +971,9 @@ class StreamWrapper {
   /**
    * Get the current position in the stream.
    *
-   * See ftell() and fseek().
+   * @see `ftell()` and `fseek()`.
    *
-   * @retval int
-   * @return int
-   *   The current position in the stream.
+   * @return int The current position in the stream.
    */
   public function stream_tell() {
     return ftell($this->objStream);
@@ -1029,14 +983,12 @@ class StreamWrapper {
    * Write data to stream.
    *
    * This writes data to the local stream buffer. Data
-   * is not pushed remotely until stream_close() or 
+   * is not pushed remotely until stream_close() or
    * stream_flush() is called.
    *
-   * @param string $data
-   *   Data to write to the stream.
-   * @retval int
-   * @return int
-   *   The number of bytes written. 0 indicates and error.
+   * @param string $data Data to write to the stream.
+   *
+   * @return int The number of bytes written. 0 indicates and error.
    */
   public function stream_write($data) {
     $this->isDirty = TRUE;
@@ -1055,15 +1007,12 @@ class StreamWrapper {
    * delete either one. If you are using directory markers, not that deleting
    * a marker will NOT delete the contents of the "directory".
    *
-   * @attention
-   * You will need to use OpenStack::Bootstrap::setConfiguration() to set the
-   * necessary stream configuration, since \c unlink() does not take a context.
+   * You will need to use \OpenStack\Bootstrap::setConfiguration() to set the
+   * necessary stream configuration, since `unlink()` does not take a context.
    *
-   * @param string $path
-   *   The URL.
-   * @retval boolean
-   * @return boolean
-   *   TRUE if the file was deleted, FALSE otherwise.
+   * @param string $path The URL.
+   *
+   * @return boolean TRUE if the file was deleted, FALSE otherwise.
    */
   public function unlink($path) {
     $url = $this->parseUrl($path);
@@ -1147,7 +1096,7 @@ class StreamWrapper {
    * Get the Object.
    *
    * This provides low-level access to the
-   * PHCloud::Storage::ObjectStorage::Object instance in which the content
+   * \OpenStack\Storage\ObjectStorage::Object instance in which the content
    * is stored.
    *
    * Accessing the object's payload (Object::content()) is strongly
@@ -1160,13 +1109,11 @@ class StreamWrapper {
    *
    * To access this:
    *
-   * @code
-   * <?php
-   *  $handle = fopen('swift://container/test.txt', 'rb', $cxt);
-   *  $md = stream_get_meta_data($handle);
-   *  $obj = $md['wrapper_data']->object();
-   * ?>
-   * @endcode
+   *     <?php
+   *      $handle = fopen('swift://container/test.txt', 'rb', $cxt);
+   *      $md = stream_get_meta_data($handle);
+   *      $obj = $md['wrapper_data']->object();
+   *     ?>
    */
   public function object() {
     return $this->obj;
@@ -1175,8 +1122,7 @@ class StreamWrapper {
   /**
    * EXPERT: Get the ObjectStorage for this wrapper.
    *
-   * @retval object OpenStack::ObjectStorage
-   *   An ObjectStorage object.
+   * @return object \OpenStack\ObjectStorage An ObjectStorage object.
    * @see object()
    */
   public function objectStorage() {
@@ -1186,8 +1132,7 @@ class StreamWrapper {
   /**
    * EXPERT: Get the auth token for this wrapper.
    *
-   * @retval string
-   *   A token.
+   * @return string A token.
    * @see object()
    */
   public function token() {
@@ -1199,8 +1144,7 @@ class StreamWrapper {
    *
    * This is only available when a file is opened via fopen().
    *
-   * @retval array
-   *   A service catalog.
+   * @return array A service catalog.
    * @see object()
    */
   public function serviceCatalog() {
@@ -1228,7 +1172,7 @@ class StreamWrapper {
    *   the cached stat['size'] for the underlying buffer.
    */
   protected function generateStat($object, $container, $size) {
-    // This is not entirely accurate. Basically, if the 
+    // This is not entirely accurate. Basically, if the
     // file is marked public, it gets 100775, and if
     // it is private, it gets 100770.
     //
@@ -1287,12 +1231,10 @@ class StreamWrapper {
   /**
    * Set the fopen mode.
    *
-   * @param string $mode
-   *   The mode string, e.g. `r+` or `wb`.
+   * @param string $mode The mode string, e.g. `r+` or `wb`.
    *
-   * @retval OpenStack::Storage::ObjectStorage::StreamWrapper
-   * @return \OpenStack\Storage\ObjectStorage\StreamWrapper
-   *   $this so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\StreamWrapper $this so the method
+   *   can be used in chaining.
    */
   protected function setMode($mode) {
     $mode = strtolower($mode);
@@ -1372,14 +1314,12 @@ class StreamWrapper {
    *
    * @todo Should there be an option to NOT query the Bootstrap::conf()?
    *
-   * @param string $name
-   *   The name to look up. First look it up in the context, then look
-   *   it up in the Bootstrap config.
-   * @param mixed $default
-   *   The default value to return if no config param was found.
-   * @retval mixed
-   * @return mixed
-   *   The discovered result, or $default if specified, or NULL if
+   * @param string $name The name to look up. First look it up in the context,
+   *   then look it up in the Bootstrap config.
+   * @param mixed $default The default value to return if no config param was
+   *   found.
+   *
+   * @return mixed The discovered result, or $default if specified, or NULL if
    *   no $default is specified.
    */
   protected function cxt($name, $default = NULL) {
@@ -1422,11 +1362,9 @@ class StreamWrapper {
    * This parses the URL and urldecodes the container name and
    * the object name.
    *
-   * @param string $url
-   *   A Swift URL.
-   * @retval array
-   * @return array
-   *   An array as documented in parse_url().
+   * @param string $url A Swift URL.
+   *
+   * @return array An array as documented in parse_url().
    */
   protected function parseUrl($url) {
     $res = parse_url($url);
@@ -1453,7 +1391,7 @@ class StreamWrapper {
    * Based on the context, initialize the ObjectStorage.
    *
    * The following parameters may be set either in the stream context
-   * or through OpenStack::Bootstrap::setConfiguration():
+   * or through \OpenStack\Bootstrap::setConfiguration():
    *
    * - token: An auth token. If this is supplied, authentication is skipped and
    *     this token is used. NOTE: You MUST set swift_endpoint if using this
@@ -1470,10 +1408,10 @@ class StreamWrapper {
    *     the deprecated swiftAuth instead of IdentityService authentication.
    *     In general, you should avoid using this.
    *
-   * To find these params, the method first checks the supplied context. If the 
+   * To find these params, the method first checks the supplied context. If the
    * key is not found there, it checks the Bootstrap::conf().
    *
-   * @fixme This should be rewritten to use ObjectStorage::newFromServiceCatalog().
+   * @fixme This should be rewritten to use \ObjectStorage::newFromServiceCatalog().
    */
   protected function initializeObjectStorage() {
 

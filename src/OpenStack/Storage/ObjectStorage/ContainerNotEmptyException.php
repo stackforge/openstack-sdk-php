@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Contains exception class for ContainerNotEmptyException.
  */
 

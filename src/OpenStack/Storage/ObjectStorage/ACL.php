@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * Contains the class for manipulating ObjectStorage ACL strings.
  */
 
@@ -25,7 +23,7 @@ namespace OpenStack\Storage\ObjectStorage;
 /**
  * Access control list for object storage.
  *
- * @b EXPERIMENTAL: This is bassed on a feature of Swift that is likely to
+ * EXPERIMENTAL: This is bassed on a feature of Swift that is likely to
  * change. Most of this is based on undocmented features of the API
  * discovered both in the Python docs and in discussions by various
  * members of the OpenStack community.
@@ -38,63 +36,56 @@ namespace OpenStack\Storage\ObjectStorage;
  * In the current implementation of Swift, access can be assigned based
  * on two different factors:
  *
- * - @b Accounts: Access can be granted to specific accounts, and within
+ * - Accounts: Access can be granted to specific accounts, and within
  *   those accounts, can be further specified to specific users. See the
  *   addAccount() method for details on this.
- * - @b Referrers: Access can be granted based on host names or host name
- *   patterns. For example, only subdomains of <tt>*.example.com</tt> may be
+ * - Referrers: Access can be granted based on host names or host name
+ *   patterns. For example, only subdomains of *.example.com may be
  *   granted READ access to a particular object.
  *
  * ACLs are transmitted within the HTTP headers for an object or
- * container. Two headers are used: @c X-Container-Read for READ rules, and
- * @c X-Container-Write for WRITE rules. Each header may have a chain of
+ * container. Two headers are used: `X-Container-Read` for READ rules, and
+ * `X-Container-Write` for WRITE rules. Each header may have a chain of
  * rules.
  *
- * @b Examples
+ * Examples
  *
  * For most casual cases, only the static constructor functions are
  * used. For example, an ACL that does not grant any public access can
  * be created with a single call:
  *
- * @code
- * <?php
- * $acl = ACL::makeNonPublic();
- * ?>
- * @endcode
+ *     <?php
+ *     $acl = ACL::makeNonPublic();
+ *     ?>
  *
  * Public read access is granted like this:
  *
- * @code
- * <?php
- * $acl = ACL::makePublic();
- * ?>
- * @endcode
+ *     <?php
+ *     $acl = ACL::makePublic();
+ *     ?>
  *
  * (Note that in both cases, what is returned is an instance of an ACL with
  * all of the necessary configuration done.)
  *
  * Sometimes you will need more sophisticated access control rules. The
- * following grants READ access to anyone coming from an @c example.com
- * domain, but grants WRITE access only to the account @c admins:
+ * following grants READ access to anyone coming from an `example.com`
+ * domain, but grants WRITE access only to the account `admins:`
  *
- * @code
- * <?php
- * $acl = new ACL();
+ *     <?php
+ *     $acl = new ACL();
  *
- * // Grant READ to example.com users.
- * $acl->addReferrer(ACL::READ, '*.example.com');
+ *     // Grant READ to example.com users.
+ *     $acl->addReferrer(ACL::READ, '*.example.com');
  *
- * // Allow only people in the account 'admins' access to
- * // write.
- * $acl->addAccount(ACL::WRITE, 'admins');
+ *     // Allow only people in the account 'admins' access to
+ *     // write.
+ *     $acl->addAccount(ACL::WRITE, 'admins');
  *
- * // Allow example.com users to view the container
- * // listings:
- * $acl->allowListings();
+ *     // Allow example.com users to view the container
+ *     // listings:
+ *     $acl->allowListings();
  *
- * ?>
- * @endcode
- *
+ *     ?>
  *
  * Notes
  *
@@ -105,7 +96,7 @@ namespace OpenStack\Storage\ObjectStorage;
  *   replaced by a new mechanism.
  *
  * For a detailed description of the rules for ACL creation,
- * see http://swift.openstack.org/misc.html#acls
+ * @see http://swift.openstack.org/misc.html#acls
  */
 class ACL {
 
@@ -124,7 +115,7 @@ class ACL {
   /**
    * Flag for READ and WRITE.
    *
-   * This is equivalent to <tt>ACL::READ | ACL::WRITE</tt>
+   * This is equivalent to `ACL::READ | ACL::WRITE`
    */
   const READ_WRITE = 3; // self::READ | self::WRITE;
 
@@ -146,9 +137,8 @@ class ACL {
    *
    * - READ to any host, with container listings.
    *
-   * @retval OpenStack::Storage::ObjectStorage::ACL
-   * @return \OpenStack\Storage\ObjectStorage\ACL
-   *   an ACL object with the appopriate permissions set.
+   * @return \OpenStack\Storage\ObjectStorage\ACL an ACL object with the
+   *   appopriate permissions set.
    */
   public static function makePublic() {
     $acl = new ACL();
@@ -167,9 +157,8 @@ class ACL {
    * This does not grant any permissions. OpenStack interprets an object
    * with no permissions as a private object.
    *
-   * @retval OpenStack::Storage::ObjectStorage::ACL
-   * @return \OpenStack\Storage\ObjectStorage\ACL
-   *   an ACL object with the appopriate permissions set.
+   * @return \OpenStack\Storage\ObjectStorage\ACL an ACL object with the
+   *   appopriate permissions set.
    */
   public static function makeNonPublic() {
     // Default ACL is private.
@@ -189,11 +178,9 @@ class ACL {
    * This is a utility for processing headers and discovering any ACLs embedded
    * inside the headers.
    *
-   * @param array $headers
-   *   An associative array of headers.
-   * @retval OpenStack::Storage::ObjectStorage::ACL
-   * @return \OpenStack\Storage\ObjectStorage\ACL
-   *   A new ACL.
+   * @param array $headers An associative array of headers.
+   *
+   * @return \OpenStack\Storage\ObjectStorage\ACL A new ACL.
    */
   public static function newFromHeaders($headers) {
     $acl = new ACL();
@@ -235,13 +222,10 @@ class ACL {
    * This attempts to parse an ACL rule. It is not particularly
    * fault-tolerant.
    *
-   * @param int $perm
-   *   The permission (ACL::READ, ACL::WRITE).
-   * @param string $rule
-   *   The string rule to parse.
-   * @retval array
-   * @return array
-   *   The rule as an array.
+   * @param int $perm The permission (ACL::READ, ACL::WRITE).
+   * @param string $rule The string rule to parse.
+   *
+   * @return array The rule as an array.
    */
   public static function parseRule($perm, $rule) {
     // This regular expression generates the following:
@@ -304,24 +288,20 @@ class ACL {
    *
    * If $user is an array, every user in the array will be granted
    * access under the provided account. That is, for each user in the
-   * array, an entry of the form \c account:user will be generated in the
+   * array, an entry of the form `account:user` will be generated in the
    * final ACL.
    *
    * At this time there does not seem to be a way to grant global write
    * access to an object.
    *
-   * @param int $perm
-   *   ACL::READ, ACL::WRITE or ACL::READ_WRITE (which is the same as
-   *   ACL::READ|ACL::WRITE).
-   * @param string $account
-   *   The name of the account.
-   * @param mixed $user
-   *   The name of the user, or optionally an indexed array of user
-   *   names.
+   * @param int $perm ACL::READ, ACL::WRITE or ACL::READ_WRITE (which is the
+   *   same as ACL::READ|ACL::WRITE).
+   * @param string $account The name of the account.
+   * @param mixed $user The name of the user, or optionally an indexed array of
+   *   user names.
    *
-   * @retval OpenStack::Storage::ObjectStorage::ACL
-   * @return \OpenStack\Storage\ObjectStorage\ACL
-   *   $this for current object so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\ACL $this for current object so
+   *   the method can be used in chaining.
    */
   public function addAccount($perm, $account, $user = NULL) {
     $rule = array('account' => $account);
@@ -351,14 +331,12 @@ class ACL {
    * Note that a simple minus sign ('-') is illegal, though it seems it
    * should be "disallow all hosts."
    *
-   * @param string $perm
-   *   The permission being granted. One of ACL:READ, ACL::WRITE, or ACL::READ_WRITE.
-   * @param string $host
-   *   A host specification string as described above.
+   * @param string $perm The permission being granted. One of ACL:READ,
+   *   ACL::WRITE, or ACL::READ_WRITE.
+   * @param string $host A host specification string as described above.
    *
-   * @retval OpenStack::Storage::ObjectStorage::ACL
-   * @return \OpenStack\Storage\ObjectStorage\ACL
-   *   $this for current object so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\ACL $this for current object so
+   *   the method can be used in chaining.
    */
   public function addReferrer($perm, $host = '*') {
     $this->addRule($perm, array('host' => $host));
@@ -369,14 +347,11 @@ class ACL {
   /**
    * Add a rule to the appropriate stack of rules.
    *
-   * @param int $perm
-   *   One of the predefined permission constants.
-   * @param array $rule
-   *   A rule array.
-   * 
-   * @retval OpenStack::Storage::ObjectStorage::ACL
-   * @return \OpenStack\Storage\ObjectStorage\ACL
-   *   $this for current object so the method can be used in chaining.
+   * @param int $perm One of the predefined permission constants.
+   * @param array $rule A rule array.
+   *
+   * @return \OpenStack\Storage\ObjectStorage\ACL $this for current object so
+   *   the method can be used in chaining.
    */
   protected function addRule($perm, $rule) {
     $rule['mask'] = $perm;
@@ -397,9 +372,8 @@ class ACL {
    * In the current Swift implementation, there is no mechanism for
    * allowing some hosts to get listings, while denying others.
    *
-   * @retval OpenStack::Storage::ObjectStorage::ACL
-   * @return \OpenStack\Storage\ObjectStorage\ACL
-   *   $this for current object so the method can be used in chaining.
+   * @return \OpenStack\Storage\ObjectStorage\ACL $this for current object so
+   *   the method can be used in chaining.
    */
   public function allowListings() {
 
@@ -414,9 +388,7 @@ class ACL {
   /**
    * Get the rules array for this ACL.
    *
-   * @retval array
-   * @return array
-   *   An array of associative arrays of rules.
+   * @return array An array of associative arrays of rules.
    */
   public function rules() {
     return $this->rules;
@@ -427,6 +399,8 @@ class ACL {
    *
    * If this is called on an empty object, an empty set of headers is
    * returned.
+   *
+   * @return array Array of headers
    */
   public function headers() {
     $headers = array();
@@ -467,10 +441,8 @@ class ACL {
   /**
    * Convert a rule to a string.
    *
-   * @param int $perm
-   *   The permission for which to generate the rule.
-   * @param array $rule
-   *   A rule array.
+   * @param int $perm The permission for which to generate the rule.
+   * @param array $rule A rule array.
    */
   protected function ruleToString($perm, $rule) {
 
@@ -519,10 +491,8 @@ class ACL {
    * This returns TRUE only if this ACL does not grant any permissions
    * at all.
    *
-   * @retval boolean
-   * @return boolean
-   *   TRUE if this is private (non-public), FALSE if
-   *   any permissions are granted via this ACL.
+   * @return boolean TRUE if this is private (non-public), FALSE if any
+   *   permissions are granted via this ACL.
    */
   public function isNonPublic() {
     return empty($this->rules);
@@ -544,7 +514,9 @@ class ACL {
    * This checks whether the object allows public reading,
    * not whether it is ONLY allowing public reads.
    *
-   * See ACL::makePublic().
+   * @see ACL::makePublic().
+   *
+   * @return boolean Whether or not the object allows public reading.
    */
   public function isPublic() {
     $allowsAllHosts = FALSE;
@@ -563,14 +535,12 @@ class ACL {
   }
 
   /**
-   * Implements the magic __toString() PHP function.
+   * Implements the magic `__toString()` PHP function.
    *
-   * This allows you to <tt>print $acl</tt> and get back
+   * This allows you to `print $acl` and get back
    * a pretty string.
    *
-   * @retval string
-   * @return string
-   *   The ACL represented as a string.
+   * @return string The ACL represented as a string.
    */
   public function __toString() {
     $headers = $this->headers();
