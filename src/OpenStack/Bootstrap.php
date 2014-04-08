@@ -15,7 +15,7 @@
    limitations under the License.
 ============================================================================ */
 /**
- * OpenStacl PHP-Client configuration.
+ * OpenStack SDK for PHP configuration.
  *
  * It also automatically register the OpenStack stream wrappers.
  */
@@ -50,9 +50,9 @@ use OpenStack\Exception;
  *
  *     <?php
  *     $config = array(
- *       // Use the faster and better CURL transport.
- *       'transport' => '\OpenStack\Transport\CURLTransport',
- *       // Set the HTTP max wait time to 500.
+ *       // We use Guzzle, which defaults to CURL, for a transport layer.
+ *       'transport' => '\OpenStack\Transport\GuzzleClient',
+ *       // Set the HTTP max wait time to 500 seconds.
  *       'transport.timeout' => 500,
  *     );
  *     Bootstrap::setConfiguration($config);
@@ -83,13 +83,8 @@ use OpenStack\Exception;
 class Bootstrap {
 
   public static $config = array(
-    // The transport implementation. By default, we use the PHP stream
-    // wrapper's HTTP mechanism to process transactions.
-    //'transport' => '\OpenStack\Transport\PHPStreamTransport',
-
-    // This is the default transport while a bug persists in the
-    // Identity Services REST service.
-    'transport' => '\OpenStack\Transport\CURLTransport',
+    // The transport implementation. By default, we use the Guzzle Client
+    'transport' => '\OpenStack\Transport\GuzzleClient',
   );
 
   /**
@@ -97,6 +92,11 @@ class Bootstrap {
    *   created from the global settings.
    */
   public static $identity = NULL;
+
+  /**
+   * @var \OpenStack\Transport\ClientInterface A transport client for requests.
+   */
+  public static $transport = NULL;
 
   /**
    * Register stream wrappers for OpenStack.
@@ -152,23 +152,14 @@ class Bootstrap {
    *   the transport layer should wait for an HTTP request. A
    *   transport MAY ignore this parameter, but the ones included
    *   with the library honor it.
-   * - 'transport.ssl.verify': Set this to FALSE to turn off SSL certificate
+   * - 'transport.ssl_verify': Set this to FALSE to turn off SSL certificate
    *   verification. This is NOT recommended, but is sometimes necessary for
    *   certain proxy configurations.
+   * - 'transport.proxy': Set the proxy as a string.
    * - 'username' and 'password'
    * - 'tenantid'
    * - 'endpoint': The full URL to identity services. This is used by stream
    *   wrappers.
-   *
-   * The CURL wrapper supports proxy settings:
-   *
-   * - proxy: the proxy server URL (CURLOPT_PROXY)
-   * - proxy.userpwd: the proxy username:password (CURLOPT_PROXYUSERPWD)
-   * - proxy.auth: See CURLOPT_PROXYAUTH
-   * - proxy.port: The proxy port. (CURLOPT_PROXYPORT)
-   * - proxy.type: see CURLOPT_PROXYTYPE
-   * - proxy.tunnel: If this is set to TRUE, attempt to tunnel through the
-   *   proxy. This is recommended when using a proxy. (CURLOPT_HTTPPROXYTUNNEL)
    *
    * @param array $array An associative array of configuration directives.
    */
@@ -235,6 +226,8 @@ class Bootstrap {
    */
   public static function identity($force = FALSE) {
 
+    $transport = self::transport();
+
     // If we already have an identity make sure the token is not expired.
     if ($force || is_null(self::$identity) || self::$identity->isExpired()) {
 
@@ -250,16 +243,41 @@ class Bootstrap {
 
       // Check if we have a username/password
       if (!empty($user) && self::hasConfig('password')) {
-        $is = new IdentityService(self::config('endpoint'));
+        $is = new IdentityService(self::config('endpoint'), $transport);
         $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', NULL), self::config('tenantname', NULL));
         self::$identity = $is;
       }
-
       else {
         throw new Exception('Unable to authenticate. No user credentials supplied.');
       }
     }
 
     return self::$identity;
+  }
+
+  /**
+   * Get a transport client.
+   *
+   * @param  boolean $reset Whether to recreate the transport client if one already exists.
+   * @return \OpenStack\Transport\ClientInterface A transport client.
+   */
+  public static function transport($reset = FALSE) {
+
+    if (is_null(self::$transport) || $reset == TRUE) {
+      $options = [
+        'ssl_verify' => self::config('ssl_verify', TRUE),
+        'timeout' => self::config('timeout', 0),          // 0 is no timeout.
+        'debug' => self::config('debug', 0),
+      ];
+      $proxy = self::config('proxy', FALSE);
+      if ($proxy) {
+        $options['proxy'] = $proxy;
+      }
+
+      $klass = self::config('transport');
+      self::$transport = new $klass($options);
+    }
+
+    return self::$transport;
   }
 }

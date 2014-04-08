@@ -5,11 +5,6 @@
           <directory>test/Tests/</directory>
         </testsuite>
     </testsuites>
-    <groups>
-        <exclude>
-            <group>curl</group>
-        </exclude>
-    </groups>
     <logging>
         <log
             type="coverage-html"

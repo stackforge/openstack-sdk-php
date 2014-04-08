@@ -20,6 +20,8 @@
 
 namespace OpenStack\Services;
 
+use OpenStack\Transport\GuzzleClient;
+
 /**
  * IdentityService provides authentication and authorization.
  *
@@ -119,7 +121,7 @@ namespace OpenStack\Services;
  * than make repeated requests for identity information.
  *
  */
-class IdentityService /*implements Serializable*/ {
+class IdentityService {
   /**
    * The version of the API currently supported.
    */
@@ -169,6 +171,11 @@ class IdentityService /*implements Serializable*/ {
   protected $userDetails;
 
   /**
+   * The HTTP Client
+   */
+  protected $client;
+
+  /**
    * Build a new IdentityService object.
    *
    * Each object is bound to a particular identity services endpoint.
@@ -190,8 +197,10 @@ class IdentityService /*implements Serializable*/ {
    *   that you do not need the version identifier in the URL, as version
    *   information is sent in the HTTP headers rather than in the URL. The URL
    *   should always be to an SSL/TLS encrypted endpoint.
+   * @param \OpenStack\Transport\ClientInterface $client An optional HTTP client
+   *   to use when making the requests.
    */
-  public function __construct($url) {
+  public function __construct($url, \OpenStack\Transport\ClientInterface $client = NULL) {
     $parts = parse_url($url);
 
     if (!empty($parts['path'])) {
@@ -199,6 +208,14 @@ class IdentityService /*implements Serializable*/ {
     }
     else {
       $this->endpoint = rtrim($url, '/') . '/v' . self::API_VERSION;
+    }
+
+    // Guzzle is the default client to use.
+    if (is_null($client)) {
+      $this->client = new GuzzleClient();
+    }
+    else {
+      $this->client = $client;
     }
   }
 
@@ -264,14 +281,9 @@ class IdentityService /*implements Serializable*/ {
       'Content-Length' => strlen($body),
     );
 
-    //print $body . PHP_EOL;
-
-    $client = \OpenStack\Transport::instance();
-
-    $response = $client->doRequest($url, 'POST', $headers, $body);
+    $response = $this->client->doRequest($url, 'POST', $headers, $body);
 
     $this->handleResponse($response);
-
 
     return $this->token();
   }
@@ -581,11 +593,9 @@ class IdentityService /*implements Serializable*/ {
       //'Content-Type' => 'application/json',
     );
 
-    $client = \OpenStack\Transport::instance();
-    $response = $client->doRequest($url, 'GET', $headers);
+    $response = $this->client->doRequest($url, 'GET', $headers);
 
-    $raw = $response->content();
-    $json = json_decode($raw, TRUE);
+    $json = $response->json();
 
     return $json['tenants'];
 
@@ -646,8 +656,7 @@ class IdentityService /*implements Serializable*/ {
       //'X-Auth-Token' => $token,
     );
 
-    $client = \OpenStack\Transport::instance();
-    $response = $client->doRequest($url, 'POST', $headers, $body);
+    $response = $this->client->doRequest($url, 'POST', $headers, $body);
     $this->handleResponse($response);
 
     return $this->token();
@@ -699,8 +708,7 @@ class IdentityService /*implements Serializable*/ {
       //'X-Auth-Token' => $token,
     );
 
-    $client = \OpenStack\Transport::instance();
-    $response = $client->doRequest($url, 'POST', $headers, $body);
+    $response = $this->client->doRequest($url, 'POST', $headers, $body);
     $this->handleResponse($response);
 
     return $this->token();
@@ -712,14 +720,13 @@ class IdentityService /*implements Serializable*/ {
    * This parses the JSON data and parcels out the data to the appropriate
    * fields.
    *
-   * @param object $response \OpenStack\Transport\Response  A response object.
+   * @param \OpenStack\Transport\ResponseInterface $response A response object.
    *
    * @return \OpenStack\Services\IdentityService $this for the current object so
    *   it can be used in chaining.
    */
   protected function handleResponse($response) {
-    $json = json_decode($response->content(), TRUE);
-    // print_r($json);
+    $json = $response->json();
 
     $this->tokenDetails = $json['access']['token'];
     $this->userDetails = $json['access']['user'];
@@ -727,25 +734,4 @@ class IdentityService /*implements Serializable*/ {
 
     return $this;
   }
-
-  /* Not necessary.
-  public function serialize() {
-    $data = array(
-      'tokenDetails' => $this->tokenDetails,
-      'userDetails' => $this->userDetails,
-      'serviceCatalog' => $this->serviceCatalog,
-      'endpoint' => $this->endpoint,
-    );
-    return serialize($data);
-  }
-
-  public function unserialize($data) {
-    $vals = unserialize($data);
-    $this->tokenDetails = $vals['tokenDetails'];
-    $this->userDetails = $vals['userDetails'];
-    $this->serviceCatalog = $vals['serviceCatalog'];
-    $this->endpoint = $vals['endpoint'];
-  }
-   */
-
 }

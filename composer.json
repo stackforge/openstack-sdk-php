@@ -5,13 +5,12 @@
   "keywords": ["openstack","keystone","cloud","swift","nova"],
   "license": "Apache-2.0",
   "require": {
-    "php": ">=5.3.0"
+    "php": ">=5.4.0",
+    "guzzlehttp/guzzle": "4.*",
+    "guzzlehttp/streams": "1.*"
   },
   "require-dev": {
     "phpunit/phpunit": "4.*"
-  },
-  "suggest": {
-    "curl": ">=7.0.0"
   },
   "autoload": {
     "psr-4": { "OpenStack\\": "src/OpenStack" }

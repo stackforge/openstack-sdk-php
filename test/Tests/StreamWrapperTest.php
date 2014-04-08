@@ -45,12 +45,12 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase {
     $tenantId = self::conf('openstack.identity.tenantId');
     $url = self::conf('openstack.identity.url');
 
-    $ident = new \OpenStack\Services\IdentityService($url);
+    $ident = new \OpenStack\Services\IdentityService($url, self::getTransportClient());
 
     $token = $ident->authenticateAsUser($user, $pass, $tenantId);
 
     // Then we need to get an instance of storage
-    $store = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
+    $store = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident, self::conf('openstack.swift.region'), self::getTransportClient());
 
 
     // Delete the container and all the contents.
@@ -108,6 +108,7 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase {
       'token' => $this->objectStore()->token(),
       'swift_endpoint' => $this->objectStore()->url(),
       'content_type' => self::FTYPE,
+      'transport_client' => $this->getTransportClient(),
     );
     $cxt = array($scheme => $params);
 
@@ -116,9 +117,6 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase {
 
   /**
    * This performs authentication via context.
-   *
-   * UPDATE: This now users IdentityService instead of deprecated
-   * swauth.
    */
   protected function authSwiftContext($add = array(), $scheme = NULL) {
     $cname    = self::$settings['openstack.swift.container'];
@@ -137,6 +135,7 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase {
       'endpoint' => $baseURL,
       'tenantid' => $tenant,
       'content_type' => self::FTYPE,
+      'transport_client' => $this->getTransportClient(),
     );
     $cxt = array($scheme => $params);
 

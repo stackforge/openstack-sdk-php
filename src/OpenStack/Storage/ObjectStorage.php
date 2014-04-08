@@ -27,6 +27,7 @@ namespace OpenStack\Storage;
 
 use OpenStack\Storage\ObjectStorage\Container;
 use OpenStack\Storage\ObjectStorage\ACL;
+use OpenStack\Transport\GuzzleClient;
 
 /**
  * Access to ObjectStorage (Swift).
@@ -82,6 +83,11 @@ class ObjectStorage {
   protected $url = NULL;
 
   /**
+   * The HTTP Client
+   */
+  protected $client;
+
+  /**
    * Create a new instance after getting an authenitcation token.
    *
    * THIS METHOD IS DEPRECATED. OpenStack now uses Keyston to authenticate.
@@ -113,13 +119,16 @@ class ObjectStorage {
    * @deprecated Newer versions of OpenStack use Keystone auth instead
    * of Swift auth.
    */
-  public static function newFromSwiftAuth($account, $key, $url) {
+  public static function newFromSwiftAuth($account, $key, $url, \OpenStack\Transport\ClientInterface $client = NULL) {
     $headers = array(
       'X-Auth-User' => $account,
       'X-Auth-Key' => $key,
     );
 
-    $client = \OpenStack\Transport::instance();
+    // Guzzle is the default client to use.
+    if (is_null($client)) {
+      $client = new GuzzleClient();
+    }
 
     // This will throw an exception if it cannot connect or
     // authenticate.
@@ -133,11 +142,10 @@ class ObjectStorage {
     // X-Trans-Id: tx33f1257e09f64bc58f28e66e0577268a
 
 
-    $token = $res->header('X-Auth-Token');
-    $newUrl = $res->header('X-Storage-Url');
+    $token = $res->getHeader('X-Auth-Token');
+    $newUrl = $res->getHeader('X-Storage-Url');
 
-
-    $store = new ObjectStorage($token, $newUrl);
+    $store = new ObjectStorage($token, $newUrl, $client);
 
     return $store;
   }
@@ -153,10 +161,10 @@ class ObjectStorage {
    *
    * @return \OpenStack\Storage\ObjectStorage A new ObjectStorage instance.
    */
-  public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION) {
+  public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Transport\ClientInterface $client = NULL) {
     $cat = $identity->serviceCatalog();
     $tok = $identity->token();
-    return self::newFromServiceCatalog($cat, $tok, $region);
+    return self::newFromServiceCatalog($cat, $tok, $region, $client);
   }
 
   /**
@@ -175,13 +183,13 @@ class ObjectStorage {
    *
    * @return \OpenStack\Storage\ObjectStorage A new ObjectStorage instance.
    */
-  public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION) {
+  public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Transport\ClientInterface $client = NULL) {
     $c = count($catalog);
     for ($i = 0; $i < $c; ++$i) {
       if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
         foreach ($catalog[$i]['endpoints'] as $endpoint) {
           if (isset($endpoint['publicURL']) && $endpoint['region'] == $region) {
-            $os= new ObjectStorage($authToken, $endpoint['publicURL']);
+            $os = new ObjectStorage($authToken, $endpoint['publicURL'], $client);
 
             return $os;
           }
@@ -202,9 +210,17 @@ class ObjectStorage {
    * @param string $url The URL to the endpoint. This typically is returned
    *   after authentication.
    */
-  public function __construct($authToken, $url) {
+  public function __construct($authToken, $url, \OpenStack\Transport\ClientInterface $client = NULL) {
     $this->token = $authToken;
     $this->url = $url;
+
+    // Guzzle is the default client to use.
+    if (is_null($client)) {
+      $this->client = new GuzzleClient();
+    }
+    else {
+      $this->client = $client;
+    }
   }
 
   /**
@@ -273,7 +289,7 @@ class ObjectStorage {
     $containerList = array();
     foreach ($containers as $container) {
       $cname = $container['name'];
-      $containerList[$cname] = Container::newFromJSON($container, $this->token(), $this->url());
+      $containerList[$cname] = Container::newFromJSON($container, $this->token(), $this->url(), $this->client);
     }
 
     return $containerList;
@@ -295,7 +311,7 @@ class ObjectStorage {
     $url = $this->url() . '/' . rawurlencode($name);
     $data = $this->req($url, 'HEAD', FALSE);
 
-    $status = $data->status();
+    $status = $data->getStatusCode();
     if ($status == 204) {
       $container = Container::newFromResponse($name, $data, $this->token(), $this->url());
 
@@ -397,16 +413,15 @@ class ObjectStorage {
       $headers += Container::generateMetadataHeaders($metadata, $prefix);
     }
 
-    $client = \OpenStack\Transport::instance();
     // Add ACLs to header.
     if (!empty($acl)) {
       $headers += $acl->headers();
     }
 
-    $data = $client->doRequest($url, 'PUT', $headers);
+    $data = $this->client->doRequest($url, 'PUT', $headers);
     //syslog(LOG_WARNING, print_r($data, TRUE));
 
-    $status = $data->status();
+    $status = $data->getStatusCode();
 
     if ($status == 201) {
       return TRUE;
@@ -488,7 +503,7 @@ class ObjectStorage {
       throw new ObjectStorage\ContainerNotEmptyException("Non-empty container cannot be deleted.");
     }
 
-    $status = $data->status();
+    $status = $data->getStatusCode();
 
     // 204 indicates that the container has been deleted.
     if ($status == 204) {
@@ -521,9 +536,9 @@ class ObjectStorage {
     $data = $this->req($url, 'HEAD', FALSE);
 
     $results = array(
-      'bytes' => $data->header('X-Account-Bytes-Used', 0),
-      'containers' => $data->header('X-Account-Container-Count', 0),
-      'objects' => $data->header('X-Account-Container-Count', 0),
+      'bytes' => $data->getHeader('X-Account-Bytes-Used', 0),
+      'containers' => $data->getHeader('X-Account-Container-Count', 0),
+      'objects' => $data->getHeader('X-Account-Container-Count', 0),
     );
 
     return $results;
@@ -543,16 +558,15 @@ class ObjectStorage {
    * Internal request issuing command.
    */
   protected function req($url, $method = 'GET', $jsonDecode = TRUE, $body = '') {
-    $client = \OpenStack\Transport::instance();
     $headers = array(
         'X-Auth-Token' => $this->token(),
     );
 
-    $raw = $client->doRequest($url, $method, $headers, $body);
+    $res = $this->client->doRequest($url, $method, $headers, $body);
     if (!$jsonDecode) {
-      return $raw;
+      return $res;
     }
-    return json_decode($raw->content(), TRUE);
+    return $res->json();
 
   }
 }

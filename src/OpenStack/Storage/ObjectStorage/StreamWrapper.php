@@ -771,7 +771,6 @@ class StreamWrapper {
     // Object name.
     $objectName = $url['path'];
 
-
     // XXX: We reserve the query string for passing additional params.
 
     try {
@@ -1034,7 +1033,8 @@ class StreamWrapper {
       $name = $url['host'];
       $token = $this->store->token();
       $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
-      $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
+      $client = $this->cxt('transport_client', NULL);
+      $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token, $client);
       return $container->delete($url['path']);
     }
     catch (\OpenStack\Exception $e) {
@@ -1067,7 +1067,8 @@ class StreamWrapper {
       $name = $url['host'];
       $token = $this->store->token();
       $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
-      $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token);
+      $client = $this->cxt('transport_client', NULL);
+      $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token, $client);
       $obj = $container->remoteObject($url['path']);
     }
     catch(\OpenStack\Exception $e) {
@@ -1402,6 +1403,7 @@ class StreamWrapper {
    * - use_swift_auth: If this is set to TRUE, it will force the app to use
    *     the deprecated swiftAuth instead of IdentityService authentication.
    *     In general, you should avoid using this.
+   * - transport_client: A transport client for the HTTP requests.
    *
    * To find these params, the method first checks the supplied context. If the
    * key is not found there, it checks the Bootstrap::conf().
@@ -1416,6 +1418,7 @@ class StreamWrapper {
     $tenantName = $this->cxt('tenantname');
     $authUrl = $this->cxt('endpoint');
     $endpoint = $this->cxt('swift_endpoint');
+    $client = $this->cxt('transport_client', NULL);
 
     $serviceCatalog = NULL;
 
@@ -1426,7 +1429,7 @@ class StreamWrapper {
     // FIXME: If a token is invalidated, we should try to re-authenticate.
     // If context has the info we need, start from there.
     if (!empty($token) && !empty($endpoint)) {
-      $this->store = new \OpenStack\Storage\ObjectStorage($token, $endpoint);
+      $this->store = new \OpenStack\Storage\ObjectStorage($token, $endpoint, $client);
     }
     // If we get here and tenant ID is not set, we can't get a container.
     elseif (empty($tenantId) && empty($tenantName)) {
@@ -1444,7 +1447,7 @@ class StreamWrapper {
       $serviceCatalog = $ident->serviceCatalog();
       self::$serviceCatalogCache[$token] = $serviceCatalog;
 
-      $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $token);
+      $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $token, \OpenStack\Storage\ObjectStorage::DEFAULT_REGION, $client);
 
       /*
       $catalog = $ident->serviceCatalog(ObjectStorage::SERVICE_TYPE);
@@ -1470,7 +1473,9 @@ class StreamWrapper {
     $tenantName = $this->cxt('tenantname');
     $authUrl = $this->cxt('endpoint');
 
-    $ident = new \OpenStack\Services\IdentityService($authUrl);
+    $client = $this->cxt('transport_client', NULL);
+
+    $ident = new \OpenStack\Services\IdentityService($authUrl, $client);
 
     // Frustrated? Go burninate. http://www.homestarrunner.com/trogdor.html
 

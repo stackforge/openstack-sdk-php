@@ -204,8 +204,8 @@ authorization token (`$token`), though we can also get the token from
 
 Note that the `IdentityService` object may throw various exceptions
 (all subclasses of OpenStack::Exception) during authentication. Failed
-authentication results in an OpenStack::Transport::AuthorizationException, while
-a network failure may result in an OpenStack::Transport::ServerException.
+authentication results in an \OpenStack\Transport\AuthorizationException, while
+a network failure may result in an \OpenStack\Transport\ServerException.
 
 Earlier, we talked about the service catalog. Once we've authenticated,
 we can get the service catalog from `$idService->serviceCatalog()`. It

@@ -61,7 +61,7 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase {
     //$serviceURL = $services[0]['endpoints'][0]['adminURL'];
     $serviceURL = $services[0]['endpoints'][0]['publicURL'];
 
-    $ostore = new \OpenStack\Storage\ObjectStorage($ident->token(), $serviceURL);
+    $ostore = new \OpenStack\Storage\ObjectStorage($ident->token(), $serviceURL, $this->getTransportClient());
 
     $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
@@ -72,7 +72,7 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase {
     $ident = $this->identity();
     $tok = $ident->token();
     $cat = $ident->serviceCatalog();
-    $ostore = \OpenStack\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok);
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok, self::$settings['openstack.swift.region'], $this->getTransportClient());
     $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
@@ -81,25 +81,25 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase {
     $ident = $this->identity();
     $tok = $ident->token();
     $cat = $ident->serviceCatalog();
-    $ostore = \OpenStack\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok, 'region-w.geo-99999.fake');
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromServiceCatalog($cat, $tok, 'region-w.geo-99999.fake', $this->getTransportClient());
     $this->assertEmpty($ostore);
   }
 
   public function testNewFromIdnetity() {
     $ident = $this->identity();
-    $ostore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident, self::$settings['openstack.swift.region'], $this->getTransportClient());
     $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
   }
 
   public function testNewFromIdentityAltRegion() {
     $ident = $this->identity();
-    $ostore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident, 'region-b.geo-1');
+    $ostore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident, 'region-b.geo-1', $this->getTransportClient());
     $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage', $ostore);
     $this->assertTrue(strlen($ostore->token()) > 0);
 
     // Make sure the store is not the same as the default region.
-    $ostoreDefault = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
+    $ostoreDefault = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident, self::$settings['openstack.swift.region'], $this->getTransportClient());
     $this->assertNotEquals($ostore, $ostoreDefault);
   }
 

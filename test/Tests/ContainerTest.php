@@ -140,15 +140,15 @@ class ContainerTest extends \OpenStack\Tests\TestCase {
     $container = $this->containerFixture();
     $object = $container->remoteObject(self::FNAME);
 
-    $content = $object->content();
+    $content = (string) $object->content();
     $object->setContent('FOO');
     $this->assertEquals('FOO', $object->content());
 
     $object->refresh(TRUE);
-    $this->assertEquals($content, $object->content());
+    $this->assertEquals($content, (string) $object->content());
 
     $object->refresh(FALSE);
-    $this->assertEquals($content, $object->content());
+    $this->assertEquals($content, (string) $object->content());
 
   }
 

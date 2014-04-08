@@ -20,6 +20,8 @@
 
 namespace OpenStack\Storage\ObjectStorage;
 
+use OpenStack\Transport\GuzzleClient;
+
 /**
  * A container in an ObjectStorage.
  *
@@ -82,6 +84,11 @@ class Container implements \Countable, \IteratorAggregate {
   protected $baseUrl;
   protected $acl;
   protected $metadata;
+
+  /**
+   * The HTTP Client
+   */
+  protected $client;
 
   /**
    * Transform a metadata array into headers.
@@ -187,11 +194,12 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $token The auth token.
    * @param string $url The base URL. The container name is automatically
    *   appended to this at construction time.
+   * @param \OpenStack\Transport\ClientInterface $client A HTTP transport client.
    *
    * @return \OpenStack\Storage\ObjectStorage\Container A new container object.
    */
-  public static function newFromJSON($jsonArray, $token, $url) {
-    $container = new Container($jsonArray['name']);
+  public static function newFromJSON($jsonArray, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL) {
+    $container = new Container($jsonArray['name'], NULL, NULL, $client);
 
     $container->baseUrl = $url;
 
@@ -226,22 +234,25 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $token The auth token.
    * @param string $url The base URL. The container name is automatically
    *   appended to this at construction time.
+   * @param \OpenStack\Transport\ClientInterface $client A HTTP transport client.
    *
    * @return \OpenStack\Storage\ObjectStorage\Container The Container object,
    *   initialized and ready for use.
    */
-  public static function newFromResponse($name, $response, $token, $url) {
-    $container = new Container($name);
-    $container->bytes = $response->header('X-Container-Bytes-Used', 0);
-    $container->count = $response->header('X-Container-Object-Count', 0);
+  public static function newFromResponse($name, $response, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL) {
+    $container = new Container($name, NULL, NULL, $client);
+    $container->bytes = $response->getHeader('X-Container-Bytes-Used', 0);
+    $container->count = $response->getHeader('X-Container-Object-Count', 0);
     $container->baseUrl = $url;
     $container->url = $url . '/' . rawurlencode($name);
     $container->token = $token;
 
-    $container->acl = ACL::newFromHeaders($response->headers());
+    $headers = self::reformatHeaders($response->getHeaders());
+
+    $container->acl = ACL::newFromHeaders($headers);
 
     $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
-    $metadata = Container::extractHeaderAttributes($response->headers(), $prefix);
+    $metadata = Container::extractHeaderAttributes($headers, $prefix);
     $container->setMetadata($metadata);
 
     return $container;
@@ -286,11 +297,20 @@ class Container implements \Countable, \IteratorAggregate {
    * @param string $name The name.
    * @param string $url The full URL to the container.
    * @param string $token The auth token.
+   * @param \OpenStack\Transport\ClientInterface $client A HTTP transport client.
    */
-  public function __construct($name , $url = NULL, $token = NULL) {
+  public function __construct($name , $url = NULL, $token = NULL, \OpenStack\Transport\ClientInterface $client = NULL) {
     $this->name = $name;
     $this->url = $url;
     $this->token = $token;
+
+    // Guzzle is the default client to use.
+    if (is_null($client)) {
+      $this->client = new GuzzleClient();
+    }
+    else {
+      $this->client = $client;
+    }
   }
 
   /**
@@ -453,8 +473,6 @@ class Container implements \Countable, \IteratorAggregate {
       $headers += $moreHeaders;
     }
 
-    $client = \OpenStack\Transport::instance();
-
     if (empty($file)) {
       // Now build up the rest of the headers:
       $headers['Etag'] = $obj->eTag();
@@ -469,7 +487,7 @@ class Container implements \Countable, \IteratorAggregate {
       else {
         $headers['Content-Length'] = $obj->contentLength();
       }
-      $response = $client->doRequest($url, 'PUT', $headers, $obj->content());
+      $response = $this->client->doRequest($url, 'PUT', $headers, $obj->content());
     }
     else {
       // Rewind the file.
@@ -490,11 +508,11 @@ class Container implements \Countable, \IteratorAggregate {
       // Not sure if this is necessary:
       rewind($file);
 
-      $response = $client->doRequestWithResource($url, 'PUT', $headers, $file);
+      $response = $this->client->doRequestWithResource($url, 'PUT', $headers, $file);
 
     }
 
-    if ($response->status() != 201) {
+    if ($response->getStatusCode() != 201) {
       throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
     return TRUE;
@@ -535,12 +553,10 @@ class Container implements \Countable, \IteratorAggregate {
     // content type IS reset during this operation.
     $headers['Content-Type'] = $obj->contentType();
 
-    $client = \OpenStack\Transport::instance();
-
     // The POST verb is for updating headers.
-    $response = $client->doRequest($url, 'POST', $headers, $obj->content());
+    $response = $this->client->doRequest($url, 'POST', $headers, $obj->content());
 
-    if ($response->status() != 202) {
+    if ($response->getStatusCode() != 202) {
       throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
     return TRUE;
@@ -587,13 +603,13 @@ class Container implements \Countable, \IteratorAggregate {
     $headers = array(
       'X-Auth-Token' => $this->token,
       'Destination' => $destUrl,
+      'Content-Type' => $obj->contentType(),
     );
 
-    $client = \OpenStack\Transport::instance();
-    $response = $client->doRequest($sourceUrl, 'COPY', $headers);
+    $response = $this->client->doRequest($sourceUrl, 'COPY', $headers);
 
-    if ($response->status() != 201) {
-      throw new \OpenStack\Exception("An unknown condition occurred during copy. " . $response->status());
+    if ($response->getStatusCode() != 201) {
+      throw new \OpenStack\Exception("An unknown condition occurred during copy. " . $response->getStatusCode());
     }
     return TRUE;
   }
@@ -630,16 +646,14 @@ class Container implements \Countable, \IteratorAggregate {
     // Auth token.
     $headers['X-Auth-Token'] = $this->token;
 
-    $client = \OpenStack\Transport::instance();
+    $response = $this->client->doRequest($url, 'GET', $headers);
 
-    $response = $client->doRequest($url, 'GET', $headers);
-
-    if ($response->status() != 200) {
+    if ($response->getStatusCode() != 200) {
       throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
 
-    $remoteObject = RemoteObject::newFromHeaders($name, $response->headers(), $this->token, $url);
-    $remoteObject->setContent($response->content());
+    $remoteObject = RemoteObject::newFromHeaders($name, self::reformatHeaders($response->getHeaders()), $this->token, $url, $this->client);
+    $remoteObject->setContent($response->getBody());
 
     return $remoteObject;
   }
@@ -679,18 +693,15 @@ class Container implements \Countable, \IteratorAggregate {
       'X-Auth-Token' => $this->token,
     );
 
+    $response = $this->client->doRequest($url, 'HEAD', $headers);
 
-    $client = \OpenStack\Transport::instance();
-
-    $response = $client->doRequest($url, 'HEAD', $headers);
-
-    if ($response->status() != 200) {
+    if ($response->getStatusCode() != 200) {
       throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
     }
 
-    $headers = $response->headers();
+    $headers = self::reformatHeaders($response->getHeaders());
 
-    $obj = RemoteObject::newFromHeaders($name, $headers, $this->token, $url);
+    $obj = RemoteObject::newFromHeaders($name, $headers, $this->token, $url, $this->client);
 
     return $obj;
   }
@@ -894,22 +905,21 @@ class Container implements \Countable, \IteratorAggregate {
       throw new \OpenStack\Exception('Remote data cannot be fetched. Tokena and endpoint URL are required.');
     }
     // Do a GET on $url to fetch headers.
-    $client = \OpenStack\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
-    $response = $client->doRequest($this->url, 'GET', $headers);
-
+    $response = $this->client->doRequest($this->url, 'GET', $headers);
+    $headers = self::reformatHeaders($response->getHeaders());
     // Get ACL.
-    $this->acl = ACL::newFromHeaders($response->headers());
+    $this->acl = ACL::newFromHeaders($headers);
 
     // Update size and count.
-    $this->bytes = $response->header('X-Container-Bytes-Used', 0);
-    $this->count = $response->header('X-Container-Object-Count', 0);
+    $this->bytes = $response->getHeader('X-Container-Bytes-Used', 0);
+    $this->count = $response->getHeader('X-Container-Object-Count', 0);
 
     // Get metadata.
     $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
-    $this->setMetadata(Container::extractHeaderAttributes($response->headers(), $prefix));
+    $this->setMetadata(Container::extractHeaderAttributes($headers, $prefix));
 
     return $this;
   }
@@ -933,21 +943,19 @@ class Container implements \Countable, \IteratorAggregate {
     $query = str_replace('%2F', '/', $query);
     $url = $this->url . '?' . $query;
 
-    $client = \OpenStack\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
 
-    $response = $client->doRequest($url, 'GET', $headers);
+    $response = $this->client->doRequest($url, 'GET', $headers);
 
     // The only codes that should be returned are 200 and the ones
     // already thrown by doRequest.
-    if ($response->status() != 200) {
+    if ($response->getStatusCode() != 200) {
       throw new \OpenStack\Exception('An unknown exception occurred while processing the request.');
     }
 
-    $responseContent = $response->content();
-    $json = json_decode($responseContent, TRUE);
+    $json = $response->json();
 
     // Turn the array into a list of RemoteObject instances.
     $list = array();
@@ -961,7 +969,7 @@ class Container implements \Countable, \IteratorAggregate {
       else {
         //$url = $this->url . '/' . rawurlencode($item['name']);
         $url = self::objectUrl($this->url, $item['name']);
-        $list[] = RemoteObject::newFromJSON($item, $this->token, $url);
+        $list[] = RemoteObject::newFromJSON($item, $this->token, $url, $this->client);
       }
     }
 
@@ -1011,20 +1019,51 @@ class Container implements \Countable, \IteratorAggregate {
       'X-Auth-Token' => $this->token,
     );
 
-    $client = \OpenStack\Transport::instance();
-
     try {
-      $response = $client->doRequest($url, 'DELETE', $headers);
+      $response = $this->client->doRequest($url, 'DELETE', $headers);
     }
     catch (\OpenStack\Transport\FileNotFoundException $fnfe) {
       return FALSE;
     }
 
-    if ($response->status() != 204) {
+    if ($response->getStatusCode() != 204) {
       throw new \OpenStack\Exception("An unknown exception occured while deleting $name.");
     }
 
     return TRUE;
+  }
+
+  /**
+   * Reformat the headers array to remove a nested array.
+   *
+   * For example, headers coming in could be in the format:
+   *
+   *     $headers = [
+   *         'Content-Type' => [
+   *             [0] => 'Foo',
+   *         ],
+   *     ];
+   *
+   * This method would reformat the array into:
+   *
+   *     $headers = [
+   *         'Content-Type' => 'Foo',
+   *     ];
+   *
+   * Note, for cases where multiple values for a header are needed this method
+   * should not be used.
+   *
+   * @param  array  $headers A headers array from the response.
+   * @return array  A new shallower array.
+   */
+  public static function reformatHeaders(array $headers) {
+    $newHeaders = [];
+
+    foreach ($headers as $name => $header) {
+      $newHeaders[$name] = $header[0];
+    }
+
+    return $newHeaders;
   }
 
 }

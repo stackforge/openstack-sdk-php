@@ -21,10 +21,10 @@
 namespace OpenStack\Transport;
 
 /**
- * Describes a Transporter.
+ * Describes a transport client.
  *
- * Transporters are responsible for moving data from the remote cloud to
- * the local host. Transporters are responsible only for the transport
+ * Transport clients are responsible for moving data from the remote cloud to
+ * the local host. Transport clinets are responsible only for the transport
  * protocol, not for the payloads.
  *
  * The current OpenStack services implementation is oriented toward
@@ -32,9 +32,24 @@ namespace OpenStack\Transport;
  * HTTP/HTTPS, and perhaps SPDY some day. The interface reflects this.
  * it is not designed as a protocol-neutral transport layer
  */
-interface Transporter {
+interface ClientInterface {
 
   const HTTP_USER_AGENT = 'OpenStack-PHP/1.0';
+
+  /**
+   * Setup for the HTTP Client.
+   * 
+   * @param array $options Options for the HTTP Client including:
+   *   - headers  (array)  A key/value mapping of default headers for each request.
+   *   - proxy    (string) A proxy specified as a URI.
+   *   - debug      (bool)   True if debug output should be displayed.
+   *   - timeout    (int)    The timeout, in seconds, a request should wait before
+   *     timing out.
+   *   - ssl_verify (bool|string) True, the default, verifies the SSL certificate,
+   *     FALSE disables verification, and a string is the path to a CA to verify
+   *     against.
+   */
+  public function __construct(array $options = []);
 
   /**
    * Perform a request.
@@ -47,8 +62,23 @@ interface Transporter {
    * @param string $method The method to be sent.
    * @param array $headers An array of name/value header pairs.
    * @param string $body The string containing the request body.
+   *
+   * @return \OpenStack\Transport\ResponseInterface The response. The response
+   *   is implicit rather than explicit. The interface is based on a draft for
+   *   messages from PHP FIG. Individual implementing libraries will have their
+   *   own reference to interfaces. For example, see Guzzle.
+   *
+   * @throws \OpenStack\Transport\ForbiddenException
+   * @throws \OpenStack\Transport\UnauthorizedException
+   * @throws \OpenStack\Transport\FileNotFoundException
+   * @throws \OpenStack\Transport\MethodNotAllowedException
+   * @throws \OpenStack\Transport\ConflictException
+   * @throws \OpenStack\Transport\LengthRequiredException
+   * @throws \OpenStack\Transport\UnprocessableEntityException
+   * @throws \OpenStack\Transport\ServerException
+   * @throws \OpenStack\Exception
    */
-  public function doRequest($uri, $method = 'GET', $headers = array(), $body = '');
+  public function doRequest($uri, $method = 'GET', array $headers = [], $body = '');
 
 
   /**
@@ -75,6 +105,21 @@ interface Transporter {
    *   file object resource. If it is a string, then it will be opened with the
    *   default context. So if you need a special context, you should open the
    *   file elsewhere and pass the resource in here.
+   *
+   * @return \OpenStack\Transport\ResponseInterface The response. The response
+   *   is implicit rather than explicit. The interface is based on a draft for
+   *   messages from PHP FIG. Individual implementing libraries will have their
+   *   own reference to interfaces. For example, see Guzzle.
+   *
+   * @throws \OpenStack\Transport\ForbiddenException
+   * @throws \OpenStack\Transport\UnauthorizedException
+   * @throws \OpenStack\Transport\FileNotFoundException
+   * @throws \OpenStack\Transport\MethodNotAllowedException
+   * @throws \OpenStack\Transport\ConflictException
+   * @throws \OpenStack\Transport\LengthRequiredException
+   * @throws \OpenStack\Transport\UnprocessableEntityException
+   * @throws \OpenStack\Transport\ServerException
+   * @throws \OpenStack\Exception
    */
-  public function doRequestWithResource($uri, $method, $headers, $resource);
+  public function doRequestWithResource($uri, $method, array $headers = [], $resource);
 }

@@ -31,7 +31,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $endpoint = self::conf('openstack.identity.url');
     $this->assertNotEmpty($endpoint);
 
-    $service = new IdentityService($endpoint);
+    $service = new IdentityService($endpoint, $this->getTransportClient());
 
     $this->assertInstanceOf('\OpenStack\Services\IdentityService', $service);
 
@@ -43,7 +43,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
    */
   public function testUrl() {
     $endpoint = self::conf('openstack.identity.url');
-    $service = new IdentityService($endpoint);
+    $service = new IdentityService($endpoint, $this->getTransportClient());
 
     // If there is a trailing / we remove that from the endpoint. Our calls add
     // the / back where appropriate.
@@ -79,7 +79,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $this->assertNotEmpty($tok);
 
     // We should get the same token if we request again.
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $tok2 = $service->authenticate($auth);
     $this->assertEquals($tok, $tok2);
 
@@ -99,7 +99,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
    * @depends testAuthenticate
    */
   public function testAuthenticateAsUser() {
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
 
     $user = self::conf('openstack.identity.username');
     $pass = self::conf('openstack.identity.password');
@@ -132,7 +132,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
   public function testIsExpired($service) {
     $this->assertFalse($service->isExpired());
 
-    $service2 = new IdentityService(self::conf('openstack.identity.url'));
+    $service2 = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $this->assertTrue($service2->isExpired());
   }
 
@@ -144,17 +144,17 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $pass = self::conf('openstack.identity.password');
     $tenantName = self::conf('openstack.identity.tenantName');
 
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $this->assertNull($service->tenantName());
 
     $service->authenticateAsUser($user, $pass);
     $this->assertEmpty($service->tenantName());
 
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $ret = $service->authenticateAsUser($user, $pass, NULL, $tenantName);
     $this->assertNotEmpty($service->tenantName());
 
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $this->assertNull($service->tenantName());
   }
 
@@ -166,13 +166,13 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $pass = self::conf('openstack.identity.password');
     $tenantId = self::conf('openstack.identity.tenantId');
 
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $this->assertNull($service->tenantId());
 
     $service->authenticateAsUser($user, $pass);
     $this->assertEmpty($service->tenantId());
 
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $service->authenticateAsUser($user, $pass, $tenantId);
     $this->assertNotEmpty($service->tenantId());
   }
@@ -186,7 +186,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
     $pass = self::conf('openstack.identity.password');
     $tenantId = self::conf('openstack.identity.tenantId');
 
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $service->authenticateAsUser($user, $pass);
 
     // Details for user auth.
@@ -199,7 +199,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
 
 
     // Test details for username auth.
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $service->authenticateAsUser($user, $pass, $tenantId);
 
     $details = $service->tokenDetails();
@@ -291,8 +291,8 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
    * @group tenant
    */
   public function testTenants() {
-    $service = new IdentityService(self::conf('openstack.identity.url'));
-    $service2 = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
+    $service2 = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $user = self::conf('openstack.identity.username');
     $pass = self::conf('openstack.identity.password');
     $tenantId = self::conf('openstack.identity.tenantId');
@@ -317,7 +317,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
    * @depends testTenants
    */
   function testRescope() {
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $user = self::conf('openstack.identity.username');
     $pass = self::conf('openstack.identity.password');
     $tenantId = self::conf('openstack.identity.tenantId');
@@ -346,7 +346,7 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
    * @depends testTenants
    */
   function testRescopeByTenantName() {
-    $service = new IdentityService(self::conf('openstack.identity.url'));
+    $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
     $user = self::conf('openstack.identity.username');
     $pass = self::conf('openstack.identity.password');
     $tenantName = self::conf('openstack.identity.tenantName');
@@ -388,7 +388,16 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
       'password' => self::conf('openstack.identity.password'),
       'endpoint' => self::conf('openstack.identity.url'),
       'tenantid' => self::conf('openstack.identity.tenantId'),
+      'transport' => self::conf('transport'),
+      'transport.debug' => self::conf('transport.debug', FALSE),
+      'transport.ssl_verify' => self::conf('transport.ssl', TRUE),
     );
+    if (self::conf('transport.timeout')) {
+      $setting['transport.timeout'] = self::conf('transport.timeout');
+    }
+    if (self::conf('transport.proxy')) {
+      $setting['transport.proxy'] = self::conf('transport.proxy');
+    }
     Bootstrap::setConfiguration($settings);
 
     $is = Bootstrap::identity(TRUE);
@@ -410,7 +419,16 @@ class IdentityServiceTest extends \OpenStack\Tests\TestCase {
       'password' => self::conf('openstack.identity.password'),
       'endpoint' => self::conf('openstack.identity.url'),
       'tenantname' => self::conf('openstack.identity.tenantName'),
+      'transport' => self::conf('transport'),
+      'transport.debug' => self::conf('transport.debug', FALSE),
+      'transport.ssl_verify' => self::conf('transport.ssl', TRUE),
     );
+    if (self::conf('transport.timeout')) {
+      $setting['transport.timeout'] = self::conf('transport.timeout');
+    }
+    if (self::conf('transport.proxy')) {
+      $setting['transport.proxy'] = self::conf('transport.proxy');
+    }
     Bootstrap::setConfiguration($settings);
 
     $is = Bootstrap::identity(TRUE);

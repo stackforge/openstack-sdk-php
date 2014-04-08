@@ -42,6 +42,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    */
   public static $ident;
 
+  public static $httpClient = NULL;
 
   //public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
   public static function setUpBeforeClass() {
@@ -93,7 +94,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     $url = self::$settings['openstack.swift.url'];
     //$url = self::$settings['openstack.identity.url'];
 
-    return \OpenStack\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url);
+    return \OpenStack\Storage\ObjectStorage::newFromSwiftAuth($user, $key, $url, $this->getTransportClient());
 
   }
 
@@ -131,7 +132,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     if ($reset || empty(self::$ostore)) {
       $ident = $this->identity($reset);
 
-      $objStore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident);
+      $objStore = \OpenStack\Storage\ObjectStorage::newFromIdentity($ident,  self::$settings['openstack.swift.region'], $this->getTransportClient());
 
       self::$ostore = $objStore;
 
@@ -195,6 +196,34 @@ class TestCase extends \PHPUnit_Framework_TestCase {
 
     $store->deleteContainer($cname);
 
+  }
+
+  /**
+   * Retrieve the HTTP Transport Client
+   *
+   * @return \OpenStack\Transport\ClientInterface A transport client.
+   */
+  public static function getTransportClient() {
+
+    if (is_null(self::$httpClient)) {
+      $options = [];
+      if (isset(self::$settings['transport.proxy'])) {
+        $options['proxy'] = self::$settings['transport.proxy'];
+      }
+      if (isset(self::$settings['transport.debug'])) {
+        $options['debug'] = self::$settings['transport.debug'];
+      }
+      if (isset(self::$settings['transport.ssl.verify'])) {
+        $options['ssl_verify'] = self::$settings['transport.ssl.verify'];
+      }
+      if (isset(self::$settings['transport.timeout'])) {
+        $options['timeout'] = self::$settings['transport.timeout'];
+      }
+
+      self::$httpClient = new self::$settings['transport']($options);
+    }
+
+    return self::$httpClient;
   }
 
   /**

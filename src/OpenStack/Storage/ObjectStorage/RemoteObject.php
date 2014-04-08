@@ -20,6 +20,8 @@
 
 namespace OpenStack\Storage\ObjectStorage;
 
+use OpenStack\Transport\GuzzleClient;
+
 /**
  * A representation of an object stored in remote Object Storage.
  *
@@ -61,13 +63,19 @@ class RemoteObject extends Object {
   protected $allHeaders = array();
 
   /**
+   * The HTTP Client
+   */
+  protected $client;
+
+  /**
    * Create a new RemoteObject from JSON data.
    *
    * @param array $data The JSON data as an array.
    * @param string $token The authentication token.
    * @param $url The URL to the object on the remote server
+   * @param \OpenStack\Transport\ClientInterface $client A HTTP transport client.
    */
-  public static function newFromJSON($data, $token, $url) {
+  public static function newFromJSON($data, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL) {
 
     $object = new RemoteObject($data['name']);
     $object->setContentType($data['content_type']);
@@ -81,6 +89,11 @@ class RemoteObject extends Object {
 
     // FIXME: What do we do about HTTP header data that doesn't come
     // back in JSON?
+    
+    if (is_null($client)) {
+      $client = new GuzzleClient();
+    }
+    $object->setClient($client);
 
     return $object;
   }
@@ -101,7 +114,7 @@ class RemoteObject extends Object {
    *
    * @return \OpenStack\Storage\ObjectStorage\RemoteObject A new RemoteObject.
    */
-  public static function newFromHeaders($name, $headers, $token, $url) {
+  public static function newFromHeaders($name, $headers, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL) {
     $object = new RemoteObject($name);
 
     //$object->allHeaders = $headers;
@@ -136,7 +149,21 @@ class RemoteObject extends Object {
     $object->token = $token;
     $object->url = $url;
 
+    if (is_null($client)) {
+      $client = new GuzzleClient();
+    }
+    $object->setClient($client);
+
     return $object;
+  }
+
+  /**
+   * Set the HTTP Client to use.
+   *
+   * @param OpenStackTransportClientInterface $client The HTTP Client
+   */
+  public function setClient(\OpenStack\Transport\ClientInterface $client) {
+    $this->client = $client;
   }
 
   /**
@@ -324,7 +351,7 @@ class RemoteObject extends Object {
     // Get the object, content included.
     $response = $this->fetchObject(TRUE);
 
-    $content = $response->content();
+    $content = $response->getBody();
 
     // Checksum the content.
     // XXX: Right now the md5 is done even if checking is turned off.
@@ -386,7 +413,12 @@ class RemoteObject extends Object {
     // return its stream handle.
     $response = $this->fetchObject(TRUE);
 
-    return $response->file();
+    // Write to in-mem handle backed by a temp file.
+    $out = fopen('php://temp', 'rb+');
+    fwrite($out, $response->getBody());
+    rewind($out);
+
+    return $out;
   }
 
   /**
@@ -551,7 +583,7 @@ class RemoteObject extends Object {
 
 
     if ($fetchContent) {
-      $this->setContent($response->content());
+      $this->setContent($response->getBody());
     }
 
     return $this;
@@ -571,14 +603,13 @@ class RemoteObject extends Object {
   protected function fetchObject($fetchContent = FALSE) {
     $method = $fetchContent ? 'GET' : 'HEAD';
 
-    $client = \OpenStack\Transport::instance();
     $headers = array(
       'X-Auth-Token' => $this->token,
     );
 
-    $response = $client->doRequest($this->url, $method, $headers);
+    $response = $this->client->doRequest($this->url, $method, $headers);
 
-    if ($response->status() != 200) {
+    if ($response->getStatusCode() != 200) {
       throw new \OpenStack\Exception('An unknown exception occurred during transmission.');
     }
 
@@ -596,16 +627,20 @@ class RemoteObject extends Object {
    *   object so it can be used in chaining methods.
    */
   protected function extractFromHeaders($response) {
-    $this->setContentType($response->header('Content-Type', $this->contentType()));
-    $this->lastModified = strtotime($response->header('Last-Modified', 0));
-    $this->etag = $response->header('Etag', $this->etag);
-    $this->contentLength = (int) $response->header('Content-Length', 0);
+    $this->setContentType($response->getHeader('Content-Type') ? $response->getHeader('Content-Type') : $this->contentType());
+    $this->lastModified = strtotime($response->getHeader('Last-Modified') ? $response->getHeader('Last-Modified') : 0);
+    $this->etag = $response->getHeader('Etag') ? $response->getHeader('Etag') : $this->etag;
+    $this->contentLength = (int) ($response->getHeader('Content-Length') ? $response->getHeader('Content-Length') : 0);
 
-    $this->setDisposition($response->header('Content-Disposition', NULL));
-    $this->setEncoding($response->header('Content-Encoding', NULL));
+    $this->setDisposition($response->getHeader('Content-Disposition', NULL));
+    $this->setEncoding($response->getHeader('Content-Encoding', NULL));
 
     // Reset the metadata, too:
-    $this->setMetadata(Container::extractHeaderAttributes($response->headers()));
+    $headers = [];
+    foreach ($response->getHeaders() as $name => $header) {
+      $headers[$name] = $header[0];
+    }
+    $this->setMetadata(Container::extractHeaderAttributes($headers));
 
     return $this;
   }
