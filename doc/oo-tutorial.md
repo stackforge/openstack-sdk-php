@@ -491,11 +491,4 @@ OpenStack and works with object storage. Clearly, this only scratches the
 surface of what the OpenStack PHP-Client library does. But hopefully this is
 enough to get you started with the library.
 
-The entire library is well documented, and the documentation is
-[available online](https://FIXME). You can also build a
-local copy by installing [doxygen](http://www.stack.nl/~dimitri/doxygen)
-(if you haven't already) and running `make docs` in the root of the
-OpenStack PHP-Client project. This will place the generated documents in
-`docs/api/html`.
-
 \see oo-tutorial-code.php

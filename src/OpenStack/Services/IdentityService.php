@@ -15,8 +15,6 @@
    limitations under the License.
 ============================================================================ */
 /**
- * @file
- *
  * This file contains the main IdentityService class.
  */
 
@@ -33,7 +31,7 @@ namespace OpenStack\Services;
  * - Obtain a list of the services currently available with a token
  * - Associate with tenants using tenant IDs.
  *
- * @b AUTHENTICATION
+ * AUTHENTICATION
  *
  * The authentication process consists of a single transaction during which the
  * client (us) submits credentials and the server verifies those credentials,
@@ -47,7 +45,7 @@ namespace OpenStack\Services;
  *
  * Other mechanisms may be supported in the future.
  *
- * @b TENANTS
+ * TENANTS
  *
  * Services are associated with tenants. A token is returned when
  * authentication succeeds. It *may* be associated with a tenant. If it is not,
@@ -63,7 +61,7 @@ namespace OpenStack\Services;
  * - After authentication, "rescope" the token to attach it to a tenant. This
  *   is done with the rescope() method.
  *
- * <b>Where do I get a tenant ID?</b>
+ * Where do I get a tenant ID?
  *
  * There are two notable places to get this information:
  *
@@ -73,41 +71,39 @@ namespace OpenStack\Services;
  * OpenStack users can find their tenant ID in the console along with their
  * username and password.
  *
- * @b EXAMPLE
+ * EXAMPLE
  *
  * The following example illustrates typical use of this class.
  *
- * @code
- * <?php
- * // You may need to use \OpenStack\Bootstrap to set things up first.
+ *     <?php
+ *     // You may need to use \OpenStack\Bootstrap to set things up first.
  *
- * use \OpenStack\Services\IdentityService;
+ *     use \OpenStack\Services\IdentityService;
  *
- * // Create a new object with the endpoint URL (no version number)
- * $ident = new IdentityService('https://example.com:35357');
+ *     // Create a new object with the endpoint URL (no version number)
+ *     $ident = new IdentityService('https://example.com:35357');
  *
- * // Authenticate and set the tenant ID simultaneously.
- * $ident->authenticateAsUser('me@example.com', 'password', '1234567');
+ *     // Authenticate and set the tenant ID simultaneously.
+ *     $ident->authenticateAsUser('me@example.com', 'password', '1234567');
  *
- * // The token to use when connecting to other services:
- * $token = $ident->token();
+ *     // The token to use when connecting to other services:
+ *     $token = $ident->token();
  *
- * // The tenant ID.
- * $tenant = $ident->tenantId();
+ *     // The tenant ID.
+ *     $tenant = $ident->tenantId();
  *
- * // Details about what services this token can access.
- * $services = $ident->serviceCatalog();
+ *     // Details about what services this token can access.
+ *     $services = $ident->serviceCatalog();
  *
- * // List all available tenants.
- * $tenants = $ident->tenants();
+ *     // List all available tenants.
+ *     $tenants = $ident->tenants();
  *
- * // Switch to a different tenant.
- * $ident->rescope($tenants[0]['id']);
+ *     // Switch to a different tenant.
+ *     $ident->rescope($tenants[0]['id']);
  *
- * ?>
- * @endcode
+ *     ?>
  *
- * <b>PERFORMANCE CONSIDERATIONS</b>
+ * PERFORMANCE CONSIDERATIONS
  *
  * The following methods require network requests:
  *
@@ -116,7 +112,7 @@ namespace OpenStack\Services;
  * - tenants()
  * - rescope()
  *
- * <b>Serializing</b>
+ * Serializing
  *
  * IdentityService has been intentionally built to serialize well.
  * This allows implementors to cache IdentityService objects rather
@@ -128,10 +124,12 @@ class IdentityService /*implements Serializable*/ {
    * The version of the API currently supported.
    */
   const API_VERSION = '2.0';
+
   /**
    * The full OpenStack accept type.
    */
   const ACCEPT_TYPE = 'application/json';
+
   // This is no longer supported.
   //const ACCEPT_TYPE = 'application/vnd.openstack.identity+json;version=2.0';
 
@@ -150,18 +148,16 @@ class IdentityService /*implements Serializable*/ {
    *
    * This is an associative array looking like this:
    *
-   * @code
-   * <?php
-   * array(
-   *   'id' => 'auth_123abc321defef99',
-   *   // Only non-empty for username/password auth.
-   *   'tenant' => array(
-   *     'id' => '123456',
-   *     'name' => 'matt.butcher@hp.com',
-   *   ),
-   *   'expires' => '2012-01-24T12:46:01.682Z'
-   * );
-   * @endcode
+   *     <?php
+   *     array(
+   *       'id' => 'auth_123abc321defef99',
+   *       // Only non-empty for username/password auth.
+   *       'tenant' => array(
+   *         'id' => '123456',
+   *         'name' => 'matt.butcher@hp.com',
+   *       ),
+   *       'expires' => '2012-01-24T12:46:01.682Z'
+   *     );
    */
   protected $tokenDetails;
 
@@ -177,27 +173,23 @@ class IdentityService /*implements Serializable*/ {
    *
    * Each object is bound to a particular identity services endpoint.
    *
-   * For the URL, you are advised to use the version <i>without</i> a
+   * For the URL, you are advised to use the version without a
    * version number at the end, e.g. http://cs.example.com/ rather
    * than http://cs.example.com/v2.0. The version number must be
    * controlled by the library.
    *
-   * @attention
    * If a version is included in the URI, the library will attempt to use
    * that URI.
    *
-   * @code
-   * <?php
-   * $cs = new \OpenStack\Services\IdentityService('http://example.com');
-   * $token = $cs->authenticateAsUser($username, $password);
-   * ?>
-   * @endcode
+   *     <?php
+   *     $cs = new \OpenStack\Services\IdentityService('http://example.com');
+   *     $token = $cs->authenticateAsUser($username, $password);
+   *     ?>
    *
-   * @param string $url
-   *   An URL pointing to the Identity Services endpoint. Note that you do
-   *   not need the version identifier in the URL, as version information
-   *   is sent in the HTTP headers rather than in the URL. <b>The URL
-   *   should <i>always</i> be to an SSL/TLS encrypted endpoint.</b>.
+   * @param string $url An URL pointing to the Identity Services endpoint. Note
+   *   that you do not need the version identifier in the URL, as version
+   *   information is sent in the HTTP headers rather than in the URL. The URL
+   *   should always be to an SSL/TLS encrypted endpoint.
    */
   public function __construct($url) {
     $parts = parse_url($url);
@@ -216,9 +208,7 @@ class IdentityService /*implements Serializable*/ {
    * This includes version number, so in that regard it is not an identical
    * URL to the one passed into the constructor.
    *
-   * @retval string
-   * @return string
-   *   The complete URL to the identity services endpoint.
+   * @return string The complete URL to the identity services endpoint.
    */
   public function url() {
     return $this->endpoint;
@@ -227,39 +217,36 @@ class IdentityService /*implements Serializable*/ {
   /**
    * Send an authentication request.
    *
-   * @remark EXPERT: This allows authentication requests at a low level. For simple
+   * EXPERT: This allows authentication requests at a low level. For simple
    * authentication requests using a username, see the
    * authenticateAsUser() method.
    *
    * Here is an example of username/password-based authentication done with
    * the authenticate() method:
-   * @code
-   * <?php
-   * $cs = new \OpenStack\Services\IdentityService($url);
-   * $ops = array(
-   *   'passwordCredentials' => array(
-   *     'username' => $username,
-   *     'password' => $password,
-   *   ),
-   *   'tenantId' => $tenantId,
-   * );
-   * $token = $cs->authenticate($ops);
-   * ?>
-   * @endcode
+   *
+   *     <?php
+   *     $cs = new \OpenStack\Services\IdentityService($url);
+   *     $ops = array(
+   *       'passwordCredentials' => array(
+   *         'username' => $username,
+   *         'password' => $password,
+   *       ),
+   *       'tenantId' => $tenantId,
+   *     );
+   *     $token = $cs->authenticate($ops);
+   *     ?>
    *
    * Note that the same authentication can be done by authenticateAsUser().
    *
-   * @param array $ops
-   *   An associative array of authentication operations and their respective
-   *   parameters.
-   * @retval string
-   * @return string
-   *   The token. This is returned for simplicity. The full response is used
-   *   to populate this object's service catalog, etc. The token is also
-   *   retrievable with token().
-   * @throws OpenStack::Transport::AuthorizationException
+   * @param array $ops An associative array of authentication operations and
+   *   their respective parameters.
+   *
+   * @return string The token. This is returned for simplicity. The full
+   *   response is used to populate this object's service catalog, etc. The
+   *   token is also retrievable with token().
+   * @throws \OpenStack\Transport\AuthorizationException
    *   If authentication failed.
-   * @throws OpenStack::Exception
+   * @throws \OpenStack\Exception
    *   For abnormal network conditions. The message will give an indication as
    *   to the underlying problem.
    */
@@ -290,7 +277,7 @@ class IdentityService /*implements Serializable*/ {
   }
 
   /**
-   * Authenticate to Identity Services with username, password, and either 
+   * Authenticate to Identity Services with username, password, and either
    * tenant ID or tenant Name.
    *
    * Given a OpenStack username and password, authenticate to Identity Services.
@@ -308,21 +295,15 @@ class IdentityService /*implements Serializable*/ {
    * Other authentication methods:
    * - authenticate()
    *
-   * @param string $username
-   *   A valid username.
-   * @param string $password
-   *   A password string.
-   * @param string $tenantId
-   *   The tenant ID. This can be obtained through the
+   * @param string $username A valid username.
+   * @param string $password A password string.
+   * @param string $tenantId The tenant ID. This can be obtained through the
    *   OpenStack console.
-   * @param string $tenantName
-   *   The tenant Name. This can be obtained through the
+   * @param string $tenantName The tenant Name. This can be obtained through the
    *   OpenStack console.
-   * @throws OpenStack::Transport::AuthorizationException
-   *   If authentication failed.
-   * @throws OpenStack::Exception
-   *   For abnormal network conditions. The message will give an indication as
-   *   to the underlying problem.
+   * @throws \OpenStack\Transport\AuthorizationException If authentication failed.
+   * @throws \OpenStack\Exception For abnormal network conditions. The message
+   *   will give an indication as to the underlying problem.
    */
   public function authenticateAsUser($username, $password, $tenantId = NULL, $tenantName = NULL) {
     $ops = array(
@@ -350,9 +331,7 @@ class IdentityService /*implements Serializable*/ {
    * This will not be populated until after one of the authentication
    * methods has been run.
    *
-   * @retval string
-   * @return string
-   *   The token ID to be used in subsequent calls.
+   * @return string The token ID to be used in subsequent calls.
    */
   public function token() {
     return $this->tokenDetails['id'];
@@ -367,9 +346,7 @@ class IdentityService /*implements Serializable*/ {
    * This will not be populated until after an authentication method has been
    * run.
    *
-   * @retval string
-   * @return string
-   *   The tenant ID if available, or NULL.
+   * @return string The tenant ID if available, or NULL.
    */
   public function tenantId() {
     if (!empty($this->tokenDetails['tenant']['id'])) {
@@ -386,9 +363,7 @@ class IdentityService /*implements Serializable*/ {
    * This will not be populated until after an authentication method has been
    * run.
    *
-   * @retval string
-   * @return string
-   *   The tenant name if available, or NULL.
+   * @return string The tenant name if available, or NULL.
    */
   public function tenantName() {
     if (!empty($this->tokenDetails['tenant']['name'])) {
@@ -407,23 +382,19 @@ class IdentityService /*implements Serializable*/ {
    * - tenant_id: The tenant ID of the authenticated user.
    * - tenant_name: The username of the authenticated user.
    *
-   * @code
-   * <?php
-   * array(
-   *   'id' => 'auth_123abc321defef99',
-   *   'tenant' => array(
-   *     'id' => '123456',
-   *     'name' => 'matt.butcher@hp.com',
-   *   ),
-   *   'expires' => '2012-01-24T12:46:01.682Z'
-   * );
-   * @endcode
+   *     <?php
+   *     array(
+   *       'id' => 'auth_123abc321defef99',
+   *       'tenant' => array(
+   *         'id' => '123456',
+   *         'name' => 'matt.butcher@hp.com',
+   *       ),
+   *       'expires' => '2012-01-24T12:46:01.682Z'
+   *     );
    *
    * This will not be populated until after authentication has been done.
    *
-   * @retval array
-   * @return array
-   *   An associative array of details.
+   * @return array An associative array of details.
    */
   public function tokenDetails() {
     return $this->tokenDetails;
@@ -436,11 +407,9 @@ class IdentityService /*implements Serializable*/ {
    * machine's local timestamp with the server's expiration time stamp. A
    * mis-configured machine timestamp could give spurious results.
    *
-   * @retval boolean
-   * @return boolean
-   *   This will return FALSE if there is a current token and it has
-   *   not yet expired (according to the date info). In all other cases
-   *   it returns TRUE.
+   * @return boolean This will return FALSE if there is a current token and it
+   *   has not yet expired (according to the date info). In all other cases it
+   *   returns TRUE.
    */
   public function isExpired() {
     $details = $this->tokenDetails();
@@ -476,34 +445,33 @@ class IdentityService /*implements Serializable*/ {
    *
    * The return value is an indexed array of associative arrays, where each assoc
    * array describes an individual service.
-   * @code
-   * <?php
-   * array(
-   *   array(
-   *     'name' : 'Object Storage',
-   *     'type' => 'object-store',
-   *     'endpoints' => array(
-   *       'tenantId' => '123456',
-   *       'adminURL' => 'https://example.hpcloud.net/1.0',
-   *       'publicURL' => 'https://example.hpcloud.net/1.0/123456',
-   *       'region' => 'region-a.geo-1',
-   *       'id' => '1.0',
-   *     ),
-   *   ),
-   *   array(
-   *     'name' => 'Identity',
-   *     'type' => 'identity'
-   *     'endpoints' => array(
-   *       'publicURL' => 'https://example.hpcloud.net/1.0/123456',
-   *       'region' => 'region-a.geo-1',
-   *       'id' => '2.0',
-   *       'list' => 'http://example.hpcloud.net/extension',
-   *     ),
-   *   )
    *
-   * );
-   * ?>
-   * @endcode
+   *     <?php
+   *     array(
+   *       array(
+   *         'name' : 'Object Storage',
+   *         'type' => 'object-store',
+   *         'endpoints' => array(
+   *           'tenantId' => '123456',
+   *           'adminURL' => 'https://example.hpcloud.net/1.0',
+   *           'publicURL' => 'https://example.hpcloud.net/1.0/123456',
+   *           'region' => 'region-a.geo-1',
+   *           'id' => '1.0',
+   *         ),
+   *       ),
+   *       array(
+   *         'name' => 'Identity',
+   *         'type' => 'identity'
+   *         'endpoints' => array(
+   *           'publicURL' => 'https://example.hpcloud.net/1.0/123456',
+   *           'region' => 'region-a.geo-1',
+   *           'id' => '2.0',
+   *           'list' => 'http://example.hpcloud.net/extension',
+   *         ),
+   *       )
+   *
+   *     );
+   *     ?>
    *
    * This will not be populated until after authentication has been done.
    *
@@ -520,10 +488,7 @@ class IdentityService /*implements Serializable*/ {
    *
    * @todo Paging on the service catalog is not yet implemented.
    *
-   * @retval array
-   * @return array
-   *   An associative array representing
-   *   the service catalog.
+   * @return array An associative array representing the service catalog.
    */
   public function serviceCatalog($type = NULL) {
     // If no type is specified, return the entire
@@ -549,28 +514,25 @@ class IdentityService /*implements Serializable*/ {
    * user, including the user's username and roles.
    *
    * The returned data is structured like this:
-   * @code
-   * <?php
-   * array(
-   *   'name' => 'matthew.butcher@hp.com',
-   *   'id' => '1234567890'
-   *   'roles' => array(
+   *
+   *     <?php
    *     array(
-   *       'name' => 'domainuser',
-   *       'serviceId' => '100',
-   *       'id' => '000100400010011',
-   *     ),
-   *     // One array for each role...
-   *   ),
-   * )
-   * ?>
-   * @endcode
+   *       'name' => 'matthew.butcher@hp.com',
+   *       'id' => '1234567890'
+   *       'roles' => array(
+   *         array(
+   *           'name' => 'domainuser',
+   *           'serviceId' => '100',
+   *           'id' => '000100400010011',
+   *         ),
+   *         // One array for each role...
+   *       ),
+   *     )
+   *     ?>
    *
    * This will not have data until after authentication has been done.
    *
-   * @retval array
-   * @return array
-   *   An associative array, as described above.
+   * @return array An associative array, as described above.
    */
   public function user() {
     return $this->userDetails;
@@ -585,32 +547,26 @@ class IdentityService /*implements Serializable*/ {
    *
    * Returned data will follow this format:
    *
-   * @code
-   * <?php
-   * array(
-   *   array(
-   *     "id" =>  "395I91234514446",
-   *     "name" => "Banking Tenant Services",
-   *     "description" => "Banking Tenant Services for TimeWarner",
-   *     "enabled" => TRUE,
-   *     "created" => "2011-11-29T16:59:52.635Z",
-   *     "updated" => "2011-11-29T16:59:52.635Z",
-   *   ),
-   * );
-   * ?>
-   * @endcode
+   *     <?php
+   *     array(
+   *       array(
+   *         "id" =>  "395I91234514446",
+   *         "name" => "Banking Tenant Services",
+   *         "description" => "Banking Tenant Services for TimeWarner",
+   *         "enabled" => TRUE,
+   *         "created" => "2011-11-29T16:59:52.635Z",
+   *         "updated" => "2011-11-29T16:59:52.635Z",
+   *       ),
+   *     );
+   *     ?>
    *
    * Note that this method invokes a new request against the remote server.
    *
-   * @retval array
-   * @return array
-   *   An indexed array of tenant info. Each entry will be an associative
-   *   array containing tenant details.
-   * @throws OpenStack::Transport::AuthorizationException
-   *   If authentication failed.
-   * @throws OpenStack::Exception
-   *   For abnormal network conditions. The message will give an indication as
-   *   to the underlying problem.
+   * @return array An indexed array of tenant info. Each entry will be an
+   *   associative array containing tenant details.
+   * @throws \OpenStack\Transport\AuthorizationException If authentication failed.
+   * @throws \OpenStack\Exception For abnormal network conditions. The message
+   *   will give an indication as to the underlying problem.
    */
   public function tenants($token = NULL) {
     $url = $this->url() . '/tenants';
@@ -636,7 +592,7 @@ class IdentityService /*implements Serializable*/ {
   }
 
   /**
-   * @see OpenStack::Services::IdentityService::rescopeUsingTenantId()
+   * @see \OpenStack\Services\IdentityService::rescopeUsingTenantId()
    * @deprecated
    */
   public function rescope($tenantId) {
@@ -660,19 +616,15 @@ class IdentityService /*implements Serializable*/ {
    * - Change a token from one tenant ID to another (re-scoping).
    * - Remove the tenant ID from a scoped token (unscoping).
    *
-   * @param string $tenantId
-   *   The tenant ID that this present token should be bound to. If this is the
-   *   empty string (`''`), the present token will be "unscoped" and its tenant
-   *   ID will be removed.
+   * @param string $tenantId The tenant ID that this present token should be
+   *   bound to. If this is the empty string (`''`), the present token will be
+   *   "unscoped" and its tenant ID will be removed.
    *
-   * @retval string
-   * @return string
-   *   The authentication token.
-   * @throws OpenStack::Transport::AuthorizationException
-   *   If authentication failed.
-   * @throws OpenStack::Exception
-   *   For abnormal network conditions. The message will give an indication as
-   *   to the underlying problem.
+   * @return string The authentication token.
+   * @throws \OpenStack\Transport\AuthorizationException If authentication
+   *   failed.
+   * @throws \OpenStack\Exception For abnormal network conditions. The message
+   *   will give an indication as to the underlying problem.
    */
   public function rescopeUsingTenantId($tenantId) {
     $url = $this->url() . '/tokens';
@@ -718,19 +670,14 @@ class IdentityService /*implements Serializable*/ {
    * - Change a token from one tenant ID to another (re-scoping).
    * - Remove the tenant ID from a scoped token (unscoping).
    *
-   * @param string $tenantName
-   *   The tenant name that this present token should be bound to. If this is the
-   *   empty string (`''`), the present token will be "unscoped" and its tenant
-   *   name will be removed.
+   * @param string $tenantName The tenant name that this present token should be
+   *   bound to. If this is the empty string (`''`), the present token will be
+   *   "unscoped" and its tenant name will be removed.
    *
-   * @retval string
-   * @return string
-   *   The authentication token.
-   * @throws OpenStack::Transport::AuthorizationException
-   *   If authentication failed.
-   * @throws OpenStack::Exception
-   *   For abnormal network conditions. The message will give an indication as
-   *   to the underlying problem.
+   * @return string The authentication token.
+   * @throws \OpenStack\Transport\AuthorizationException If authentication failed.
+   * @throws \OpenStack\Exception For abnormal network conditions. The message
+   *   will give an indication as to the underlying problem.
    */
   public function rescopeUsingTenantName($tenantName) {
     $url = $this->url() . '/tokens';
@@ -765,12 +712,10 @@ class IdentityService /*implements Serializable*/ {
    * This parses the JSON data and parcels out the data to the appropriate
    * fields.
    *
-   * @param object $response OpenStack::Transport::Response
-   *   A response object.
+   * @param object $response \OpenStack\Transport\Response  A response object.
    *
-   * @retval OpenStack::Services::IdentityService
-   * @return \OpenStack\Services\IdentityService
-   *   $this for the current object so it can be used in chaining.
+   * @return \OpenStack\Services\IdentityService $this for the current object so
+   *   it can be used in chaining.
    */
   protected function handleResponse($response) {
     $json = json_decode($response->content(), TRUE);

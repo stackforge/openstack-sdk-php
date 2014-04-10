@@ -1,37 +1,37 @@
 <?php
-/** @mainpage About the OpenStack PHP-Client
+/** About the OpenStack PHP-Client
  *
  * This is the documentation for the OpenStack PHP-Client library.
  *
- * @section about_package Overview
+ * Overview
  *
- * <a href="http://www.openstack.org">OpenStack</a> is open source software for
+ * @see http://www.openstack.org is open source software for
  * building public and private clouds.
  *
  * The PHP-Client library provides PHP developers with a fully tested,
  * robust, and feature-rich library for working with the OpenStack services.
  *
- * @attention
  * Making use of this library will require that you have several pieces of
  * account information for your OpenStack account:
- * - account ID and secret key: For cases where you want account-wide 
+ * - account ID and secret key: For cases where you want account-wide
  *   authentication/authorization.
  * - username/password: Typically, this is the same username/password you use
  *   to access the console.
  * - tenant ID: This associates an account or user with a bundle of services.
  *   You can find this information in your console.
  * - endpoint: You will need the URL to the OpenStack endpoint responsible for
- *   <i>authenticating users</i>. This can be found in your console.
+ *   authenticating users. This can be found in your console.
  *
- * @section where_to_start Where To Start
+ * Where To Start
  *
  * Cruising a list of methods and classes is not exactly the best way to get
  * started with a library. It's better to know where to start. Here's
  * what we suggest:
  *
  *- There are a few tutorials inside this documentation that will help you
- *   get started. One explains [Stream Wrappers](@ref streams-tutorial) and
- *   the other [the library itself](@ref oo-tutorial).
+ *   get started.
+ *   @see streams-tutorial Information about stream wrappers.
+ *   @see oo-tutorial Getting started with the library itself
  *- Connecting and logging in is almost inevitably going to be your first
  *   task. For that, you will want to look at IdentityServices.
  *- ObjectStorage (a.k.a. swift) is the cloud storage system. There are
@@ -40,46 +40,45 @@
  *   - You can use the PHP stream wrappers to access your object storage. This
  *     is explained in StreamWrapper.
  *
- * @section learn_more Learn More
+ * Learn More
  *
  * This documentation is intended to provide a detailed reference to the
  * PHP-Client library. To learn more about the APIs and OpenStack visit
- * http://api.openstack.org/ and http://docs.openstack.org/.
+ * @see http://api.openstack.org/
+ * @see http://docs.openstack.org/
  *
- * @section intro_example_sw Basic Example: Stream Wrappers
+ * Basic Example: Stream Wrappers
  *
  * The super-simple stream API:
  *
- * @code
- * <?php
- * // This is only required if you don't have a PSR-4
- * // autoloader to do the hard work for you.
- * require 'OpenStack/Autoloader.php';
+ *     <?php
+ *     // This is only required if you don't have a PSR-4
+ *     // autoloader to do the hard work for you.
+ *     require 'OpenStack/Autoloader.php';
  *
- * // If you aren't using a PSR-4 autoloader,
- * // you might want to use this:
- * \OpenStack\Autoloader::useAutoloader();
+ *     // If you aren't using a PSR-4 autoloader,
+ *     // you might want to use this:
+ *     \OpenStack\Autoloader::useAutoloader();
  *
- * // Turn on stream wrappers.
- * \OpenStack\Bootstrap::useStreamWrappers();
+ *     // Turn on stream wrappers.
+ *     \OpenStack\Bootstrap::useStreamWrappers();
  *
- * // Create a stream context. You can get this
- * // information (including tenant ID) from your
- * // OpenStack console.
- * $cxt = stream_context_create(array(
- *   'username' => 'foo@example.com',
- *   'password' => 'secret',
- *   'tenantid' => '123456',
- *   'endpoint' => 'http://url.from.hpcloud.com/',
- * ));
+ *     // Create a stream context. You can get this
+ *     // information (including tenant ID) from your
+ *     // OpenStack console.
+ *     $cxt = stream_context_create(array(
+ *       'username' => 'foo@example.com',
+ *       'password' => 'secret',
+ *       'tenantid' => '123456',
+ *       'endpoint' => 'http://url.from.hpcloud.com/',
+ *     ));
  *
  *
- * // Get an object from the remote object storage and read it as a string
- * // right into $myObject.
- * $myObject = file_get_contents('swift://mycontainer/foo.txt', FALSE, $cxt);
+ *     // Get an object from the remote object storage and read it as a string
+ *     // right into $myObject.
+ *     $myObject = file_get_contents('swift://mycontainer/foo.txt', FALSE, $cxt);
  *
- * ?>
- * @endcode
+ *     ?>
  *
  * With stream wrapper support, you can transparently read and write files to the
  * ObjectStorage service without using any fancy API at all. Use the
@@ -90,115 +89,111 @@
  *- file_get_contents(), stream_get_contents()
  *- stat()/fstat()
  *- is_readable()/is_writable()
- *- And so on (http://us3.php.net/manual/en/ref.filesystem.php).
+ *- And so on
+ *  @see http://us3.php.net/manual/en/ref.filesystem.php
  *
- * Learn more about this at OpenStack::Storage::ObjectStorage::StreamWrapper.
+ * Learn more about this at \OpenStack\Storage\ObjectStorage\StreamWrapper.
  *
- * @section intro_example_ident Basic Example: Identity Service
+ * Basic Example: Identity Service
  *
  * Stream wrappers are nice and all, but
  * some of us love fancy APIs. So here's an example using the full API
  * to log in and then dump a list of services that are available to you:
  *
- * @code
- * <?php
- * // This is only required if you don't have a PSR-4
- * // autoloader to do the hard work for you.
- * require 'OpenStack/Autoloader.php';
+ *     <?php
+ *     // This is only required if you don't have a PSR-4
+ *     // autoloader to do the hard work for you.
+ *     require 'OpenStack/Autoloader.php';
  *
- * // If you aren't using a PSR-4 autoloader,
- * // you might want to use this:
- * \OpenStack\Autoloader::useAutoloader();
+ *     // If you aren't using a PSR-4 autoloader,
+ *     // you might want to use this:
+ *     \OpenStack\Autoloader::useAutoloader();
  *
- * use \OpenStack\Services\IdentityService;
+ *     use \OpenStack\Services\IdentityService;
  *
- * // Create a new identity service object, and tell it where to
- * // go to authenticate. This URL can be found in your console.
- * $identity = new IdentityService('http://get.url.from.hpcloud.com');
+ *     // Create a new identity service object, and tell it where to
+ *     // go to authenticate. This URL can be found in your console.
+ *     $identity = new IdentityService('http://get.url.from.hpcloud.com');
  *
- * // You can authenticate with a username/password (IdentityService::authenticateAsUser()).
- * // In either case you can get the info you need from the console.
- * $username = 'foobar';
- * $password = 'dgasgasd';
- * $tenantId = '56545654';
+ *     // You can authenticate with a username/password (IdentityService::authenticateAsUser()).
+ *     // In either case you can get the info you need from the console.
+ *     $username = 'foobar';
+ *     $password = 'dgasgasd';
+ *     $tenantId = '56545654';
  *
- * // $token will be your authorization key when you connect to other
- * // services. You can also get it from $identity->token().
- * $token = $identity->authenticateAsUser($username, $password, $tenantId);
+ *     // $token will be your authorization key when you connect to other
+ *     // services. You can also get it from $identity->token().
+ *     $token = $identity->authenticateAsUser($username, $password, $tenantId);
  *
- * // Get a listing of all of the services you currently have configured in
- * // OpenStack.
- * $catalog = $identity->serviceCatalog();
+ *     // Get a listing of all of the services you currently have configured in
+ *     // OpenStack.
+ *     $catalog = $identity->serviceCatalog();
  *
- * var_dump($catalog);
+ *     var_dump($catalog);
  *
- * ?>
- * @endcode
+ *     ?>
  *
- *-# Our classes use PHP namespaces to organize components. If you've never used
- *   them before, don't worry. They're easy to get the hang of.
- *-# The Bootstrap class handles setting up OpenStack services. Read about it at OpenStack::Bootstrap.
- *-# The IdentityServices class handles authenticating to OpenStack, discovering services, and providing
- *   access to your account. OpenStack::Services::IdentityService explains the details, but here are
- *   a few functions you'll want to know:
- *   - OpenStack::Services::IdentityService::__construct() tells the object where to connect.
- *   - OpenStack::Services::IdentityService::authenticateAsUser() lets you log
- *     in with username and password.
- *   - OpenStack::Services::IdentityService::serviceCatalog() tells you about
- *     the services you have activated on this account.
+ *- Our classes use PHP namespaces to organize components. If you've never used
+ *  them before, don't worry. They're easy to get the hang of.
+ *- The Bootstrap class handles setting up OpenStack services. Read about it at \OpenStack\Bootstrap.
+ *- The IdentityServices class handles authenticating to OpenStack, discovering services, and providing
+ *  access to your account. \OpenStack\Services\IdentityService explains the details, but here are
+ *  a few functions you'll want to know:
+ *  - \OpenStack\Services\IdentityService::__construct() tells the object where to connect.
+ *  - \OpenStack\Services\IdentityService::authenticateAsUser() lets you log
+ *    in with username and password.
+ *  - \OpenStack\Services\IdentityService::serviceCatalog() tells you about
+ *    the services you have activated on this account.
  *
- * @section intro_example_swift Basic Example: Object Storage
+ * Basic Example: Object Storage
  *
  * Assuming you have an object storage instance available in your service
  * catalog, we could continue on with something like this:
  *
- * @code
- * <?php
- * // The explicit way:
- * // Find out where our ObjectStorage instance lives:
- * // $storageList = $identity->serviceCatalog('object-storage');
- * // $objectStorageUrl = storageList[0]['endpoints'][0]['publicURL'];
+ *     <?php
+ *     // The explicit way:
+ *     // Find out where our ObjectStorage instance lives:
+ *     // $storageList = $identity->serviceCatalog('object-storage');
+ *     // $objectStorageUrl = storageList[0]['endpoints'][0]['publicURL'];
  *
- * // Create a new ObjectStorage instance:
- * // $objectStore = new \OpenStack\Storage\ObjectStorage($token, $objectStorageUrl);
+ *     // Create a new ObjectStorage instance:
+ *     // $objectStore = new \OpenStack\Storage\ObjectStorage($token, $objectStorageUrl);
  *
- * // Or let ObjectStorage figure out which instance to use:
- * $objectStore = \OpenStack\Storage\ObjectStorage::newFromIdentity($identity);
+ *     // Or let ObjectStorage figure out which instance to use:
+ *     $objectStore = \OpenStack\Storage\ObjectStorage::newFromIdentity($identity);
  *
- * // List containers:
- * print_r($objectStore->containers());
+ *     // List containers:
+ *     print_r($objectStore->containers());
  *
- * // Get a container named 'stuff':
- * $container = $objectStore->container('stuff');
+ *     // Get a container named 'stuff':
+ *     $container = $objectStore->container('stuff');
  *
- * // List all of the objects in that container:
- * print_r($container->objects());
+ *     // List all of the objects in that container:
+ *     print_r($container->objects());
  *
- * // Get an object named 'example.txt'
- * $obj = $container->object('example.txt');
+ *     // Get an object named 'example.txt'
+ *     $obj = $container->object('example.txt');
  *
- * // Print that object's contents:
- * print $obj->content();
+ *     // Print that object's contents:
+ *     print $obj->content();
  *
- * // Actually, since it implements __tostring, we could do this:
- * print $obj;
- * ?>
- * @endcode
+ *     // Actually, since it implements __tostring, we could do this:
+ *     print $obj;
+ *     ?>
  *
  * This shows you a few methods for accessing objects and containers on your
- * OpenStack::Storage::ObjectStorage account. There are many functions for
+ * \OpenStack\Storage\ObjectStorage account. There are many functions for
  * creating and modifying containers and objects, too.
  *
- *- OpenStack::Storage::ObjectStorage is where you will start.
- *- Container services are in OpenStack::Storage::ObjectStorage::Container
+ *- \OpenStack\Storage\ObjectStorage is where you will start.
+ *- Container services are in \OpenStack\Storage\ObjectStorage\Container
  *- There are two classes for objects:
- *     - OpenStack::Storage::ObjectStorage::Object is for creating new objects.
- *     - OpenStack::Storage::ObjectStorage::RemoteObject provides better network
+ *     - \OpenStack\Storage\ObjectStorage\Object is for creating new objects.
+ *     - \OpenStack\Storage\ObjectStorage\RemoteObject provides better network
  *     performance when reading objects.
  *
  */
-// Note that Doxygen assumes that dot (.) is the namespace separator in
-// package descriptions.
+
 /**
  * @package OpenStack
  * The OpenStack PHP-Client library.
@@ -227,7 +222,7 @@
  * @package OpenStack.Storage.ObjectStorage
  * Classes specific to ObjectStorage.
  *
- * The main class is OpenStack::Storage::ObjectStorage.
+ * The main class is \OpenStack\Storage\ObjectStorage.
  */
 /**
  * @package OpenStack.Transport

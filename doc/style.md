@@ -8,7 +8,7 @@ style.
 
 - Read the [coding standards](https://github.com/mattfarina/Coding-Standards)
   to learn why we code the way we do.
-- Read the [doxygen manual](http://www.stack.nl/~dimitri/doxygen)
+- Read about [PHPDoc](http://www.phpdoc.org/)
   if you're curious about our source code documentation.
 - Two spaces, no tabs.
 - WE LOVE GITHUB ISSUES AND PULL REQUESTS
@@ -117,21 +117,4 @@ free to suggest improvements on either side of the scales.
 
 ## Documentation Style
 
-This project is documented with Doxygen, and the configuration file used
-is available in ./config.doxy in this project.
-
-The following conventions are used:
-
-- In documentation, namespaces are separated with double-colon (::) instead of
-  backslash characters (\\). This is because backslash characters have
-  special meaning to Doxygen, and cannot be used as namespace separators.
-- We use \@retval instead of \@return. This special marker was added to
-  Doxygen for languages like PHP where the return type is "optional". We
-  try to always specify a return type, thus we use retval.
-
-### Markdown and Doxygen >= 1.8
-
-Since Doxygen 1.8.0, Doxygen boasts native support for Markdown. Where
-possible, we write documentation in Markdown, which makes it both
-readable in the source code form, and also a fully integrated part of
-the API documentation.
+This project is documented with PHPDoc.
