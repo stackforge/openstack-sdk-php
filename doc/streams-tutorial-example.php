@@ -8,10 +8,10 @@ Bootstrap::useStreamWrappers();
 
 $ini = parse_ini_file(getenv('HOME') . '/.OpenStack.ini');
 $settings = array(
-  'account' => $ini['account'],
-  'key' => $ini['secret'],
-  'tenantid' => $ini['tenantId'],
-  'endpoint' => $ini['url'],
+    'account' => $ini['account'],
+    'key' => $ini['secret'],
+    'tenantid' => $ini['tenantId'],
+    'endpoint' => $ini['url'],
 );
 Bootstrap::setConfiguration($settings);
 
@@ -22,7 +22,7 @@ fclose($newfile);
 
 // Check for an object:
 if (file_exists('swift://Example/my_file.txt')) {
-  print "Found my_file.txt." . PHP_EOL;
+    print "Found my_file.txt." . PHP_EOL;
 }
 
 // Get an entire object at once:
@@ -30,13 +30,12 @@ $file = file_get_contents('swift://Example/my_file.txt');
 print 'File: ' . $file . PHP_EOL;
 
 $cxt = stream_context_create(array(
-  'swift' => array(
-    'account' => $ini['account'],
-    'key' => $ini['secret'],
-    'tenantid' => $ini['tenantId'],
-    'endpoint' => $ini['url'],
-  ),
+    'swift' => array(
+        'account' => $ini['account'],
+        'key' => $ini['secret'],
+        'tenantid' => $ini['tenantId'],
+        'endpoint' => $ini['url'],
+    ),
 ));
 
 print file_get_contents('swift://Example/my_file.txt', FALSE, $cxt);
-

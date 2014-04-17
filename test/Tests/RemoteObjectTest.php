@@ -2,17 +2,17 @@
 /* ============================================================================
 (c) Copyright 2012-2014 Hewlett-Packard Development Company, L.P.
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+             http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
 ============================================================================ */
 /**
  * Unit tests for ObjectStorage RemoteObject.
@@ -25,291 +25,308 @@ use \OpenStack\Storage\ObjectStorage\RemoteObject;
 use \OpenStack\Storage\ObjectStorage\Object;
 use \OpenStack\Storage\ObjectStorage\Container;
 
-class RemoteObjectTest extends \OpenStack\Tests\TestCase {
-
-  const FNAME = 'RemoteObjectTest';
-  //const FTYPE = 'text/plain; charset=UTF-8';
-  const FTYPE = 'application/octet-stream; charset=UTF-8';
-  const FCONTENT = 'Rah rah ah ah ah. Roma roma ma. Gaga oh la la.';
-  const FMETA_NAME = 'Foo';
-  const FMETA_VALUE = 'Bar';
-  const FDISPOSITION = 'attachment; roma.gaga';
-  const FENCODING = 'gzip';
-  const FCORS_NAME = 'Access-Control-Max-Age';
-  const FCORS_VALUE = '2000';
-
-  protected function createAnObject() {
-    $container = $this->containerFixture();
-
-    $object = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
-    $object->setMetadata(array(self::FMETA_NAME => self::FMETA_VALUE));
-    $object->setDisposition(self::FDISPOSITION);
-    $object->setEncoding(self::FENCODING);
-    $object->setAdditionalHeaders(array(
-      'Access-Control-Allow-Origin' => 'http://example.com',
-      'Access-control-allow-origin' => 'http://example.com',
-    ));
-
-    // Need some headers that Swift actually stores and returns. This
-    // one does not seem to be returned ever.
-    //$object->setAdditionalHeaders(array(self::FCORS_NAME => self::FCORS_VALUE));
-
-    $container->save($object);
-  }
-
-  public function testNewFromHeaders() {
-    // This is tested via the container.
-
-    $this->destroyContainerFixture();
-    $container = $this->containerFixture();
-    $this->createAnObject();
-
-    $obj = $container->remoteObject(self::FNAME);
-
-    $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage\RemoteObject', $obj);
-
-    return $obj;
-  }
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testContentLength($obj) {
-    $len = strlen(self::FCONTENT);
-
-    $this->assertEquals($len, $obj->contentLength());
-
-    return $obj;
-  }
-
-  /**
-   * @depends testContentLength
-   */
-  public function testContentType($obj) {
-    $this->assertEquals(self::FTYPE, $obj->contentType());
-
-    return $obj;
-  }
+class RemoteObjectTest extends \OpenStack\Tests\TestCase
+{
+    const FNAME = 'RemoteObjectTest';
+    //const FTYPE = 'text/plain; charset=UTF-8';
+    const FTYPE = 'application/octet-stream; charset=UTF-8';
+    const FCONTENT = 'Rah rah ah ah ah. Roma roma ma. Gaga oh la la.';
+    const FMETA_NAME = 'Foo';
+    const FMETA_VALUE = 'Bar';
+    const FDISPOSITION = 'attachment; roma.gaga';
+    const FENCODING = 'gzip';
+    const FCORS_NAME = 'Access-Control-Max-Age';
+    const FCORS_VALUE = '2000';
+
+    protected function createAnObject()
+    {
+        $container = $this->containerFixture();
+
+        $object = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
+        $object->setMetadata(array(self::FMETA_NAME => self::FMETA_VALUE));
+        $object->setDisposition(self::FDISPOSITION);
+        $object->setEncoding(self::FENCODING);
+        $object->setAdditionalHeaders(array(
+            'Access-Control-Allow-Origin' => 'http://example.com',
+            'Access-control-allow-origin' => 'http://example.com',
+        ));
+
+        // Need some headers that Swift actually stores and returns. This
+        // one does not seem to be returned ever.
+        //$object->setAdditionalHeaders(array(self::FCORS_NAME => self::FCORS_VALUE));
+
+        $container->save($object);
+    }
+
+    public function testNewFromHeaders()
+    {
+        // This is tested via the container.
+
+        $this->destroyContainerFixture();
+        $container = $this->containerFixture();
+        $this->createAnObject();
+
+        $obj = $container->remoteObject(self::FNAME);
+
+        $this->assertInstanceOf('\OpenStack\Storage\ObjectStorage\RemoteObject', $obj);
+
+        return $obj;
+    }
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testContentLength($obj)
+    {
+        $len = strlen(self::FCONTENT);
+
+        $this->assertEquals($len, $obj->contentLength());
+
+        return $obj;
+    }
+
+    /**
+     * @depends testContentLength
+     */
+    public function testContentType($obj)
+    {
+        $this->assertEquals(self::FTYPE, $obj->contentType());
+
+        return $obj;
+    }
+
+    /**
+     * @depends testContentType
+     */
+    public function testEtag($obj)
+    {
+        $hash = md5(self::FCONTENT);
+
+        $this->assertEquals($hash, $obj->eTag());
+
+        return $obj;
+    }
+
+    /**
+     * @depends testContentType
+     */
+    public function testLastModified($obj)
+    {
+        $date = $obj->lastModified();
+
+        $this->assertTrue(is_int($date));
+        $this->assertTrue($date > 0);
+    }
+
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testMetadata($obj)
+    {
+        $md = $obj->metadata();
+
+        $this->assertArrayHasKey(self::FMETA_NAME, $md);
+        $this->assertEquals(self::FMETA_VALUE, $md[self::FMETA_NAME]);
+    }
 
-  /**
-   * @depends testContentType
-   */
-  public function testEtag($obj) {
-    $hash = md5(self::FCONTENT);
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testDisposition($obj)
+    {
+        $this->assertEquals(self::FDISPOSITION, $obj->disposition());
+    }
 
-    $this->assertEquals($hash, $obj->eTag());
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testEncoding($obj)
+    {
+        $this->assertEquals(self::FENCODING, $obj->encoding());
+    }
 
-    return $obj;
-  }
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testHeaders($obj)
+    {
+        $headers = $obj->headers();
+        $this->assertTrue(count($headers) > 1);
 
-  /**
-   * @depends testContentType
-   */
-  public function testLastModified($obj) {
-    $date = $obj->lastModified();
+        //fwrite(STDOUT, print_r($headers, TRUE));
 
-    $this->assertTrue(is_int($date));
-    $this->assertTrue($date > 0);
-  }
+        $this->assertNotEmpty($headers['Date']);
 
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testMetadata($obj) {
-    $md = $obj->metadata();
+        $obj->removeHeaders(array('Date'));
 
-    $this->assertArrayHasKey(self::FMETA_NAME, $md);
-    $this->assertEquals(self::FMETA_VALUE, $md[self::FMETA_NAME]);
-  }
+        $headers = $obj->headers();
+        $this->assertFalse(isset($headers['Date']));
 
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testDisposition($obj) {
-    $this->assertEquals(self::FDISPOSITION, $obj->disposition());
-  }
+        // Swift doesn't return CORS headers even though it is supposed to.
+        //$this->assertEquals(self::FCORS_VALUE, $headers[self::FCORS_NAME]);
+    }
 
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testEncoding($obj) {
-    $this->assertEquals(self::FENCODING, $obj->encoding());
-  }
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testUrl($obj)
+    {
+        $url = $obj->url();
 
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testHeaders($obj) {
-    $headers = $obj->headers();
-    $this->assertTrue(count($headers) > 1);
+        $this->assertTrue(strpos($obj->url(), $obj->name())> 0);
+    }
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testStream($obj)
+    {
+        $res = $obj->stream();
 
-    //fwrite(STDOUT, print_r($headers, TRUE));
+        $this->assertTrue(is_resource($res));
 
-    $this->assertNotEmpty($headers['Date']);
+        $res_md = stream_get_meta_data($res);
 
-    $obj->removeHeaders(array('Date'));
+        $content = fread($res, $obj->contentLength());
 
-    $headers = $obj->headers();
-    $this->assertFalse(isset($headers['Date']));
+        fclose($res);
 
-    // Swift doesn't return CORS headers even though it is supposed to.
-    //$this->assertEquals(self::FCORS_VALUE, $headers[self::FCORS_NAME]);
-  }
+        $this->assertEquals(self::FCONTENT, $content);
 
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testUrl($obj) {
-    $url = $obj->url();
+        // Now repeat the tests, only with a local copy of the data.
+        // This allows us to test the local tempfile buffering.
 
-    $this->assertTrue(strpos($obj->url(), $obj->name())> 0);
-  }
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testStream($obj) {
-    $res = $obj->stream();
+        $obj->setContent($content);
 
-    $this->assertTrue(is_resource($res));
+        $res2 = $obj->stream();
+        $res_md = stream_get_meta_data($res2);
 
-    $res_md = stream_get_meta_data($res);
+        $this->assertEquals('PHP', $res_md['wrapper_type']);
 
-    $content = fread($res, $obj->contentLength());
+        $content = fread($res2, $obj->contentLength());
 
-    fclose($res);
+        fclose($res2);
 
-    $this->assertEquals(self::FCONTENT, $content);
+        $this->assertEquals(self::FCONTENT, $content);
 
-    // Now repeat the tests, only with a local copy of the data.
-    // This allows us to test the local tempfile buffering.
+        // Finally, we redo the first part of the test to make sure that
+        // refreshing gets us a new copy:
 
-    $obj->setContent($content);
+        $res3 = $obj->stream(TRUE);
+        $res_md = stream_get_meta_data($res3);
+        $this->assertEquals('PHP', $res_md['wrapper_type']);
+        fclose($res3);
 
-    $res2 = $obj->stream();
-    $res_md = stream_get_meta_data($res2);
+        return $obj;
+    }
 
-    $this->assertEquals('PHP', $res_md['wrapper_type']);
+    // To avoid test tainting from testStream(), we start over.
+    public function testContent()
+    {
+        $container = $this->containerFixture();
+        $obj = $container->object(self::FNAME);
 
-    $content = fread($res2, $obj->contentLength());
+        $content = $obj->content();
+        $this->assertEquals(self::FCONTENT, $content);
 
-    fclose($res2);
+        // Make sure remoteObject retrieves the same content.
+        $obj = $container->remoteObject(self::FNAME);
+        $content = $obj->content();
+        $this->assertEquals(self::FCONTENT, $content);
 
-    $this->assertEquals(self::FCONTENT, $content);
+    }
 
-    // Finally, we redo the first part of the test to make sure that
-    // refreshing gets us a new copy:
+    /**
+     * @depends testStream
+     */
+    public function testCaching()
+    {
+        $container = $this->containerFixture();
+        $obj = $container->remoteObject(self::FNAME);
 
-    $res3 = $obj->stream(TRUE);
-    $res_md = stream_get_meta_data($res3);
-    $this->assertEquals('PHP', $res_md['wrapper_type']);
-    fclose($res3);
+        $this->assertFalse($obj->isCaching());
 
-    return $obj;
-  }
+        $content = $obj->content();
 
-  // To avoid test tainting from testStream(), we start over.
-  public function testContent() {
-    $container = $this->containerFixture();
-    $obj = $container->object(self::FNAME);
+        $res1 = $obj->stream();
+        $md = stream_get_meta_data($res1);
+        $this->assertEquals('PHP', $md['wrapper_type']);
 
-    $content = $obj->content();
-    $this->assertEquals(self::FCONTENT, $content);
+        fclose($res1);
 
-    // Make sure remoteObject retrieves the same content.
-    $obj = $container->remoteObject(self::FNAME);
-    $content = $obj->content();
-    $this->assertEquals(self::FCONTENT, $content);
+        // Enable caching and retest.
+        $obj->setCaching(TRUE);
+        $this->assertTrue($obj->isCaching());
 
-  }
+        // This will cache the content.
+        $content = $obj->content();
 
-  /**
-   * @depends testStream
-   */
-  public function testCaching() {
-    $container = $this->containerFixture();
-    $obj = $container->remoteObject(self::FNAME);
+        $res2 = $obj->stream();
+        $md = stream_get_meta_data($res2);
 
-    $this->assertFalse($obj->isCaching());
+        // If this is using the PHP version, it built content from the
+        // cached version.
+        $this->assertEquals('PHP', $md['wrapper_type']);
 
-    $content = $obj->content();
+        fclose($res2);
+    }
 
-    $res1 = $obj->stream();
-    $md = stream_get_meta_data($res1);
-    $this->assertEquals('PHP', $md['wrapper_type']);
+    /**
+     * @depends testNewFromHeaders
+     */
+    public function testContentVerification($obj)
+    {
+        $this->assertTrue($obj->isVerifyingContent());
+        $obj->setContentVerification(FALSE);
+        $this->assertFALSE($obj->isVerifyingContent());
+        $obj->setContentVerification(TRUE);
+    }
 
-    fclose($res1);
+    /**
+     * @depends testCaching
+     */
+    public function testIsDirty()
+    {
+        $container = $this->containerFixture();
+        $obj = $container->remoteObject(self::FNAME);
 
-    // Enable caching and retest.
-    $obj->setCaching(TRUE);
-    $this->assertTrue($obj->isCaching());
+        // THere is no content. Assert false.
+        $this->assertFalse($obj->isDirty());
 
-    // This will cache the content.
-    $content = $obj->content();
+        $obj->setCaching(TRUE);
+        $obj->content();
 
-    $res2 = $obj->stream();
-    $md = stream_get_meta_data($res2);
+        // THere is content, but it is unchanged.
+        $this->assertFalse($obj->isDirty());
 
-    // If this is using the PHP version, it built content from the
-    // cached version.
-    $this->assertEquals('PHP', $md['wrapper_type']);
+        // Change content and retest.
+        $obj->setContent('foo');
 
-    fclose($res2);
-  }
+        $this->assertTrue($obj->isDirty());
+    }
 
-  /**
-   * @depends testNewFromHeaders
-   */
-  public function testContentVerification($obj) {
-    $this->assertTrue($obj->isVerifyingContent());
-    $obj->setContentVerification(FALSE);
-    $this->assertFALSE($obj->isVerifyingContent());
-    $obj->setContentVerification(TRUE);
-  }
+    /**
+     * @depends testIsDirty
+     */
+    public function testRefresh()
+    {
+        $container = $this->containerFixture();
+        $obj = $container->remoteObject(self::FNAME);
 
-  /**
-   * @depends testCaching
-   */
-  public function testIsDirty() {
-    $container = $this->containerFixture();
-    $obj = $container->remoteObject(self::FNAME);
+        $obj->setContent('foo');
+        $this->assertTrue($obj->isDirty());
 
-    // THere is no content. Assert false.
-    $this->assertFalse($obj->isDirty());
+        $obj->refresh(FALSE);
+        $this->assertFalse($obj->isDirty());
+        $this->assertEquals(self::FCONTENT, $obj->content());
 
-    $obj->setCaching(TRUE);
-    $obj->content();
+        $obj->setContent('foo');
+        $this->assertTrue($obj->isDirty());
 
-    // THere is content, but it is unchanged.
-    $this->assertFalse($obj->isDirty());
+        $obj->refresh(TRUE);
+        $this->assertFalse($obj->isDirty());
+        $this->assertEquals(self::FCONTENT, $obj->content());
 
-    // Change content and retest.
-    $obj->setContent('foo');
+        $this->destroyContainerFixture();
 
-    $this->assertTrue($obj->isDirty());
-  }
-
-  /**
-   * @depends testIsDirty
-   */
-  public function testRefresh() {
-    $container = $this->containerFixture();
-    $obj = $container->remoteObject(self::FNAME);
-
-    $obj->setContent('foo');
-    $this->assertTrue($obj->isDirty());
-
-    $obj->refresh(FALSE);
-    $this->assertFalse($obj->isDirty());
-    $this->assertEquals(self::FCONTENT, $obj->content());
-
-    $obj->setContent('foo');
-    $this->assertTrue($obj->isDirty());
-
-    $obj->refresh(TRUE);
-    $this->assertFalse($obj->isDirty());
-    $this->assertEquals(self::FCONTENT, $obj->content());
-
-    $this->destroyContainerFixture();
-
-  }
+    }
 
 }

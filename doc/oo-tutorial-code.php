@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../src/OpenStack/Autoloader.php';
 
-use \OpenStack\Bootstrap;
 use \OpenStack\Autoloader;
 use \OpenStack\Services\IdentityService;
 use \OpenStack\Storage\ObjectStorage;
@@ -38,6 +37,3 @@ printf("Name: %s \n", $object->name());
 printf("Size: %d \n", $object->contentLength());
 printf("Type: %s \n", $object->contentType());
 print $object->content() . PHP_EOL;
-
-
-
