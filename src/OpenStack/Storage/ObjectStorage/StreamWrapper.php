@@ -108,7 +108,7 @@ use \OpenStack\Storage\ObjectStorage;
  *      )
  *     );
  *     // Open the file.
- *     $handle = fopen('swift://mycontainer/myobject.txt', 'r+', FALSE, $context);
+ *     $handle = fopen('swift://mycontainer/myobject.txt', 'r+', false, $context);
  *
  *     // You can get the entire file, or use fread() to loop through the file.
  *     $contents = stream_get_contents($handle);
@@ -226,7 +226,7 @@ use \OpenStack\Storage\ObjectStorage;
  * - password: A password. MUST be accompanied by 'username' and 'tenantid' (or 'tenantname').
  * - endpoint: The URL to the authentication endpoint. Necessary if you are not
  *     using a 'token' and 'swift_endpoint'.
- * - use_swift_auth: If this is set to TRUE, it will force the app to use
+ * - use_swift_auth: If this is set to true, it will force the app to use
  *     the deprecated swiftAuth instead of IdentityService authentication.
  *     In general, you should avoid using this.
  * - content_type: This is effective only when writing files. It will
@@ -268,30 +268,30 @@ class StreamWrapper
     protected $authToken;
 
     // File flags. These should probably be replaced by O_ const's at some point.
-    protected $isBinary = FALSE;
-    protected $isText = TRUE;
-    protected $isWriting = FALSE;
-    protected $isReading = FALSE;
-    protected $isTruncating = FALSE;
-    protected $isAppending = FALSE;
-    protected $noOverwrite = FALSE;
-    protected $createIfNotFound = TRUE;
+    protected $isBinary = false;
+    protected $isText = true;
+    protected $isWriting = false;
+    protected $isReading = false;
+    protected $isTruncating = false;
+    protected $isAppending = false;
+    protected $noOverwrite = false;
+    protected $createIfNotFound = true;
 
     /**
-     * If this is TRUE, no data is ever sent to the remote server.
+     * If this is true, no data is ever sent to the remote server.
      */
-    protected $isNeverDirty = FALSE;
+    protected $isNeverDirty = false;
 
-    protected $triggerErrors = FALSE;
+    protected $triggerErrors = false;
 
     /**
      * Indicate whether the local differs from remote.
      *
      * When the file is modified in such a way that
      * it needs to be written remotely, the isDirty flag
-     * is set to TRUE.
+     * is set to true.
      */
-    protected $isDirty = FALSE;
+    protected $isDirty = false;
 
     /**
      * Object storage instance.
@@ -349,7 +349,7 @@ class StreamWrapper
         $this->dirListing = array();
 
         //syslog(LOG_WARNING, "CLOSEDIR called.");
-        return TRUE;
+        return true;
     }
 
     /**
@@ -372,7 +372,7 @@ class StreamWrapper
      * @param string $path    The URL to open.
      * @param int    $options Unused.
      *
-     * @return boolean TRUE if the directory is opened, FALSE otherwise.
+     * @return boolean true if the directory is opened, false otherwise.
      */
     public function dir_opendir($path, $options)
     {
@@ -381,7 +381,7 @@ class StreamWrapper
         if (empty($url['host'])) {
             trigger_error('Container name is required.' , E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
 
         try {
@@ -400,10 +400,10 @@ class StreamWrapper
         } catch (\OpenStack\Exception $e) {
             trigger_error('Directory could not be opened: ' . $e->getMessage(), E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -418,21 +418,21 @@ class StreamWrapper
      *     // Get the container as if it were a directory.
      *     $dir = opendir('swift://mycontainer', $cxt);
      *
-     *     while (($entry = readdir($dir)) !== FALSE) {
+     *     while (($entry = readdir($dir)) !== false) {
      *       print $entry . PHP_EOL;
      *     }
      *
      *     closedir($dir);
      *     ?>
      *
-     * @return string The name of the resource or FALSE when the directory has no
+     * @return string The name of the resource or false when the directory has no
      *                more entries.
      */
     public function dir_readdir()
     {
-        // If we are at the end of the listing, return FALSE.
+        // If we are at the end of the listing, return false.
         if (count($this->dirListing) <= $this->dirIndex) {
-            return FALSE;
+            return false;
         }
 
         $curr = $this->dirListing[$this->dirIndex];
@@ -464,7 +464,7 @@ class StreamWrapper
      *     // Get the container as if it were a directory.
      *     $dir = opendir('swift://mycontainer', $cxt);
      *
-     *     while (($entry = readdir($dir)) !== FALSE) {
+     *     while (($entry = readdir($dir)) !== false) {
      *       print $entry . PHP_EOL;
      *     }
      *
@@ -520,7 +520,7 @@ class StreamWrapper
      * @param string $path_from A swift URL that exists on the remote.
      * @param string $path_to   A swift URL to another path.
      *
-     * @return boolean TRUE on success, FALSE otherwise.
+     * @return boolean true on success, false otherwise.
      */
     public function rename($path_from, $path_to)
     {
@@ -536,7 +536,7 @@ class StreamWrapper
             || empty($dest['host']) || empty($dest['path'])) {
                 trigger_error('Container and path are required for both source and destination URLs.', E_USER_WARNING);
 
-                return FALSE;
+                return false;
         }
 
         try {
@@ -551,7 +551,7 @@ class StreamWrapper
         } catch (\OpenStack\Exception $e) {
             trigger_error('Rename was not completed: ' . $e->getMessage(), E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
     }
 
@@ -583,7 +583,7 @@ class StreamWrapper
      *
      *     // Assuming $cxt has a valid context.
      *
-     *     $file = fopen('swift://container/file.txt', 'r', FALSE, $cxt);
+     *     $file = fopen('swift://container/file.txt', 'r', false, $cxt);
      *
      *     fclose($file);
      *
@@ -602,7 +602,7 @@ class StreamWrapper
         } catch (\OpenStack\Exception $e) {
             trigger_error('Error while closing: ' . $e->getMessage(), E_USER_NOTICE);
 
-            return FALSE;
+            return false;
         }
 
         // Force-clear the memory hogs.
@@ -620,7 +620,7 @@ class StreamWrapper
      *
      * @see stream_seek().
      *
-     * @return boolean TRUE if it has reached the end, FALSE otherwise.
+     * @return boolean true if it has reached the end, false otherwise.
      */
     public function stream_eof()
     {
@@ -643,7 +643,7 @@ class StreamWrapper
             syslog(LOG_WARNING, $e);
             trigger_error('Error while flushing: ' . $e->getMessage(), E_USER_NOTICE);
 
-            return FALSE;
+            return false;
         }
     }
 
@@ -674,7 +674,7 @@ class StreamWrapper
             fseek($this->objStream, SEEK_SET, $position);
 
         }
-        $this->isDirty = FALSE;
+        $this->isDirty = false;
     }
 
     /*
@@ -701,7 +701,7 @@ class StreamWrapper
      *     ));
      *     ?>
      *
-     *     $file = fopen('swift://myContainer/myObject.csv', 'rb', FALSE, $cxt);
+     *     $file = fopen('swift://myContainer/myObject.csv', 'rb', false, $cxt);
      *     while ($bytes = fread($file, 8192)) {
      *       print $bytes;
      *     }
@@ -736,7 +736,7 @@ class StreamWrapper
         // If STREAM_REPORT_ERRORS is set, we are responsible for
         // all error handling while opening the stream.
         if (STREAM_REPORT_ERRORS & $options) {
-            $this->triggerErrors = TRUE;
+            $this->triggerErrors = true;
         }
 
         // Using the mode string, set the internal mode.
@@ -744,14 +744,14 @@ class StreamWrapper
 
         // Parse the URL.
         $url = $this->parseUrl($path);
-        //syslog(LOG_WARNING, print_r($url, TRUE));
+        //syslog(LOG_WARNING, print_r($url, true));
 
         // Container name is required.
         if (empty($url['host'])) {
             //if ($this->triggerErrors) {
                 trigger_error('No container name was supplied in ' . $path, E_USER_WARNING);
             //}
-            return FALSE;
+            return false;
         }
 
         // A path to an object is required.
@@ -759,7 +759,7 @@ class StreamWrapper
             //if ($this->triggerErrors) {
                 trigger_error('No object name was supplied in ' . $path, E_USER_WARNING);
             //}
-            return FALSE;
+            return false;
         }
 
         // We set this because it is possible to bind another scheme name,
@@ -785,7 +785,7 @@ class StreamWrapper
         } catch (\OpenStack\Exception $e) {
             trigger_error('Failed to init object storage: ' . $e->getMessage(), E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
 
         //syslog(LOG_WARNING, "Container: " . $containerName);
@@ -799,7 +799,7 @@ class StreamWrapper
         } catch (\OpenStack\Transport\FileNotFoundException $e) {
                 trigger_error('Container not found.', E_USER_WARNING);
 
-                return FALSE;
+                return false;
         }
 
         try {
@@ -816,7 +816,7 @@ class StreamWrapper
                 //if ($this->triggerErrors) {
                     trigger_error('File exists and cannot be overwritten.', E_USER_WARNING);
                 //}
-                return FALSE;
+                return false;
             }
 
             // If we need to write to it, we need a writable
@@ -851,12 +851,12 @@ class StreamWrapper
             if ($this->createIfNotFound) {
                 $this->obj = new Object($objectName);
                 $this->objStream = fopen('php://temp', 'rb+');
-                $this->isDirty = TRUE;
+                $this->isDirty = true;
             } else {
                 //if ($this->triggerErrors) {
                     trigger_error($nf->getMessage(), E_USER_WARNING);
                 //}
-                return FALSE;
+                return false;
             }
 
         }
@@ -865,20 +865,20 @@ class StreamWrapper
             //if ($this->triggerErrors) {
                 trigger_error('Failed to fetch object: ' . $e->getMessage(), E_USER_WARNING);
             //}
-            return FALSE;
+            return false;
         }
 
         // At this point, we have a file that may be read-only. It also may be
         // reading off of a socket. It will be positioned at the beginning of
         // the stream.
-        return TRUE;
+        return true;
     }
 
     /**
      * Read N bytes from the stream.
      *
      * This will read up to the requested number of bytes. Or, upon
-     * hitting the end of the file, it will return NULL.
+     * hitting the end of the file, it will return null.
      *
      * @see fread(), fgets(), and so on for examples.
      *
@@ -890,7 +890,7 @@ class StreamWrapper
      *       'endpoint' => 'https://auth.example.com',
      *     ));
      *
-     *     $content = file_get_contents('swift://public/myfile.txt', FALSE, $cxt);
+     *     $content = file_get_contents('swift://public/myfile.txt', false, $cxt);
      *     ?>
      *
      * @param int $count The number of bytes to read (usually 8192).
@@ -917,7 +917,7 @@ class StreamWrapper
         $ret = fseek($this->objStream, $offset, $whence);
 
         // fseek returns 0 for success, -1 for failure.
-        // We need to return TRUE for success, FALSE for failure.
+        // We need to return true for success, false for failure.
         return $ret === 0;
     }
 
@@ -951,7 +951,7 @@ class StreamWrapper
      * Perform stat()/lstat() operations.
      *
      *     <?php
-     *       $file = fopen('swift://foo/bar', 'r+', FALSE, $cxt);
+     *       $file = fopen('swift://foo/bar', 'r+', false, $cxt);
      *       $stats = fstat($file);
      *     ?>
      *
@@ -997,7 +997,7 @@ class StreamWrapper
      */
     public function stream_write($data)
     {
-        $this->isDirty = TRUE;
+        $this->isDirty = true;
 
         return fwrite($this->objStream, $data);
     }
@@ -1019,7 +1019,7 @@ class StreamWrapper
      *
      * @param string $path The URL.
      *
-     * @return boolean TRUE if the file was deleted, FALSE otherwise.
+     * @return boolean true if the file was deleted, false otherwise.
      */
     public function unlink($path)
     {
@@ -1029,7 +1029,7 @@ class StreamWrapper
         if (empty($url['host'])) {
             trigger_error('Container name is required.', E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
 
         // I suppose we could allow deleting containers,
@@ -1038,7 +1038,7 @@ class StreamWrapper
         if (empty($url['path'])) {
             trigger_error('Path is required.', E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
 
         try {
@@ -1047,14 +1047,14 @@ class StreamWrapper
             $name = $url['host'];
             $token = $this->store->token();
             $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
-            $client = $this->cxt('transport_client', NULL);
+            $client = $this->cxt('transport_client', null);
             $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token, $client);
 
             return $container->delete($url['path']);
         } catch (\OpenStack\Exception $e) {
             trigger_error('Error during unlink: ' . $e->getMessage(), E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
 
     }
@@ -1071,7 +1071,7 @@ class StreamWrapper
                 trigger_error('Container name (host) and path are required.', E_USER_WARNING);
             }
 
-            return FALSE;
+            return false;
         }
 
         try {
@@ -1084,7 +1084,7 @@ class StreamWrapper
             $name = $url['host'];
             $token = $this->store->token();
             $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
-            $client = $this->cxt('transport_client', NULL);
+            $client = $this->cxt('transport_client', null);
             $container = new \OpenStack\Storage\ObjectStorage\Container($name, $endpoint_url, $token, $client);
             $obj = $container->remoteObject($url['path']);
         } catch (\OpenStack\Exception $e) {
@@ -1092,14 +1092,14 @@ class StreamWrapper
             //if ($flags & STREAM_URL_STAT_QUIET) {
                 //trigger_error('Could not stat remote file: ' . $e->getMessage(), E_USER_WARNING);
             //}
-            return FALSE;
+            return false;
         }
 
         if ($flags & STREAM_URL_STAT_QUIET) {
             try {
                 return @$this->generateStat($obj, $container, $obj->contentLength());
             } catch (\OpenStack\Exception $e) {
-                return FALSE;
+                return false;
             }
         }
 
@@ -1261,48 +1261,48 @@ class StreamWrapper
         // object storage does not distinguish between
         // text and binary files. Per the PHP recommendation
         // files are treated as binary.
-        $this->isBinary = strpos($mode, 'b') !== FALSE;
-        $this->isText = strpos($mode, 't') !== FALSE;
+        $this->isBinary = strpos($mode, 'b') !== false;
+        $this->isText = strpos($mode, 't') !== false;
 
         // Rewrite mode to remove b or t:
         $mode = preg_replace('/[bt]?/', '', $mode);
 
         switch ($mode) {
             case 'r+':
-                $this->isWriting = TRUE;
+                $this->isWriting = true;
             case 'r':
-                $this->isReading = TRUE;
-                $this->createIfNotFound = FALSE;
+                $this->isReading = true;
+                $this->createIfNotFound = false;
                 break;
 
 
             case 'w+':
-                $this->isReading = TRUE;
+                $this->isReading = true;
             case 'w':
-                $this->isTruncating = TRUE;
-                $this->isWriting = TRUE;
+                $this->isTruncating = true;
+                $this->isWriting = true;
                 break;
 
 
             case 'a+':
-                $this->isReading = TRUE;
+                $this->isReading = true;
             case 'a':
-                $this->isAppending = TRUE;
-                $this->isWriting = TRUE;
+                $this->isAppending = true;
+                $this->isWriting = true;
                 break;
 
 
             case 'x+':
-                $this->isReading = TRUE;
+                $this->isReading = true;
             case 'x':
-                $this->isWriting = TRUE;
-                $this->noOverwrite = TRUE;
+                $this->isWriting = true;
+                $this->noOverwrite = true;
                 break;
 
             case 'c+':
-                $this->isReading = TRUE;
+                $this->isReading = true;
             case 'c':
-                $this->isWriting = TRUE;
+                $this->isWriting = true;
                 break;
 
             // nope mode: Mock read/write support,
@@ -1310,16 +1310,16 @@ class StreamWrapper
             // (This is accomplished by never marking
             // the stream as dirty.)
             case 'nope':
-                $this->isReading = TRUE;
-                $this->isWriting = TRUE;
-                $this->isNeverDirty = TRUE;
+                $this->isReading = true;
+                $this->isWriting = true;
+                $this->isNeverDirty = true;
                 break;
 
             // Default case is read/write
             // like c+.
             default:
-                $this->isReading = TRUE;
-                $this->isWriting = TRUE;
+                $this->isReading = true;
+                $this->isWriting = true;
                 break;
 
         }
@@ -1337,10 +1337,10 @@ class StreamWrapper
      * @param mixed  $default The default value to return if no config param was
      *                        found.
      *
-     * @return mixed The discovered result, or $default if specified, or NULL if
+     * @return mixed The discovered result, or $default if specified, or null if
      *               no $default is specified.
      */
-    protected function cxt($name, $default = NULL)
+    protected function cxt($name, $default = null)
     {
         // Lazilly populate the context array.
         if (is_resource($this->context) && empty($this->contextArray)) {
@@ -1363,7 +1363,7 @@ class StreamWrapper
 
         // Check to see if the value can be gotten from
         // \OpenStack\Bootstrap.
-        $val = \OpenStack\Bootstrap::config($name, NULL);
+        $val = \OpenStack\Bootstrap::config($name, null);
         if (isset($val)) {
             return $val;
         }
@@ -1421,7 +1421,7 @@ class StreamWrapper
      * - password: A password. MUST be accompanied by 'username' and 'tenantname'.
      * - endpoint: The URL to the authentication endpoint. Necessary if you are not
      *     using a 'token' and 'swift_endpoint'.
-     * - use_swift_auth: If this is set to TRUE, it will force the app to use
+     * - use_swift_auth: If this is set to true, it will force the app to use
      *     the deprecated swiftAuth instead of IdentityService authentication.
      *     In general, you should avoid using this.
      * - transport_client: A transport client for the HTTP requests.
@@ -1439,9 +1439,9 @@ class StreamWrapper
         $tenantName = $this->cxt('tenantname');
         $authUrl = $this->cxt('endpoint');
         $endpoint = $this->cxt('swift_endpoint');
-        $client = $this->cxt('transport_client', NULL);
+        $client = $this->cxt('transport_client', null);
 
-        $serviceCatalog = NULL;
+        $serviceCatalog = null;
 
         if (!empty($token) && isset(self::$serviceCatalogCache[$token])) {
             $serviceCatalog = self::$serviceCatalogCache[$token];
@@ -1472,7 +1472,7 @@ class StreamWrapper
             /*
             $catalog = $ident->serviceCatalog(ObjectStorage::SERVICE_TYPE);
             if (empty($catalog) || empty($catalog[0]['endpoints'][0]['publicURL'])) {
-                //throw new \OpenStack\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, TRUE));
+                //throw new \OpenStack\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, true));
                 throw new \OpenStack\Exception('No object storage services could be found for this tenant ID.');
             }
             $serviceURL = $catalog[0]['endpoints'][0]['publicURL'];
@@ -1494,7 +1494,7 @@ class StreamWrapper
         $tenantName = $this->cxt('tenantname');
         $authUrl = $this->cxt('endpoint');
 
-        $client = $this->cxt('transport_client', NULL);
+        $client = $this->cxt('transport_client', null);
 
         $ident = new \OpenStack\Services\IdentityService($authUrl, $client);
 

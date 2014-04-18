@@ -76,11 +76,11 @@ class ObjectStorage
     /**
      * The authorization token.
      */
-    protected $token = NULL;
+    protected $token = null;
     /**
      * The URL to the Swift endpoint.
      */
-    protected $url = NULL;
+    protected $url = null;
 
     /**
      * The HTTP Client
@@ -119,7 +119,7 @@ class ObjectStorage
      * @deprecated Newer versions of OpenStack use Keystone auth instead
      * of Swift auth.
      */
-    public static function newFromSwiftAuth($account, $key, $url, \OpenStack\Transport\ClientInterface $client = NULL)
+    public static function newFromSwiftAuth($account, $key, $url, \OpenStack\Transport\ClientInterface $client = null)
     {
         $headers = array(
             'X-Auth-User' => $account,
@@ -160,7 +160,7 @@ class ObjectStorage
      *
      * @return \OpenStack\Storage\ObjectStorage A new ObjectStorage instance.
      */
-    public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Transport\ClientInterface $client = NULL)
+    public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Transport\ClientInterface $client = null)
     {
         $cat = $identity->serviceCatalog();
         $tok = $identity->token();
@@ -184,7 +184,7 @@ class ObjectStorage
      *
      * @return \OpenStack\Storage\ObjectStorage A new ObjectStorage instance.
      */
-    public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Transport\ClientInterface $client = NULL)
+    public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Transport\ClientInterface $client = null)
     {
         $c = count($catalog);
         for ($i = 0; $i < $c; ++$i) {
@@ -199,7 +199,7 @@ class ObjectStorage
             }
         }
 
-        return FALSE;
+        return false;
 
     }
 
@@ -214,7 +214,7 @@ class ObjectStorage
      * @param string $url       The URL to the endpoint. This typically is returned
      *                          after authentication.
      */
-    public function __construct($authToken, $url, \OpenStack\Transport\ClientInterface $client = NULL)
+    public function __construct($authToken, $url, \OpenStack\Transport\ClientInterface $client = null)
     {
         $this->token = $authToken;
         $this->url = $url;
@@ -279,7 +279,7 @@ class ObjectStorage
      *               object. Results are ordered in server order (the order that the remote
      *               host puts them in).
      */
-    public function containers($limit = 0, $marker = NULL)
+    public function containers($limit = 0, $marker = null)
     {
         $url = $this->url() . '?format=json';
 
@@ -315,7 +315,7 @@ class ObjectStorage
     public function container($name)
     {
         $url = $this->url() . '/' . rawurlencode($name);
-        $data = $this->req($url, 'HEAD', FALSE);
+        $data = $this->req($url, 'HEAD', false);
 
         $status = $data->getStatusCode();
         if ($status == 204) {
@@ -337,7 +337,7 @@ class ObjectStorage
      *
      * @param string $name The name of the container to test.
      *
-     * @return boolean TRUE if the container exists, FALSE if it does not.
+     * @return boolean true if the container exists, false if it does not.
      *
      * @throws \OpenStack\Exception If an unexpected network error occurs.
      */
@@ -346,10 +346,10 @@ class ObjectStorage
         try {
             $container = $this->container($name);
         } catch (\OpenStack\Transport\FileNotFoundException $fnfe) {
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -361,8 +361,8 @@ class ObjectStorage
      * A boolean is returned when the operation did not generate an error
      * condition.
      *
-     * - TRUE means that the container was created.
-     * - FALSE means that the container was not created because it already
+     * - true means that the container was created.
+     * - false means that the container was not created because it already
      * exists.
      *
      * Any actual error will cause an exception to be thrown. These will
@@ -408,10 +408,10 @@ class ObjectStorage
      * @param array  $metadata An associative array of metadata to attach to the
      *                         container.
      *
-     * @return boolean TRUE if the container was created, FALSE if the container
+     * @return boolean true if the container was created, false if the container
      *                 was not created because it already exists.
      */
-    public function createContainer($name, ACL $acl = NULL, $metadata = array())
+    public function createContainer($name, ACL $acl = null, $metadata = array())
     {
         $url = $this->url() . '/' . rawurlencode($name);
         $headers = array(
@@ -429,14 +429,14 @@ class ObjectStorage
         }
 
         $data = $this->client->doRequest($url, 'PUT', $headers);
-        //syslog(LOG_WARNING, print_r($data, TRUE));
+        //syslog(LOG_WARNING, print_r($data, true));
 
         $status = $data->getStatusCode();
 
         if ($status == 201) {
-            return TRUE;
+            return true;
         } elseif ($status == 202) {
-            return FALSE;
+            return false;
         }
         // According to the OpenStack docs, there are no other return codes.
         else {
@@ -452,7 +452,7 @@ class ObjectStorage
      * you are encouraged to use this alias in cases where you clearly intend
      * to update an existing container.
      */
-    public function updateContainer($name, ACL $acl = NULL, $metadata = array())
+    public function updateContainer($name, ACL $acl = null, $metadata = array())
     {
         return $this->createContainer($name, $acl, $metadata);
     }
@@ -470,7 +470,7 @@ class ObjectStorage
      * @param object $acl  \OpenStack\Storage\ObjectStorage\ACL An ACL. To make the
      *                     container publically readable, use ACL::makePublic().
      *
-     * @return boolean TRUE if the cointainer was created, FALSE otherwise.
+     * @return boolean true if the cointainer was created, false otherwise.
      */
     public function changeContainerACL($name, ACL $acl)
     {
@@ -491,7 +491,7 @@ class ObjectStorage
      *
      * @param string $name The name of the container.
      *
-     * @return boolean TRUE if the container was deleted, FALSE if the container
+     * @return boolean true if the container was deleted, false if the container
      *                 was not found (and hence, was not deleted).
      *
      * @throws \OpenStack\Storage\ObjectStorage\ContainerNotEmptyException if the container is not empty.
@@ -505,9 +505,9 @@ class ObjectStorage
         $url = $this->url() . '/' . rawurlencode($name);
 
         try {
-            $data = $this->req($url, 'DELETE', FALSE);
+            $data = $this->req($url, 'DELETE', false);
         } catch (\OpenStack\Transport\FileNotFoundException $e) {
-            return FALSE;
+            return false;
         }
         // XXX: I'm not terribly sure about this. Why not just throw the
         // ConflictException?
@@ -519,7 +519,7 @@ class ObjectStorage
 
         // 204 indicates that the container has been deleted.
         if ($status == 204) {
-            return TRUE;
+            return true;
         }
         // OpenStacks documentation doesn't suggest any other return
         // codes.
@@ -546,7 +546,7 @@ class ObjectStorage
     public function accountInfo()
     {
         $url = $this->url();
-        $data = $this->req($url, 'HEAD', FALSE);
+        $data = $this->req($url, 'HEAD', false);
 
         $results = array(
             'bytes' => $data->getHeader('X-Account-Bytes-Used', 0),
@@ -563,7 +563,7 @@ class ObjectStorage
      * This is a convenience method that handles the
      * most common case of Swift requests.
      */
-    protected function get($url, $jsonDecode = TRUE)
+    protected function get($url, $jsonDecode = true)
     {
         return $this->req($url, 'GET', $jsonDecode);
     }
@@ -571,7 +571,7 @@ class ObjectStorage
     /**
      * Internal request issuing command.
      */
-    protected function req($url, $method = 'GET', $jsonDecode = TRUE, $body = '')
+    protected function req($url, $method = 'GET', $jsonDecode = true, $body = '')
     {
         $headers = array(
                 'X-Auth-Token' => $this->token(),

@@ -156,7 +156,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         $this->assertEmpty($service->tenantName());
 
         $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
-        $ret = $service->authenticateAsUser($user, $pass, NULL, $tenantName);
+        $ret = $service->authenticateAsUser($user, $pass, null, $tenantName);
         $this->assertNotEmpty($service->tenantName());
 
         $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
@@ -231,7 +231,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
 
         $this->assertGreaterThan(0, count($catalog));
 
-        $idService = NULL;
+        $idService = null;
         foreach ($catalog as $item) {
             if ($item['type'] == 'identity') {
                 $idService = $item;
@@ -398,8 +398,8 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
             'endpoint' => self::conf('openstack.identity.url'),
             'tenantid' => self::conf('openstack.identity.tenantId'),
             'transport' => self::conf('transport'),
-            'transport.debug' => self::conf('transport.debug', FALSE),
-            'transport.ssl_verify' => self::conf('transport.ssl', TRUE),
+            'transport.debug' => self::conf('transport.debug', false),
+            'transport.ssl_verify' => self::conf('transport.ssl', true),
         );
         if (self::conf('transport.timeout')) {
             $setting['transport.timeout'] = self::conf('transport.timeout');
@@ -409,7 +409,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         }
         Bootstrap::setConfiguration($settings);
 
-        $is = Bootstrap::identity(TRUE);
+        $is = Bootstrap::identity(true);
         $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
 
         // Test getting a second instance from the cache.
@@ -417,7 +417,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         $this->assertEquals($is, $is2);
 
         // Test that forcing a refresh does so.
-        $is2 = Bootstrap::identity(TRUE);
+        $is2 = Bootstrap::identity(true);
         $this->assertNotEquals($is, $is2);
 
         Bootstrap::$config = $reset;
@@ -429,8 +429,8 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
             'endpoint' => self::conf('openstack.identity.url'),
             'tenantname' => self::conf('openstack.identity.tenantName'),
             'transport' => self::conf('transport'),
-            'transport.debug' => self::conf('transport.debug', FALSE),
-            'transport.ssl_verify' => self::conf('transport.ssl', TRUE),
+            'transport.debug' => self::conf('transport.debug', false),
+            'transport.ssl_verify' => self::conf('transport.ssl', true),
         );
         if (self::conf('transport.timeout')) {
             $setting['transport.timeout'] = self::conf('transport.timeout');
@@ -440,7 +440,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         }
         Bootstrap::setConfiguration($settings);
 
-        $is = Bootstrap::identity(TRUE);
+        $is = Bootstrap::identity(true);
         $this->assertInstanceOf('\OpenStack\Services\IdentityService', $is);
     }
 }

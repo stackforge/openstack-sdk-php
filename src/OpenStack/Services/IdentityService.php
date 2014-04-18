@@ -201,7 +201,7 @@ class IdentityService
      *
      * @param \OpenStack\Transport\ClientInterface $client An optional HTTP client to use when making the requests.
      */
-    public function __construct($url, \OpenStack\Transport\ClientInterface $client = NULL)
+    public function __construct($url, \OpenStack\Transport\ClientInterface $client = null)
     {
         $parts = parse_url($url);
 
@@ -319,7 +319,7 @@ class IdentityService
      * @throws \OpenStack\Exception                        For abnormal network conditions. The message
      *                                                     will give an indication as to the underlying problem.
      */
-    public function authenticateAsUser($username, $password, $tenantId = NULL, $tenantName = NULL)
+    public function authenticateAsUser($username, $password, $tenantId = null, $tenantName = null)
     {
         $ops = array(
             'passwordCredentials' => array(
@@ -355,12 +355,12 @@ class IdentityService
      * Get the tenant ID associated with this token.
      *
      * If this token has a tenant ID, the ID will be returned. Otherwise, this
-     * will return NULL.
+     * will return null.
      *
      * This will not be populated until after an authentication method has been
      * run.
      *
-     * @return string The tenant ID if available, or NULL.
+     * @return string The tenant ID if available, or null.
      */
     public function tenantId()
     {
@@ -373,12 +373,12 @@ class IdentityService
      * Get the tenant name associated with this token.
      *
      * If this token has a tenant name, the name will be returned. Otherwise, this
-     * will return NULL.
+     * will return null.
      *
      * This will not be populated until after an authentication method has been
      * run.
      *
-     * @return string The tenant name if available, or NULL.
+     * @return string The tenant name if available, or null.
      */
     public function tenantName()
     {
@@ -424,16 +424,16 @@ class IdentityService
      * machine's local timestamp with the server's expiration time stamp. A
      * mis-configured machine timestamp could give spurious results.
      *
-     * @return boolean This will return FALSE if there is a current token and it
+     * @return boolean This will return false if there is a current token and it
      *                 has not yet expired (according to the date info). In all
-     *                 other cases it returns TRUE.
+     *                 other cases it returns true.
      */
     public function isExpired()
     {
         $details = $this->tokenDetails();
 
         if (empty($details['expires'])) {
-            return TRUE;
+            return true;
         }
 
         $currentDateTime = new \DateTime('now');
@@ -508,7 +508,7 @@ class IdentityService
      *
      * @return array An associative array representing the service catalog.
      */
-    public function serviceCatalog($type = NULL)
+    public function serviceCatalog($type = null)
     {
         // If no type is specified, return the entire
         // catalog.
@@ -573,7 +573,7 @@ class IdentityService
      *         "id" =>  "395I91234514446",
      *         "name" => "Banking Tenant Services",
      *         "description" => "Banking Tenant Services for TimeWarner",
-     *         "enabled" => TRUE,
+     *         "enabled" => true,
      *         "created" => "2011-11-29T16:59:52.635Z",
      *         "updated" => "2011-11-29T16:59:52.635Z",
      *       ),
@@ -589,7 +589,7 @@ class IdentityService
      * @throws \OpenStack\Exception                        For abnormal network conditions. The message
      *                                                     will give an indication as to the underlying problem.
      */
-    public function tenants($token = NULL)
+    public function tenants($token = null)
     {
         $url = $this->url() . '/tenants';
 

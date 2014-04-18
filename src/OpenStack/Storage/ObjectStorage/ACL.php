@@ -215,7 +215,7 @@ class ACL
             }
         }
 
-        //throw new \Exception(print_r($acl->rules(), TRUE));
+        //throw new \Exception(print_r($acl->rules(), true));
         return $acl;
     }
 
@@ -252,7 +252,7 @@ class ACL
         if (!empty($matches[2])) {
             $entry['host'] = $matches[2];
         } elseif (!empty($matches[3])) {
-            $entry['rlistings'] = TRUE;
+            $entry['rlistings'] = true;
         } elseif (!empty($matches[4])) {
             $entry['account'] = $matches[4];
             if (!empty($matches[6])) {
@@ -305,7 +305,7 @@ class ACL
      * @return \OpenStack\Storage\ObjectStorage\ACL $this for current object so
      *                                              the method can be used in chaining.
      */
-    public function addAccount($perm, $account, $user = NULL)
+    public function addAccount($perm, $account, $user = null)
     {
         $rule = array('account' => $account);
 
@@ -384,7 +384,7 @@ class ACL
     {
         $this->rules[] = array(
             'mask' => self::READ,
-            'rlistings' => TRUE,
+            'rlistings' => true,
         );
 
         return $this;
@@ -496,10 +496,10 @@ class ACL
     /**
      * Check if the ACL marks this private.
      *
-     * This returns TRUE only if this ACL does not grant any permissions
+     * This returns true only if this ACL does not grant any permissions
      * at all.
      *
-     * @return boolean TRUE if this is private (non-public), FALSE if any
+     * @return boolean true if this is private (non-public), false if any
      *                 permissions are granted via this ACL.
      */
     public function isNonPublic()
@@ -518,7 +518,7 @@ class ACL
     /**
      * Check whether this object allows public reading.
      *
-     * This will return TRUE the ACL allows (a) any host to access
+     * This will return true the ACL allows (a) any host to access
      * the item, and (b) it allows container listings.
      *
      * This checks whether the object allows public reading,
@@ -530,14 +530,14 @@ class ACL
      */
     public function isPublic()
     {
-        $allowsAllHosts = FALSE;
-        $allowsRListings = FALSE;
+        $allowsAllHosts = false;
+        $allowsRListings = false;
         foreach ($this->rules as $rule) {
             if (self::READ & $rule['mask']) {
                 if (!empty($rule['rlistings'])) {
-                    $allowsRListings = TRUE;
+                    $allowsRListings = true;
                 } elseif (!empty($rule['host']) && trim($rule['host']) == '*') {
-                    $allowsAllHosts = TRUE;
+                    $allowsAllHosts = true;
                 }
             }
         }

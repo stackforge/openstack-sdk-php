@@ -48,8 +48,8 @@ class RemoteObject extends Object
     protected $etag = '';
     protected $lastModified = 0;
 
-    protected $contentVerification = TRUE;
-    protected $caching = FALSE;
+    protected $contentVerification = true;
+    protected $caching = false;
 
     /**
      * All headers received from a remote are stored in this array.
@@ -75,7 +75,7 @@ class RemoteObject extends Object
      * @param $url The URL to the object on the remote server
      * @param \OpenStack\Transport\ClientInterface $client A HTTP transport client.
      */
-    public static function newFromJSON($data, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL)
+    public static function newFromJSON($data, $token, $url, \OpenStack\Transport\ClientInterface $client = null)
     {
         $object = new RemoteObject($data['name']);
         $object->setContentType($data['content_type']);
@@ -114,14 +114,14 @@ class RemoteObject extends Object
      *
      * @return \OpenStack\Storage\ObjectStorage\RemoteObject A new RemoteObject.
      */
-    public static function newFromHeaders($name, $headers, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL)
+    public static function newFromHeaders($name, $headers, $token, $url, \OpenStack\Transport\ClientInterface $client = null)
     {
         $object = new RemoteObject($name);
 
         //$object->allHeaders = $headers;
         $object->setHeaders($headers);
 
-        //throw new \Exception(print_r($headers, TRUE));
+        //throw new \Exception(print_r($headers, true));
 
         // Fix inconsistant header.
         if (isset($headers['ETag'])) {
@@ -179,7 +179,7 @@ class RemoteObject extends Object
      *                authentication. You can, for example, pass the URL to a browser
      *                user agent.
      *                - If this object has never been saved remotely, then there will be
-     *                no URL, and this will return NULL.
+     *                no URL, and this will return null.
      */
     public function url()
     {
@@ -256,7 +256,7 @@ class RemoteObject extends Object
         return $this->allHeaders;
     }
 
-    public function additionalHeaders($mergeAll = FALSE)
+    public function additionalHeaders($mergeAll = false)
     {
         // Any additional headers will be set. Note that $this->headers will contain
         // some headers that are NOT additional. But we do not know which headers are
@@ -273,10 +273,10 @@ class RemoteObject extends Object
     }
 
     protected $reservedHeaders = array(
-        'etag' => TRUE, 'content-length' => TRUE,
-        'x-auth-token' => TRUE,
-        'transfer-encoding' => TRUE,
-        'x-trans-id' => TRUE,
+        'etag' => true, 'content-length' => true,
+        'x-auth-token' => true,
+        'transfer-encoding' => true,
+        'x-trans-id' => true,
     );
 
     /**
@@ -360,7 +360,7 @@ class RemoteObject extends Object
         }
 
         // Get the object, content included.
-        $response = $this->fetchObject(TRUE);
+        $response = $this->fetchObject(true);
 
         $content = $response->getBody();
 
@@ -393,7 +393,7 @@ class RemoteObject extends Object
      *
      * If there is a local copy of the content, the stream will be read
      * out of the content as if it were a temp-file backed in-memory
-     * resource. To ignore the local version, pass in TRUE for the
+     * resource. To ignore the local version, pass in true for the
      * $refresh parameter.
      *
      * If the content is coming from a remote copy, the stream will be
@@ -401,11 +401,11 @@ class RemoteObject extends Object
      *
      * Each time stream() is called, a new stream is created. In most
      * cases, this results in a new HTTP transaction (unless $refresh is
-     * FALSE and the content is already stored locally).
+     * false and the content is already stored locally).
      *
      * The stream is read-only.
      *
-     * @param boolean $refresh If this is set to TRUE, any existing local
+     * @param boolean $refresh If this is set to true, any existing local
      *                         modifications will be ignored and the content will
      *                         be refreshed from the server. Any local changes to
      *                         the object will be discarded.
@@ -413,7 +413,7 @@ class RemoteObject extends Object
      * @return resource A handle to the stream, which is already opened and
      *                  positioned at the beginning of the stream.
      */
-    public function stream($refresh = FALSE)
+    public function stream($refresh = false)
     {
         // If we're working on local content, return that content wrapped in
         // a fake IO stream.
@@ -423,7 +423,7 @@ class RemoteObject extends Object
 
         // Otherwise, we fetch a fresh version from the remote server and
         // return its stream handle.
-        $response = $this->fetchObject(TRUE);
+        $response = $this->fetchObject(true);
 
         // Write to in-mem handle backed by a temp file.
         $out = fopen('php://temp', 'rb+');
@@ -463,8 +463,8 @@ class RemoteObject extends Object
      * existing cached content will not be removed if caching is turned
      * off.
      *
-     * @param boolean $enabled If this is TRUE, caching will be enabled. If this
-     *                         is FALSE, caching will be disabled.
+     * @param boolean $enabled If this is true, caching will be enabled. If this
+     *                         is false, caching will be disabled.
      *
      * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this so the method can be used in chaining.
      */
@@ -481,7 +481,7 @@ class RemoteObject extends Object
      * Importantly, this indicates whether the object will cache
      * its contents, not whether anything is actually cached.
      *
-     * @return boolean TRUE if caching is enabled, FALSE otherwise.
+     * @return boolean true if caching is enabled, false otherwise.
      */
     public function isCaching()
     {
@@ -506,9 +506,9 @@ class RemoteObject extends Object
      * also provide a small performance improvement on large files, but at
      * the expense of security.
      *
-     * @param boolean $enabled If this is TRUE, content verification is performed.
+     * @param boolean $enabled If this is true, content verification is performed.
      *                         The content is hashed and checked against a
-     *                         server-supplied MD5 hashcode. If this is FALSE,
+     *                         server-supplied MD5 hashcode. If this is false,
      *                         no checking is done.
      *
      * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this so the method can be used in chaining.
@@ -528,7 +528,7 @@ class RemoteObject extends Object
      * returned by the remote server, and comparing that to the server's
      * supplied ETag hash.
      *
-     * @return boolean TRUE if this is verifying, FALSE otherwise.
+     * @return boolean true if this is verifying, false otherwise.
      */
     public function isVerifyingContent()
     {
@@ -563,17 +563,17 @@ class RemoteObject extends Object
     {
         // If there is no content, the object can't be dirty.
         if (!isset($this->content)) {
-            return FALSE;
+            return false;
         }
 
         // Content is dirty iff content is set, and it is
         // different from the original content. Note that
         // we are using the etag from the original headers.
         if ($this->etag != md5($this->content)) {
-            return TRUE;
+            return true;
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -585,13 +585,13 @@ class RemoteObject extends Object
      * WARNING: This will destroy any unsaved local changes. You can use
      * isDirty() to determine whether or not a local change has been made.
      *
-     * @param boolean $fetchContent If this is TRUE, the content will be
+     * @param boolean $fetchContent If this is true, the content will be
      *                              downloaded as well.
      *
      * @return \OpenStack\Storage\ObjectStorage\RemoteObject $this for the current object so it can be used in chaining
      *                                                       methods.
      */
-    public function refresh($fetchContent = FALSE)
+    public function refresh($fetchContent = false)
     {
         // Kill old content.
         unset($this->content);
@@ -609,17 +609,17 @@ class RemoteObject extends Object
     /**
      * Helper function for fetching an object.
      *
-     * @param boolean $fetchContent If this is set to TRUE, a GET request will be
+     * @param boolean $fetchContent If this is set to true, a GET request will be
      *                              issued, which will cause the remote host to
      *                              return the object in the response body. The
      *                              response body is not handled, though. If this
-     *                              is set to FALSE, a HEAD request is sent, and
+     *                              is set to false, a HEAD request is sent, and
      *                              no body is returned.
      *
      * @return \OpenStack\Transport\Response containing the object metadata and (depending on the $fetchContent flag)
      *                                       optionally the data.
      */
-    protected function fetchObject($fetchContent = FALSE)
+    protected function fetchObject($fetchContent = false)
     {
         $method = $fetchContent ? 'GET' : 'HEAD';
 
@@ -653,8 +653,8 @@ class RemoteObject extends Object
         $this->etag = $response->getHeader('Etag') ? $response->getHeader('Etag') : $this->etag;
         $this->contentLength = (int) ($response->getHeader('Content-Length') ? $response->getHeader('Content-Length') : 0);
 
-        $this->setDisposition($response->getHeader('Content-Disposition', NULL));
-        $this->setEncoding($response->getHeader('Content-Encoding', NULL));
+        $this->setDisposition($response->getHeader('Content-Disposition', null));
+        $this->setEncoding($response->getHeader('Content-Encoding', null));
 
         // Reset the metadata, too:
         $headers = [];

@@ -63,7 +63,7 @@ $user = $argv[1 + $offset];
 $password = $argv[2 + $offset];
 $uri = $argv[3 + $offset];
 
-$tenantId = NULL;
+$tenantId = null;
 if (!empty($argv[4 + $offset])) {
     $tenantId = $argv[4 + $offset];
 }

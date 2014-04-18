@@ -34,16 +34,16 @@ class TestCase extends \PHPUnit_Framework_TestCase
 {
     public static $settings = array();
 
-    public static $ostore = NULL;
+    public static $ostore = null;
 
     /**
      * The IdentityService instance.
      */
     public static $ident;
 
-    public static $httpClient = NULL;
+    public static $httpClient = null;
 
-    //public function __construct(score $score = NULL, locale $locale = NULL, adapter $adapter = NULL) {
+    //public function __construct(score $score = null, locale $locale = null, adapter $adapter = null) {
     public static function setUpBeforeClass()
     {
         global $bootstrap_settings;
@@ -72,7 +72,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
      * Optionally, specify a default value to be used
      * if none was found.
      */
-    public static function conf($name, $default = NULL)
+    public static function conf($name, $default = null)
     {
         if (isset(self::$settings[$name])) {
             return self::$settings[$name];
@@ -81,7 +81,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
         return $default;
     }
 
-    protected $containerFixture = NULL;
+    protected $containerFixture = null;
 
     /**
      * @deprecated
@@ -107,7 +107,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
      *     $this->identity()->token();
      *     ?>
      */
-    protected function identity($reset = FALSE)
+    protected function identity($reset = false)
     {
         if ($reset || empty(self::$ident)) {
             $user = self::conf('openstack.identity.username');
@@ -126,7 +126,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
         return self::$ident;
     }
 
-    protected function objectStore($reset = FALSE)
+    protected function objectStore($reset = false)
     {
         if ($reset || empty(self::$ostore)) {
             $ident = $this->identity($reset);

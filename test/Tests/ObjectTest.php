@@ -77,7 +77,7 @@ class ObjectTest extends \OpenStack\Tests\TestCase
         $this->assertEquals(self::FCONTENT, $o->content());
 
         // Test binary data.
-        $bin = sha1(self::FCONTENT, TRUE);
+        $bin = sha1(self::FCONTENT, true);
         $o->setContent($bin, 'application/octet-stream');
 
         $this->assertEquals($bin, $o->content());
@@ -103,7 +103,7 @@ class ObjectTest extends \OpenStack\Tests\TestCase
         $this->assertEquals(strlen(self::FCONTENT), $o->contentLength());
 
         // Test on binary data.
-        $bin = sha1(self::FCONTENT, TRUE);
+        $bin = sha1(self::FCONTENT, true);
 
         $o->setContent($bin);
         $this->assertFalse($o->contentLength() == 0);

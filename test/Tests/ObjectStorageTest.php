@@ -129,7 +129,7 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
 
         $md = array('Foo' => 1234);
 
-        $ret = $store->createContainer($testCollection, NULL, $md);
+        $ret = $store->createContainer($testCollection, null, $md);
         $this->assertTrue($ret, "Create container");
 
     }
@@ -283,7 +283,7 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
         $this->assertNotEmpty($data, $url);
 
         $containers = $store->containers();
-        //throw new \Exception(print_r($containers, TRUE));
+        //throw new \Exception(print_r($containers, true));
 
         $store->deleteContainer($testCollection);
     }

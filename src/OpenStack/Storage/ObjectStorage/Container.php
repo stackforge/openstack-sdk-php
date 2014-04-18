@@ -72,12 +72,12 @@ class Container implements \Countable, \IteratorAggregate
     const CONTAINER_METADATA_HEADER_PREFIX = 'X-Container-Meta-';
 
     //protected $properties = array();
-    protected $name = NULL;
+    protected $name = null;
 
-    // These were both changed from 0 to NULL to allow
+    // These were both changed from 0 to null to allow
     // lazy loading.
-    protected $count = NULL;
-    protected $bytes = NULL;
+    protected $count = null;
+    protected $bytes = null;
 
     protected $token;
     protected $url;
@@ -106,7 +106,7 @@ class Container implements \Countable, \IteratorAggregate
      * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e635
      * @see http://docs.openstack.org/bexar/openstack-object-storage/developer/content/ch03s03.html#d5e700
      */
-    public static function generateMetadataHeaders(array $metadata, $prefix = NULL)
+    public static function generateMetadataHeaders(array $metadata, $prefix = null)
     {
         if (empty($prefix)) {
             $prefix = Container::METADATA_HEADER_PREFIX;
@@ -140,7 +140,7 @@ class Container implements \Countable, \IteratorAggregate
      */
     public static function objectUrl($base, $oname)
     {
-        if (strpos($oname, '/') === FALSE) {
+        if (strpos($oname, '/') === false) {
             return $base . '/' . rawurlencode($oname);
         }
 
@@ -172,7 +172,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return array An associative array of name/value attribute pairs.
      */
-    public static function extractHeaderAttributes($headers, $prefix = NULL)
+    public static function extractHeaderAttributes($headers, $prefix = null)
     {
         if (empty($prefix)) {
             $prefix = Container::METADATA_HEADER_PREFIX;
@@ -198,7 +198,7 @@ class Container implements \Countable, \IteratorAggregate
      * fetching containers from ObjectStorage.
      *
      * @param array  $jsonArray An associative array as returned by
-     *                          json_decode($foo, TRUE);
+     *                          json_decode($foo, true);
      * @param string $token     The auth token.
      * @param string $url       The base URL. The container name is automatically
      *                          appended to this at construction time.
@@ -206,9 +206,9 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return \OpenStack\Storage\ObjectStorage\Container A new container object.
      */
-    public static function newFromJSON($jsonArray, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL)
+    public static function newFromJSON($jsonArray, $token, $url, \OpenStack\Transport\ClientInterface $client = null)
     {
-        $container = new Container($jsonArray['name'], NULL, NULL, $client);
+        $container = new Container($jsonArray['name'], null, null, $client);
 
         $container->baseUrl = $url;
 
@@ -226,7 +226,7 @@ class Container implements \Countable, \IteratorAggregate
             $container->bytes = $jsonArray['bytes'];
         }
 
-        //syslog(LOG_WARNING, print_r($jsonArray, TRUE));
+        //syslog(LOG_WARNING, print_r($jsonArray, true));
         return $container;
     }
 
@@ -246,9 +246,9 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return \OpenStack\Storage\ObjectStorage\Container The Container object, initialized and ready for use.
      */
-    public static function newFromResponse($name, $response, $token, $url, \OpenStack\Transport\ClientInterface $client = NULL)
+    public static function newFromResponse($name, $response, $token, $url, \OpenStack\Transport\ClientInterface $client = null)
     {
-        $container = new Container($name, NULL, NULL, $client);
+        $container = new Container($name, null, null, $client);
         $container->bytes = $response->getHeader('X-Container-Bytes-Used', 0);
         $container->count = $response->getHeader('X-Container-Object-Count', 0);
         $container->baseUrl = $url;
@@ -307,7 +307,7 @@ class Container implements \Countable, \IteratorAggregate
      * @param string $token The auth token.
      * @param \OpenStack\Transport\ClientInterface $client A HTTP transport client.
      */
-    public function __construct($name , $url = NULL, $token = NULL, \OpenStack\Transport\ClientInterface $client = NULL)
+    public function __construct($name , $url = null, $token = null, \OpenStack\Transport\ClientInterface $client = null)
     {
         $this->name = $name;
         $this->url = $url;
@@ -433,7 +433,7 @@ class Container implements \Countable, \IteratorAggregate
      * @param resource $file An optional file argument that, if set, will be
      *                       treated as the contents of the object.
      *
-     * @return boolean TRUE if the object was saved.
+     * @return boolean true if the object was saved.
      *
      * @throws \OpenStack\Transport\LengthRequiredException      if the Content-Length could not be determined and
      *                                                           chunked encoding was not enabled. This should not occur
@@ -445,7 +445,7 @@ class Container implements \Countable, \IteratorAggregate
      * @throws \OpenStack\Exception                              when an unexpected (usually network-related) error
      *                                                           condition arises.
      */
-    public function save(Object $obj, $file = NULL)
+    public function save(Object $obj, $file = null)
     {
         if (empty($this->token)) {
             throw new \OpenStack\Exception('Container does not have an auth token.');
@@ -530,7 +530,7 @@ class Container implements \Countable, \IteratorAggregate
             throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -546,7 +546,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @param object $obj \OpenStack\Storage\ObjectStorage\Object The object to update.
      *
-     * @return boolean TRUE if the metadata was updated.
+     * @return boolean true if the metadata was updated.
      *
      * @throws \OpenStack\Transport\FileNotFoundException if the object does not already exist on the object storage.
      */
@@ -575,7 +575,7 @@ class Container implements \Countable, \IteratorAggregate
             throw new \OpenStack\Exception('An unknown error occurred while saving: ' . $response->status());
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -601,7 +601,7 @@ class Container implements \Countable, \IteratorAggregate
      *                          set, the object will be saved into this container. If this is not sent,
      *                          the copy will be performed inside of the original container.
      */
-    public function copy(Object $obj, $newName, $container = NULL)
+    public function copy(Object $obj, $newName, $container = null)
     {
         //$sourceUrl = $obj->url(); // This doesn't work with Object; only with RemoteObject.
         $sourceUrl = self::objectUrl($this->url, $obj->name());
@@ -629,7 +629,7 @@ class Container implements \Countable, \IteratorAggregate
             throw new \OpenStack\Exception("An unknown condition occurred during copy. " . $response->getStatusCode());
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -759,7 +759,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return array List of RemoteObject or Subdir instances.
      */
-    public function objects($limit = NULL, $marker = NULL)
+    public function objects($limit = null, $marker = null)
     {
         $params = array();
 
@@ -819,7 +819,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return array List of RemoteObject or Subdir instances.
      */
-    public function objectsWithPrefix($prefix, $delimiter = '/', $limit = NULL, $marker = NULL)
+    public function objectsWithPrefix($prefix, $delimiter = '/', $limit = null, $marker = null)
     {
         $params = array(
             'prefix' => $prefix,
@@ -863,7 +863,7 @@ class Container implements \Countable, \IteratorAggregate
      * @param string $marker    The name of the object to start with. The query will
      *                          begin with the next object AFTER this one.
      */
-    public function objectsByPath($path, $delimiter = '/', $limit = NULL, $marker = NULL)
+    public function objectsByPath($path, $delimiter = '/', $limit = null, $marker = null)
     {
         $params = array(
             'path' => $path,
@@ -902,7 +902,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @todo Determine how to get the ACL from JSON data.
      *
-     * @return \OpenStack\Storage\ObjectStorage\ACL An ACL, or NULL if the ACL could not be retrieved.
+     * @return \OpenStack\Storage\ObjectStorage\ACL An ACL, or null if the ACL could not be retrieved.
      */
     public function acl()
     {
@@ -954,7 +954,7 @@ class Container implements \Countable, \IteratorAggregate
      * Perform the HTTP query for a list of objects and de-serialize the
      * results.
      */
-    protected function objectQuery($params = array(), $limit = NULL, $marker = NULL)
+    protected function objectQuery($params = array(), $limit = null, $marker = null)
     {
         if (isset($limit)) {
             $params['limit'] = (int) $limit;
@@ -1036,7 +1036,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @param string $name The name of the object to remove.
      *
-     * @return boolean TRUE if the file was deleted, FALSE if no such file is
+     * @return boolean true if the file was deleted, false if no such file is
      *                 found.
      */
     public function delete($name)
@@ -1049,14 +1049,14 @@ class Container implements \Countable, \IteratorAggregate
         try {
             $response = $this->client->doRequest($url, 'DELETE', $headers);
         } catch (\OpenStack\Transport\FileNotFoundException $fnfe) {
-            return FALSE;
+            return false;
         }
 
         if ($response->getStatusCode() != 204) {
             throw new \OpenStack\Exception("An unknown exception occured while deleting $name.");
         }
 
-        return TRUE;
+        return true;
     }
 
     /**

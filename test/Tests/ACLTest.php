@@ -117,7 +117,7 @@ class ACLTest extends \OpenStack\Tests\TestCase
         $acl->addReferrer(ACL::READ_WRITE, '.example.com');
         $headers = $acl->headers();
 
-        $this->assertEquals(1, count($headers), print_r($headers, TRUE));
+        $this->assertEquals(1, count($headers), print_r($headers, true));
         $read = $headers[ACL::HEADER_READ];
 
         $this->assertEquals('.r:.example.com', $read);

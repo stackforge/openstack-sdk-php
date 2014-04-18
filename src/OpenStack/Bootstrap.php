@@ -90,12 +90,12 @@ class Bootstrap
      * @var \OpenStack\Services\IdentityService An identity services object
      *   created from the global settings.
      */
-    public static $identity = NULL;
+    public static $identity = null;
 
     /**
      * @var \OpenStack\Transport\ClientInterface A transport client for requests.
      */
-    public static $transport = NULL;
+    public static $transport = null;
 
     /**
      * Register stream wrappers for OpenStack.
@@ -115,7 +115,7 @@ class Bootstrap
      *     ));
      *
      *     // Get the contents of a Swift object.
-     *     $content = file_get_contents('swift://public/notes.txt', 'r', FALSE, $cxt);
+     *     $content = file_get_contents('swift://public/notes.txt', 'r', false, $cxt);
      */
     public static function useStreamWrappers()
     {
@@ -152,7 +152,7 @@ class Bootstrap
      *   the transport layer should wait for an HTTP request. A
      *   transport MAY ignore this parameter, but the ones included
      *   with the library honor it.
-     * - 'transport.ssl_verify': Set this to FALSE to turn off SSL certificate
+     * - 'transport.ssl_verify': Set this to false to turn off SSL certificate
      *   verification. This is NOT recommended, but is sometimes necessary for
      *   certain proxy configurations.
      * - 'transport.proxy': Set the proxy as a string.
@@ -176,9 +176,9 @@ class Bootstrap
      * @param string $name    The name of the configuration option to get.
      * @param mixed  $default The default value to return if the name is not found.
      *
-     * @return mixed The value, if found; or the default, if set; or NULL.
+     * @return mixed The value, if found; or the default, if set; or null.
      */
-    public static function config($name = NULL, $default = NULL)
+    public static function config($name = null, $default = null)
     {
         // If no name is specified, return the entire config array.
         if (empty($name)) {
@@ -203,8 +203,8 @@ class Bootstrap
      *
      * @param string $name The name of the item to check for.
      *
-     * @return boolean TRUE if the named option is set, FALSE otherwise. Note that
-     *                 the value may be falsey (FALSE, 0, etc.), but if the value is NULL, this
+     * @return boolean true if the named option is set, false otherwise. Note that
+     *                 the value may be falsey (false, 0, etc.), but if the value is null, this
      *                 will return false.
      */
     public static function hasConfig($name)
@@ -226,7 +226,7 @@ class Bootstrap
      * @throws \OpenStack\Exception When the needed configuration to authenticate
      *                              is not available.
      */
-    public static function identity($force = FALSE)
+    public static function identity($force = false)
     {
         $transport = self::transport();
 
@@ -239,14 +239,14 @@ class Bootstrap
             }
 
             // User cannot be an empty string, so we need
-            // to do more checking than self::hasConfig(), which returns TRUE
+            // to do more checking than self::hasConfig(), which returns true
             // if an item exists and is an empty string.
-            $user = self::config('username', NULL);
+            $user = self::config('username', null);
 
             // Check if we have a username/password
             if (!empty($user) && self::hasConfig('password')) {
                 $is = new IdentityService(self::config('endpoint'), $transport);
-                $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', NULL), self::config('tenantname', NULL));
+                $is->authenticateAsUser($user, self::config('password'), self::config('tenantid', null), self::config('tenantname', null));
                 self::$identity = $is;
             } else {
                 throw new Exception('Unable to authenticate. No user credentials supplied.');
@@ -263,15 +263,15 @@ class Bootstrap
      *
      * @return \OpenStack\Transport\ClientInterface A transport client.
      */
-    public static function transport($reset = FALSE)
+    public static function transport($reset = false)
     {
-        if (is_null(self::$transport) || $reset == TRUE) {
+        if (is_null(self::$transport) || $reset == true) {
             $options = [
-                'ssl_verify' => self::config('ssl_verify', TRUE),
+                'ssl_verify' => self::config('ssl_verify', true),
                 'timeout' => self::config('timeout', 0),          // 0 is no timeout.
                 'debug' => self::config('debug', 0),
             ];
-            $proxy = self::config('proxy', FALSE);
+            $proxy = self::config('proxy', false);
             if ($proxy) {
                 $options['proxy'] = $proxy;
             }

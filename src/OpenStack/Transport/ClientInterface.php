@@ -46,7 +46,7 @@ interface ClientInterface
      *                       - timeout    (int) The timeout, in seconds, a request should wait before
      *                       timing out.
      *                       - ssl_verify (bool|string) True, the default, verifies the SSL certificate,
-     *                       FALSE disables verification, and a string is the path to a CA to verify
+     *                       false disables verification, and a string is the path to a CA to verify
      *                       against.
      */
     public function __construct(array $options = []);

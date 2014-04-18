@@ -54,8 +54,8 @@
  * - swiftfs_fake_isdir_true: Directory functions like mkdir and is_dir (stat)
  *     check to see if there are objects with the the passed in directory as a
  *     prefix to see if it already exists. If you want is_dir to always return
- *     true even if it is not an existing prefix set this to TRUE. Defaults to
- *     FALSE.
+ *     true even if it is not an existing prefix set this to true. Defaults to
+ *     false.
  */
 
 namespace OpenStack\Storage\ObjectStorage;
@@ -85,7 +85,7 @@ class StreamWrapperFS extends StreamWrapper
      */
     public function mkdir($uri, $mode, $options)
     {
-        return ($this->cxt('swiftfs_fake_isdir_true', FALSE) || !($this->testDirectoryExists($uri)));
+        return ($this->cxt('swiftfs_fake_isdir_true', false) || !($this->testDirectoryExists($uri)));
 
     }
 
@@ -113,15 +113,15 @@ class StreamWrapperFS extends StreamWrapper
         if ($stat) {
             return $stat;
         }
-        // When FALSE is returned there is no file to stat. So, we attempt to handle
+        // When false is returned there is no file to stat. So, we attempt to handle
         // it like a directory.
         else {
-            if ($this->cxt('swiftfs_fake_isdir_true', FALSE) || $this->testDirectoryExists($path)) {
+            if ($this->cxt('swiftfs_fake_isdir_true', false) || $this->testDirectoryExists($path)) {
                 // The directory prefix exists. Fake the directory file permissions.
-                return $this->fakeStat(TRUE);
+                return $this->fakeStat(true);
             } else {
                 // The directory does not exist as a prefix.
-                return FALSE;
+                return false;
             }
         }
     }
@@ -141,7 +141,7 @@ class StreamWrapperFS extends StreamWrapper
      *
      * @param string $path The directory path to test.
      *
-     * @return boolean TRUE if the directory prefix exists and FALSE otherwise.
+     * @return boolean true if the directory prefix exists and false otherwise.
      */
     protected function testDirectoryExists($path)
     {
@@ -150,7 +150,7 @@ class StreamWrapperFS extends StreamWrapper
         if (empty($url['host'])) {
             trigger_error('Container name is required.' , E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
 
         try {
@@ -172,7 +172,7 @@ class StreamWrapperFS extends StreamWrapper
         } catch (\OpenStack\Exception $e) {
             trigger_error('Path could not be opened: ' . $e->getMessage(), E_USER_WARNING);
 
-            return FALSE;
+            return false;
         }
     }
 
@@ -182,7 +182,7 @@ class StreamWrapperFS extends StreamWrapper
      * Under certain conditions we have to return totally trumped-up
      * stats. This generates those.
      */
-    protected function fakeStat($dir = FALSE)
+    protected function fakeStat($dir = false)
     {
         $request_time = time();
 

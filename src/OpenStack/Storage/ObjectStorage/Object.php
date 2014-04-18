@@ -96,7 +96,7 @@ class Object
      * @param string $type    Optional content type for this content. This is the
      *                        same as calling setContentType().
      */
-    public function __construct($name, $content = NULL, $type = NULL)
+    public function __construct($name, $content = null, $type = null)
     {
         $this->name = $name;
 
@@ -266,7 +266,7 @@ class Object
      * @return \OpenStack\Storage\ObjectStorage\Object $this so the method can be
      *                                                 used in chaining.
      */
-    public function setContent($content, $type = NULL)
+    public function setContent($content, $type = null)
     {
         $this->content = $content;
         if (!empty($type)) {
@@ -411,7 +411,7 @@ class Object
      *
      * See setDisposition() for discussion.
      *
-     * @return string The disposition string, or NULL if none is set.
+     * @return string The disposition string, or null if none is set.
      */
     public function disposition()
     {
@@ -507,19 +507,19 @@ class Object
      * This should be used when (a) the file size is large, or (b) the
      * exact size of the file is unknown.
      *
-     * If this returns TRUE, it does not guarantee that the data
+     * If this returns true, it does not guarantee that the data
      * will be transmitted in chunks. But it recommends that the
      * underlying transport layer use chunked encoding.
      *
      * The contentLength() method is not called for chunked transfers. So
-     * if this returns TRUE, contentLength() is ignored.
+     * if this returns true, contentLength() is ignored.
      *
-     * @return boolean TRUE to recommend chunked transfer, FALSE otherwise.
+     * @return boolean true to recommend chunked transfer, false otherwise.
      */
     public function isChunked()
     {
         // Currently, this value is hard-coded. The default Object
         // implementation does not get chunked.
-        return FALSE;
+        return false;
     }
 }

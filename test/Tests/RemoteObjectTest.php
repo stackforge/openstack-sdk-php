@@ -152,7 +152,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         $headers = $obj->headers();
         $this->assertTrue(count($headers) > 1);
 
-        //fwrite(STDOUT, print_r($headers, TRUE));
+        //fwrite(STDOUT, print_r($headers, true));
 
         $this->assertNotEmpty($headers['Date']);
 
@@ -210,7 +210,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         // Finally, we redo the first part of the test to make sure that
         // refreshing gets us a new copy:
 
-        $res3 = $obj->stream(TRUE);
+        $res3 = $obj->stream(true);
         $res_md = stream_get_meta_data($res3);
         $this->assertEquals('PHP', $res_md['wrapper_type']);
         fclose($res3);
@@ -253,7 +253,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         fclose($res1);
 
         // Enable caching and retest.
-        $obj->setCaching(TRUE);
+        $obj->setCaching(true);
         $this->assertTrue($obj->isCaching());
 
         // This will cache the content.
@@ -275,9 +275,9 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
     public function testContentVerification($obj)
     {
         $this->assertTrue($obj->isVerifyingContent());
-        $obj->setContentVerification(FALSE);
-        $this->assertFALSE($obj->isVerifyingContent());
-        $obj->setContentVerification(TRUE);
+        $obj->setContentVerification(false);
+        $this->assertfalse($obj->isVerifyingContent());
+        $obj->setContentVerification(true);
     }
 
     /**
@@ -291,7 +291,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         // THere is no content. Assert false.
         $this->assertFalse($obj->isDirty());
 
-        $obj->setCaching(TRUE);
+        $obj->setCaching(true);
         $obj->content();
 
         // THere is content, but it is unchanged.
@@ -314,14 +314,14 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         $obj->setContent('foo');
         $this->assertTrue($obj->isDirty());
 
-        $obj->refresh(FALSE);
+        $obj->refresh(false);
         $this->assertFalse($obj->isDirty());
         $this->assertEquals(self::FCONTENT, $obj->content());
 
         $obj->setContent('foo');
         $this->assertTrue($obj->isDirty());
 
-        $obj->refresh(TRUE);
+        $obj->refresh(true);
         $this->assertFalse($obj->isDirty());
         $this->assertEquals(self::FCONTENT, $obj->content());
 

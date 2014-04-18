@@ -94,7 +94,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     /**
      * This assumes auth has already been done.
      */
-    protected function basicSwiftContext($add = array(), $scheme = NULL)
+    protected function basicSwiftContext($add = array(), $scheme = null)
     {
         $cname   = self::$settings['openstack.swift.container'];
 
@@ -123,7 +123,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
      * UPDATE: This now users IdentityService instead of deprecated
      * swauth.
      */
-    protected function authSwiftContext($add = array(), $scheme = NULL)
+    protected function authSwiftContext($add = array(), $scheme = null)
     {
         $cname    = self::$settings['openstack.swift.container'];
         $username = self::$settings['openstack.identity.username'];
@@ -176,7 +176,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     {
         // Clear old values.
         \OpenStack\Bootstrap::setConfiguration(array(
-            'token' => NULL,
+            'token' => null,
         ));
 
         $cxt = $this->authSwiftContext();
@@ -229,7 +229,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
         // Simple write test.
         $oUrl = $this->newUrl('foo→/test.csv');
 
-        $res = fopen($oUrl, 'nope', FALSE, $this->authSwiftContext());
+        $res = fopen($oUrl, 'nope', false, $this->authSwiftContext());
 
         $this->assertTrue(is_resource($res));
 
@@ -241,7 +241,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
         // Now we test the same, but re-using the auth token:
         $cxt = $this->basicSwiftContext(array('token' => $wrapper->token()));
 
-        $res = fopen($oUrl, 'nope', FALSE, $cxt);
+        $res = fopen($oUrl, 'nope', false, $cxt);
 
         $this->assertTrue(is_resource($res));
 
@@ -255,7 +255,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     public function testOpenFailureWithRead()
     {
         $url = $this->newUrl(__FUNCTION__);
-        $res = @fopen($url, 'r', FALSE, $this->basicSwiftContext());
+        $res = @fopen($url, 'r', false, $this->basicSwiftContext());
 
         $this->assertFalse($res);
 
@@ -269,7 +269,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     public function testOpenCreateMode()
     {
         $url = $this->newUrl(self::FNAME);
-        $res = fopen($url, 'c+', FALSE, $this->basicSwiftContext());
+        $res = fopen($url, 'c+', false, $this->basicSwiftContext());
         $this->assertTrue(is_resource($res));
         //fclose($res);
         return $res;
@@ -367,7 +367,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
 
         // Grab a copy of the object.
         $url = $this->newUrl(self::FNAME);
-        $newObj = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+        $newObj = fopen($url, 'r', false, $this->basicSwiftContext());
 
         $stat2 = fstat($newObj);
 
@@ -383,7 +383,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     {
         // Grab a copy of the object.
         $url = $this->newUrl(self::FNAME);
-        $newObj = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+        $newObj = fopen($url, 'r', false, $this->basicSwiftContext());
 
         $md = stream_get_meta_data($newObj);
         //throw new \Exception(print_r($md, true));
@@ -410,7 +410,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
         fclose($res);
 
         $url = $this->newUrl(self::FNAME);
-        $res2 = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+        $res2 = fopen($url, 'r', false, $this->basicSwiftContext());
         $this->assertTrue(is_resource($res2));
 
         $contents = stream_get_contents($res2);
@@ -425,7 +425,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     public function testCast()
     {
         $url = $this->newUrl(self::FNAME);
-        $res = fopen($url, 'r', FALSE, $this->basicSwiftContext());
+        $res = fopen($url, 'r', false, $this->basicSwiftContext());
 
         $read = array($res);
         $write = array();
@@ -497,7 +497,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     public function testSetOption()
     {
         $url = $this->newUrl('fake.foo');
-        $fake = fopen($url, 'nope', FALSE, $this->basicSwiftContext());
+        $fake = fopen($url, 'nope', false, $this->basicSwiftContext());
 
         $this->assertTrue(stream_set_blocking($fake, 1));
 
@@ -516,7 +516,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
     public function testRename()
     {
         $url = $this->newUrl('rename.foo');
-        $fake = fopen($url, 'w+', FALSE, $this->basicSwiftContext());
+        $fake = fopen($url, 'w+', false, $this->basicSwiftContext());
         fwrite($fake, 'test');
         fclose($fake);
 
@@ -540,7 +540,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
         $urls = array('test1.txt', 'foo/test2.txt', 'foo/test3.txt', 'bar/test4.txt');
         foreach ($urls as $base) {
             $url = $this->newUrl($base);
-            $f = fopen($url, 'c+', FALSE, $this->basicSwiftContext());
+            $f = fopen($url, 'c+', false, $this->basicSwiftContext());
             fwrite($f, 'Test.');
             fclose($f);
         }
@@ -563,7 +563,7 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
         $expects = array('bar/', 'foo/', 'test1.txt');
 
         $buffer = array();
-        while (($entry = readdir($dir)) !== FALSE) {
+        while (($entry = readdir($dir)) !== false) {
             $should_be = array_shift($expects);
             $this->assertEquals($should_be, $entry);
         }
@@ -641,11 +641,11 @@ class StreamWrapperFSTest extends \OpenStack\Tests\TestCase
         // Object names are pathy. If no object names start with the a path we can
         // consider mkdir passed. If object names exist we should fail mkdir.
         $url = $this->newUrl('baz/');
-        $this->assertTrue(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
+        $this->assertTrue(mkdir($url, 0700, true, $this->basicSwiftContext()));
 
         // Test the case for an existing directory.
         $url = $this->newUrl('foo/');
-        $this->assertFalse(mkdir($url, 0700, TRUE, $this->basicSwiftContext()));
+        $this->assertFalse(mkdir($url, 0700, true, $this->basicSwiftContext()));
     }
 
     /**

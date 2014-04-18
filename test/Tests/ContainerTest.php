@@ -148,10 +148,10 @@ class ContainerTest extends \OpenStack\Tests\TestCase
         $object->setContent('FOO');
         $this->assertEquals('FOO', $object->content());
 
-        $object->refresh(TRUE);
+        $object->refresh(true);
         $this->assertEquals($content, (string) $object->content());
 
-        $object->refresh(FALSE);
+        $object->refresh(false);
         $this->assertEquals($content, (string) $object->content());
 
     }
@@ -306,7 +306,7 @@ class ContainerTest extends \OpenStack\Tests\TestCase
         // $this->assertEquals(1, count($objects), 'One subdir');
 
         // $objects = $container->objectsByPath('a/');
-        // throw new \Exception(print_r($objects, TRUE));
+        // throw new \Exception(print_r($objects, true));
         // $this->assertEquals(2, count($objects));
 
         // foreach ($objects as $o) {

@@ -41,7 +41,7 @@ class GuzzleClient implements ClientInterface, \Serializable
      *                       - timeout    (int) The timeout, in seconds, a request should wait before
      *                       timing out.
      *                       - ssl_verify (bool|string) True, the default, verifies the SSL certificate,
-     *                       FALSE disables verification, and a string is the path to a CA to verify
+     *                       false disables verification, and a string is the path to a CA to verify
      *                       against.
      *                       - client     (mixed)  A guzzle client object to use instead of the default.
      *                       This can be either a string to the class or an existing object. If an
