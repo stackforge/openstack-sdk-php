@@ -1,10 +1,8 @@
-bin/build/*
-dist/*
+.idea/
 build/
-mageekguy.atoum.phar
-test/settings.ini*
+vendor/
+
 .DS_Store
-doc/api
-curl-output.txt
-vendor
 composer.lock
+composer.phar
+test/settings.ini*
