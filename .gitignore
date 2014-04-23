@@ -5,4 +5,4 @@ vendor/
 .DS_Store
 composer.lock
 composer.phar
-test/settings.ini*
+tests/settings.ini*

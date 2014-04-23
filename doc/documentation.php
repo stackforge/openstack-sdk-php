@@ -92,7 +92,7 @@
  *- And so on
  *  @see http://us3.php.net/manual/en/ref.filesystem.php
  *
- * Learn more about this at \OpenStack\Storage\ObjectStorage\StreamWrapper.
+ * Learn more about this at \OpenStack\ObjectStore\v1\Resource\StreamWrapper.
  *
  * Basic Example: Identity Service
  *
@@ -109,7 +109,7 @@
  *     // you might want to use this:
  *     \OpenStack\Autoloader::useAutoloader();
  *
- *     use \OpenStack\Services\IdentityService;
+ *     use \OpenStack\Identity\v1\IdentityService;
  *
  *     // Create a new identity service object, and tell it where to
  *     // go to authenticate. This URL can be found in your console.
@@ -137,12 +137,12 @@
  *  them before, don't worry. They're easy to get the hang of.
  *- The Bootstrap class handles setting up OpenStack services. Read about it at \OpenStack\Bootstrap.
  *- The IdentityServices class handles authenticating to OpenStack, discovering services, and providing
- *  access to your account. \OpenStack\Services\IdentityService explains the details, but here are
+ *  access to your account. \OpenStack\Identity\v1\IdentityService explains the details, but here are
  *  a few functions you'll want to know:
- *  - \OpenStack\Services\IdentityService::__construct() tells the object where to connect.
- *  - \OpenStack\Services\IdentityService::authenticateAsUser() lets you log
+ *  - \OpenStack\Identity\v1\IdentityService::__construct() tells the object where to connect.
+ *  - \OpenStack\Identity\v1\IdentityService::authenticateAsUser() lets you log
  *    in with username and password.
- *  - \OpenStack\Services\IdentityService::serviceCatalog() tells you about
+ *  - \OpenStack\Identity\v1\IdentityService::serviceCatalog() tells you about
  *    the services you have activated on this account.
  *
  * Basic Example: Object Storage
@@ -157,10 +157,10 @@
  *     // $objectStorageUrl = storageList[0]['endpoints'][0]['publicURL'];
  *
  *     // Create a new ObjectStorage instance:
- *     // $objectStore = new \OpenStack\Storage\ObjectStorage($token, $objectStorageUrl);
+ *     // $objectStore = new \OpenStack\ObjectStore\v1\ObjectStorage($token, $objectStorageUrl);
  *
  *     // Or let ObjectStorage figure out which instance to use:
- *     $objectStore = \OpenStack\Storage\ObjectStorage::newFromIdentity($identity);
+ *     $objectStore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($identity);
  *
  *     // List containers:
  *     print_r($objectStore->containers());
@@ -182,14 +182,14 @@
  *     ?>
  *
  * This shows you a few methods for accessing objects and containers on your
- * \OpenStack\Storage\ObjectStorage account. There are many functions for
+ * \OpenStack\ObjectStore\v1\ObjectStorage account. There are many functions for
  * creating and modifying containers and objects, too.
  *
- *- \OpenStack\Storage\ObjectStorage is where you will start.
- *- Container services are in \OpenStack\Storage\ObjectStorage\Container
+ *- \OpenStack\ObjectStore\v1\ObjectStorage is where you will start.
+ *- Container services are in \OpenStack\ObjectStore\v1\ObjectStorage\Container
  *- There are two classes for objects:
- *     - \OpenStack\Storage\ObjectStorage\Object is for creating new objects.
- *     - \OpenStack\Storage\ObjectStorage\RemoteObject provides better network
+ *     - \OpenStack\ObjectStore\v1\ObjectStorage\Object is for creating new objects.
+ *     - \OpenStack\ObjectStore\v1\ObjectStorage\RemoteObject provides better network
  *     performance when reading objects.
  *
  */
@@ -222,7 +222,7 @@
  * @package OpenStack.Storage.ObjectStorage
  * Classes specific to ObjectStorage.
  *
- * The main class is \OpenStack\Storage\ObjectStorage.
+ * The main class is \OpenStack\ObjectStore\v1\ObjectStorage.
  */
 /**
  * @package OpenStack.Transport

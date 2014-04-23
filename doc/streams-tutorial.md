@@ -156,7 +156,7 @@ names. So `swift://Example/this/is/my/file.png' checks the container
 
 (For power users, there are some fancy operations you can do to treat
 Swift filename parts as if they were directories. Check out
-OpenStack::Storage::ObjectStorage::Container.)
+`\OpenStack\ObjectStore\v1\Resource\Container`.)
 
 ## Using Stream Contexts for Authentication
 
@@ -241,4 +241,4 @@ more about that.
 
 Addidtionally, you may wish to learn more about the internals of the
 stream wrapper, the main class,
-OpenStack::Storage::ObjectStorage::StreamWrapper, is well-documented.
+`\OpenStack\ObjectStore\v1\Resource\StreamWrapper`, is well-documented.

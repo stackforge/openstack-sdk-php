@@ -22,7 +22,7 @@
 
 namespace OpenStack;
 
-use OpenStack\Services\IdentityService;
+use OpenStack\Identity\v2\IdentityService;
 
 /**
  * Bootstrapping services.
@@ -50,7 +50,7 @@ use OpenStack\Services\IdentityService;
  *     <?php
  *     $config = array(
  *       // We use Guzzle, which defaults to CURL, for a transport layer.
- *       'transport' => '\OpenStack\Transport\GuzzleClient',
+ *       'transport' => '\OpenStack\Common\Transport\GuzzleClient',
  *       // Set the HTTP max wait time to 500 seconds.
  *       'transport.timeout' => 500,
  *     );
@@ -83,17 +83,17 @@ class Bootstrap
 {
     public static $config = array(
         // The transport implementation. By default, we use the Guzzle Client
-        'transport' => '\OpenStack\Transport\GuzzleClient',
+        'transport' => '\OpenStack\Common\Transport\GuzzleClient',
     );
 
     /**
-     * @var \OpenStack\Services\IdentityService An identity services object
+     * @var \OpenStack\Identity\v2\IdentityService An identity services object
      *   created from the global settings.
      */
     public static $identity = null;
 
     /**
-     * @var \OpenStack\Transport\ClientInterface A transport client for requests.
+     * @var \OpenStack\Common\Transport\ClientInterface A transport client for requests.
      */
     public static $transport = null;
 
@@ -120,13 +120,13 @@ class Bootstrap
     public static function useStreamWrappers()
     {
         $swift = stream_wrapper_register(
-            \OpenStack\Storage\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
-            '\OpenStack\Storage\ObjectStorage\StreamWrapper'
+            \OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
+            '\OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapper'
         );
 
         $swiftfs = stream_wrapper_register(
-            \OpenStack\Storage\ObjectStorage\StreamWrapperFS::DEFAULT_SCHEME,
-            '\OpenStack\Storage\ObjectStorage\StreamWrapperFS'
+            \OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapperFS::DEFAULT_SCHEME,
+            '\OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapperFS'
         );
 
         return ($swift && $swiftfs);
@@ -144,7 +144,7 @@ class Bootstrap
      * Common configuration directives:
      *
      * - 'transport': The namespaced classname for the transport that
-     *   should be used. Example: @code \OpenStack\Transport\CURLTransport @endcode
+     *   should be used. Example: \OpenStack\Common\Transport\GuzzleClient
      * - 'transport.debug': The integer 1 for enabling debug, 0 for
      *   disabling. Enabling will turn on verbose debugging output
      *   for any transport that supports it.
@@ -213,17 +213,17 @@ class Bootstrap
     }
 
     /**
-     * Get a \OpenStack\Services\IdentityService object from the bootstrap config.
+     * Get a \OpenStack\Identity\v2\IdentityService object from the bootstrap config.
      *
      * A factory helper function that uses the bootstrap configuration to create
-     * a ready to use \OpenStack\Services\IdentityService object.
+     * a ready to use \OpenStack\Identity\v2\IdentityService object.
      *
      * @param bool $force Whether to force the generation of a new object even if
      *                    one is already cached.
      *
-     * @return \OpenStack\Services\IdentityService An authenticated ready to use
-     *                                             \OpenStack\Services\IdentityService object.
-     * @throws \OpenStack\Exception When the needed configuration to authenticate
+     * @return \OpenStack\Identity\v2\IdentityService An authenticated ready to use
+     *                                                \OpenStack\Identity\v2\IdentityService object.
+     * @throws \OpenStack\Common\Exception When the needed configuration to authenticate
      *                              is not available.
      */
     public static function identity($force = false)
@@ -261,7 +261,7 @@ class Bootstrap
      *
      * @param  boolean $reset Whether to recreate the transport client if one already exists.
      *
-     * @return \OpenStack\Transport\ClientInterface A transport client.
+     * @return \OpenStack\Common\Transport\ClientInterface A transport client.
      */
     public static function transport($reset = false)
     {

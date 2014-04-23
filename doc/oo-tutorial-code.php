@@ -2,9 +2,9 @@
 require_once __DIR__ . '/../src/OpenStack/Autoloader.php';
 
 use \OpenStack\Autoloader;
-use \OpenStack\Services\IdentityService;
-use \OpenStack\Storage\ObjectStorage;
-use \OpenStack\Storage\ObjectStorage\Object;
+use \OpenStack\Identity\v2\IdentityService;
+use \OpenStack\ObjectStore\v1\ObjectStorage;
+use \OpenStack\ObjectStore\v1\ObjectStorage\Object;
 
 Autoloader::useAutoloader();
 

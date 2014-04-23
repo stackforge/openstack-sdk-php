@@ -37,7 +37,7 @@ The object-oriented library makes ample use of PHP namespaces. If you've
 never seen these before, they look like this:
 
 	<?php
-	\OpenStack\Storage\ObjectStorage\RemoteObject
+	\OpenStack\ObjectStore\v1\Resource\RemoteObject
 	?>
 
 The namespace above is read like this: "The RemoteObject class is part
@@ -49,7 +49,7 @@ symbol choice).
 For our library, we followed the recommendation of SPR-0, which means
 that the class above can be found in the file at:
 
-	src/OpenStack/Storage/ObjectStorage/RemoteObject.php
+	src/OpenStack/ObjectStore/v1/Resource/RemoteObject.php
 
 The pattern of matching namespace to file name should (we hope) make it
 easier for you to navigate our code.
@@ -97,9 +97,9 @@ and this is done as follows:
 
 	use \OpenStack\Autoloader;
 	use \OpenStack\Bootstrap;
-	use \OpenStack\Services\IdentityService;
-	use \OpenStack\Storage\ObjectStorage;
-	use \OpenStack\Storage\ObjectStorage\Object;
+	use \OpenStack\Identity\v2\IdentityService;
+	use \OpenStack\ObjectStore\v1\ObjectStorage;
+	use \OpenStack\ObjectStore\v1\Resource\Object;
 
 	\OpenStack\Autoloader::useAutoloader();
 	?>
@@ -182,7 +182,7 @@ authenticating.
 	$tenantId = 'ADD TENANT ID HERE';
 	$endpoint = 'ADD ENDPOINT URL HERE';
 
-	$idService = new \OpenStack\Services\IdentityService($endpoint);
+	$idService = new \OpenStack\Identity\v2\IdentityService($endpoint);
 	$token = $idService->authenticateAsUser($username, $password, $tenantId);
 	?>
 
@@ -203,9 +203,9 @@ authorization token (`$token`), though we can also get the token from
 `$idService->token()`.
 
 Note that the `IdentityService` object may throw various exceptions
-(all subclasses of OpenStack::Exception) during authentication. Failed
-authentication results in an \OpenStack\Transport\AuthorizationException, while
-a network failure may result in an \OpenStack\Transport\ServerException.
+(all subclasses of OpenStack\Common\Exception) during authentication. Failed
+authentication results in an \OpenStack\Common\Transport\AuthorizationException, while
+a network failure may result in an \OpenStack\Common\Transport\ServerException.
 
 Earlier, we talked about the service catalog. Once we've authenticated,
 we can get the service catalog from `$idService->serviceCatalog()`. It
@@ -217,7 +217,7 @@ look at Object Storage.
 
 ### IdentityService in a Nutshell
 
-Instances of OpenStack::Services::IdentityService are responsible for:
+Instances of `OpenStack\Identity\v2\IdentityService` are responsible for:
 
 - Authentication
 - Accessing the service catalog
@@ -250,7 +250,7 @@ shows the Object Storage endpoint that we have already authenticated to
 Identity Services. Earlier, we captured that value in the `$token`
 variable.
 
-Now we can get a new OpenStack::Storage::ObjectStorage instance:
+Now we can get a new `\OpenStack\ObjectStore\v1\ObjectStorage` instance:
 
 	<?php
 	$catalog = $idService->serviceCatalog();
@@ -266,7 +266,7 @@ First we get the service catalog (`$catalog`), and then we use the
 Object Storage instance.
 
 The pattern of using a constructor-like static function is used
-throughout the OpenStack PHP-Client library. Inspired by Objective-C constructors 
+throughout the OpenStack PHP-Client library. Inspired by Objective-C constructors
 and the Factory design pattern, it makes it possible for a single class
 to have multiple constructors.
 
@@ -332,7 +332,7 @@ Now that we have a `Container`, we can add an object.
 
 (Yes, we realize the irony of that title.)
 
-A OpenStack::Storage::ObjectStorage::Container instance is responsible for the following:
+A `\OpenStack\ObjectStore\v1\Resource\Container` instance is responsible for the following:
 
 - Accessing information about the container
 - Creating, saving, deleting, and listing objects in the container
@@ -396,7 +396,7 @@ Next let's turn to loading objects from the remote object storage.
 
 ### The Object in a Nutshell
 
-The OpenStack::Storage::ObjectStorage::Object instances are used for:
+The `\OpenStack\ObjectStore\v1\Resource\Object` instances are used for:
 
 - Creating a local object to be stored remotely
 
@@ -423,7 +423,7 @@ loading objects. Thus, we can fetch the object that we just created:
 	?>
 
 The `$object` variable now references an instance of a
-OpenStack::Storage::ObjectStorage::RemoteObject that contains the entire
+`\OpenStack\ObjectStore\v1\Resource\RemoteObject` that contains the entire
 object. `RemoteObject` represents an object that was loaded from the
 remote server. Along with providing the features of the `Object` class
 we saw earlier, it also provides numerous optimizations for working over
@@ -473,7 +473,7 @@ called.
 
 ### The RemoteObject in a Nutshell
 
-Instances of a OpenStack::Storage::ObjectStorage::RemoteObject offer the following features:
+Instances of a `\OpenStack\ObjectStore\v1\Resource\RemoteObject` offer the following features:
 
 - Access to an object stored on the remote object storage
 - A proxying mechanism for lazily loading objects
