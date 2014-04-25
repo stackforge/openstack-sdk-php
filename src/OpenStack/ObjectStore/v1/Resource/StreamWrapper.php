@@ -1467,18 +1467,9 @@ class StreamWrapper
             $serviceCatalog = $ident->serviceCatalog();
             self::$serviceCatalogCache[$token] = $serviceCatalog;
 
-            $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $token, \OpenStack\ObjectStore\v1\ObjectStorage::DEFAULT_REGION, $client);
+            $region = $this->cxt('openstack.swift.region') ?: ObjectStorage::DEFAULT_REGION;
 
-            /*
-            $catalog = $ident->serviceCatalog(ObjectStorage::SERVICE_TYPE);
-            if (empty($catalog) || empty($catalog[0]['endpoints'][0]['publicURL'])) {
-                //throw new \OpenStack\Common\Exception('No object storage services could be found for this tenant ID.' . print_r($catalog, true));
-                throw new \OpenStack\Common\Exception('No object storage services could be found for this tenant ID.');
-            }
-            $serviceURL = $catalog[0]['endpoints'][0]['publicURL'];
-
-            $this->store = new ObjectStorage($token, $serviceURL);
-             */
+            $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $token, $region, $client);
         }
 
         return !empty($this->store);

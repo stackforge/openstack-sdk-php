@@ -77,11 +77,6 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         $tok = $service->authenticate($auth);
         $this->assertNotEmpty($tok);
 
-        // We should get the same token if we request again.
-        $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
-        $tok2 = $service->authenticate($auth);
-        $this->assertEquals($tok, $tok2);
-
         // Again with no tenant ID.
         $auth = array(
             'passwordCredentials' => array(
@@ -106,17 +101,19 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         $tenantId = self::conf('openstack.identity.tenantId');
 
         $tok = $service->authenticateAsUser($user, $pass, $tenantId);
-
         $this->assertNotEmpty($tok);
 
-        // Try again, this time with no tenant ID.
-        $tok2 = $service->authenticateAsUser($user, $pass);
-        $this->assertNotEmpty($tok2);
-
-        $details = $service->tokenDetails();
-        $this->assertFalse(isset($details['tenant']));
-
         return $service;
+    }
+
+    public function testAuthenticatingAsUserWithoutTenant()
+    {
+        $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
+
+        $username = self::conf('openstack.identity.username');
+        $password = self::conf('openstack.identity.password');
+
+        $this->assertNotEmpty($service->authenticateAsUser($username, $password));
     }
 
     /**
@@ -236,7 +233,6 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
             }
         }
 
-        $this->assertEquals('Identity', $idService['name']);
         $this->assertNotEmpty($idService['endpoints']);
         $this->assertNotEmpty($idService['endpoints'][0]['publicURL']);
 
@@ -245,7 +241,6 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         $this->assertEquals(1, count($justID));
 
         $idService = $justID[0];
-        $this->assertEquals('Identity', $idService['name']);
         $this->assertNotEmpty($idService['endpoints']);
         $this->assertNotEmpty($idService['endpoints'][0]['publicURL']);
 

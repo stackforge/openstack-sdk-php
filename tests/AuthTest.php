@@ -21,7 +21,7 @@
  */
 
 $base = dirname(__DIR__);
-require_once $base . '/src/OpenStack/Autoloader.php';
+require_once $base . '/vendor/autoloader.php';
 
 use \OpenStack\ObjectStore\v1\ObjectStorage;
 use \OpenStack\Identity\v2\IdentityService;
