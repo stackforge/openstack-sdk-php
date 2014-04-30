@@ -16,7 +16,14 @@
 ============================================================================ */
 
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Represents an HTTP 500 error.
+ * Exception that represents a 500 Internal Server Error.
+ *
+ * This class is thrown when a server encounters an unexpected condition which
+ * prevents it from fulfilling the request. Sometimes this error is used as a
+ * generic catch-all by an OpenStack API.
  */
-class ServerException extends \OpenStack\Common\Exception {}
+class ServerException extends RequestException
+{
+}

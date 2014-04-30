@@ -14,15 +14,17 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 ============================================================================ */
-/**
- * @file
- *
- * The permission denied exception.
- */
+
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Thrown when an access constraint is not met.
+ * Exception that represents a 403 Forbidden HTTP error.
  *
- * Represents an HTTP 403 exception.
+ * This class is thrown when a server has understood the request, but is
+ * refusing to fulfill it. For example, a user has successfully authenticated
+ * but is not authorized to perform a particular action - perhaps due to ACL
+ * criteria.
  */
-class ForbiddenException extends AuthorizationException {}
+class ForbiddenException extends RequestException
+{
+}

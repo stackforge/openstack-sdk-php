@@ -14,9 +14,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 ============================================================================ */
-/**
- * This file contains the interface for transporters.
- */
 
 namespace OpenStack\Common\Transport;
 
@@ -24,7 +21,7 @@ namespace OpenStack\Common\Transport;
  * Describes a transport client.
  *
  * Transport clients are responsible for moving data from the remote cloud to
- * the local host. Transport clinets are responsible only for the transport
+ * the local host. Transport clients are responsible only for the transport
  * protocol, not for the payloads.
  *
  * The current OpenStack services implementation is oriented toward
@@ -34,91 +31,106 @@ namespace OpenStack\Common\Transport;
  */
 interface ClientInterface
 {
-    const HTTP_USER_AGENT = 'OpenStack-PHP/1.0';
+    /**
+     * Create a new Request object. To send, use the {see send()} method.
+     *
+     * @param string                                       $method  HTTP method
+     * @param string|array|\OpenStack\Common\Transport\Url $uri     URL the request will send to
+     * @param string|resource                              $body    Entity body being sent
+     * @param array                                        $options Configuration options, such as headers
+     *
+     * @return \OpenStack\Common\Transport\RequestInterface
+     */
+    public function createRequest($method,
+                                  $uri = null,
+                                  $body = null,
+                                  array $options = []);
 
     /**
-     * Setup for the HTTP Client.
+     * Sends a request.
      *
-     * @param array $options Options for the HTTP Client including:
-     *                       - headers  (array) A key/value mapping of default headers for each request.
-     *                       - proxy    (string) A proxy specified as a URI.
-     *                       - debug      (bool) True if debug output should be displayed.
-     *                       - timeout    (int) The timeout, in seconds, a request should wait before
-     *                       timing out.
-     *                       - ssl_verify (bool|string) True, the default, verifies the SSL certificate,
-     *                       false disables verification, and a string is the path to a CA to verify
-     *                       against.
+     * @param \OpenStack\Common\Transport\RequestInterface $request Request to execute
+     *
+     * @return \OpenStack\Common\Transport\ResponseInterface
      */
-    public function __construct(array $options = []);
+    public function send(RequestInterface $request);
 
     /**
-     * Perform a request.
+     * Execute a GET request.
      *
-     * Invoking this method causes a single request to be relayed over the
-     * transporter. The transporter MUST be capable of handling multiple
-     * invocations of a doRequest() call.
+     * @param string|array|\OpenStack\Common\Transport\Url $uri     URL the request will send to
+     * @param array                                        $options Configuration options, such as headers
      *
-     * @param string $uri     The target URI.
-     * @param string $method  The method to be sent.
-     * @param array  $headers An array of name/value header pairs.
-     * @param string $body    The string containing the request body.
-     *
-     * @return \OpenStack\Common\Transport\ResponseInterface The response. The response
-     *   is implicit rather than explicit. The interface is based on a draft for
-     *   messages from PHP FIG. Individual implementing libraries will have their
-     *   own reference to interfaces. For example, see Guzzle.
-     *
-     * @throws \OpenStack\Common\Transport\Exception\ForbiddenException
-     * @throws \OpenStack\Common\Transport\Exception\UnauthorizedException
-     * @throws \OpenStack\Common\Transport\Exception\FileNotFoundException
-     * @throws \OpenStack\Common\Transport\Exception\MethodNotAllowedException
-     * @throws \OpenStack\Common\Transport\Exception\ConflictException
-     * @throws \OpenStack\Common\Transport\Exception\LengthRequiredException
-     * @throws \OpenStack\Common\Transport\Exception\UnprocessableEntityException
-     * @throws \OpenStack\Common\Transport\Exception\ServerException
-     * @throws \OpenStack\Common\Exception
+     * @return \OpenStack\Common\Transport\ResponseInterface
      */
-    public function doRequest($uri, $method = 'GET', array $headers = [], $body = '');
+    public function get($uri, array $options = []);
 
     /**
-     * Perform a request, but use a resource to read the body.
+     * Execute a HEAD request.
      *
-     * This is a special version of the doRequest() function.
-     * It handles a very spefic case where...
+     * @param string|array|\OpenStack\Common\Transport\Url $uri     URL the request will send to
+     * @param array                                        $options Configuration options, such as headers
      *
-     * - The HTTP verb requires a body (viz. PUT, POST)
-     * - The body is in a resource, not a string
-     *
-     * Examples of appropriate cases for this variant:
-     *
-     * - Uploading large files.
-     * - Streaming data out of a stream and into an HTTP request.
-     * - Minimizing memory usage ($content strings are big).
-     *
-     * Note that all parameters are required.
-     *
-     * @param string $uri      The target URI.
-     * @param string $method   The method to be sent.
-     * @param array  $headers  An array of name/value header pairs.
-     * @param mixed  $resource The string with a file path or a stream URL; or a
-     *                         file object resource. If it is a string, then it will be opened with the
-     *                         default context. So if you need a special context, you should open the
-     *                         file elsewhere and pass the resource in here.
-     *
-     * @return \OpenStack\Common\Transport\ResponseInterface The response. The response
-     *   is implicit rather than explicit. The interface is based on a draft for
-     *   messages from PHP FIG. Individual implementing libraries will have their
-     *   own reference to interfaces. For example, see Guzzle.
-     *
-     * @throws \OpenStack\Common\Transport\Exception\ForbiddenException
-     * @throws \OpenStack\Common\Transport\Exception\UnauthorizedException
-     * @throws \OpenStack\Common\Transport\Exception\FileNotFoundException
-     * @throws \OpenStack\Common\Transport\Exception\MethodNotAllowedException
-     * @throws \OpenStack\Common\Transport\Exception\ConflictException
-     * @throws \OpenStack\Common\Transport\Exception\LengthRequiredException
-     * @throws \OpenStack\Common\Transport\Exception\UnprocessableEntityException
-     * @throws \OpenStack\Common\Transport\Exception\ServerException
-     * @throws \OpenStack\Common\Exception
+     * @return \OpenStack\Common\Transport\ResponseInterface
      */
-    public function doRequestWithResource($uri, $method, array $headers = [], $resource);
+    public function head($uri, array $options = []);
+
+    /**
+     * Execute a POST request.
+     *
+     * @param string|array|\OpenStack\Common\Transport\Url $uri     URL the request will send to
+     * @param mixed                                        $body    Entity body being sent
+     * @param array                                        $options Configuration options, such as headers
+     *
+     * @return \OpenStack\Common\Transport\ResponseInterface
+     */
+    public function post($uri, $body, array $options = []);
+
+    /**
+     * Execute a PUT request.
+     *
+     * @param string|array|\OpenStack\Common\Transport\Url $uri     URL the request will send to
+     * @param mixed                                        $body    Entity body being sent
+     * @param array                                        $options Configuration options, such as headers
+     *
+     * @return \OpenStack\Common\Transport\ResponseInterface
+     */
+    public function put($uri, $body, array $options = []);
+
+    /**
+     * Execute a DELETE request.
+     *
+     * @param string|array|\OpenStack\Common\Transport\Url $uri     URL the request will send to
+     * @param array                                        $options Configuration options, such as headers
+     *
+     * @return \OpenStack\Common\Transport\ResponseInterface
+     */
+    public function delete($uri, array $options = []);
+
+    /**
+     * Sets a particular configuration option, depending on how the client
+     * implements it. It could, for example, alter cURL configuration or a
+     * default header.
+     *
+     * @param string $key   The key being updated
+     * @param mixed  $value The value being set
+     */
+    public function setOption($key, $value);
+
+    /**
+     * Returns the value of a particular configuration option. If the options
+     * is not set, NULL is returned.
+     *
+     * @param string $key The option name
+     *
+     * @return mixed|null
+     */
+    public function getOption($key);
+
+    /**
+     * Returns the base URL that the client points towards.
+     *
+     * @return string
+     */
+    public function getBaseUrl();
 }

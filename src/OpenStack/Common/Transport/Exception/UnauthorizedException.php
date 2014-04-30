@@ -18,9 +18,13 @@
  * The authorization exception.
  */
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Thrown when authorization fails.
+ * Exception that represents a 401 Unauthorized HTTP error.
  *
- * Represents an HTTP 401 exception.
+ * This class is thrown when a server indicates that authorization has been
+ * refused for a set of credentials.
  */
-class UnauthorizedException extends AuthorizationException {}
+class UnauthorizedException extends RequestException
+{
+}

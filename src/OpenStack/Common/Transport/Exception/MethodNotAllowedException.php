@@ -16,7 +16,13 @@
 ============================================================================ */
 
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Represents an HTTP 405 error.
+ * Exception that represents a 405 Method Not Allowed HTTP error.
+ *
+ * This class is thrown when a request's specified method is not allowed by the
+ * server.
  */
-class MethodNotAllowedException extends \OpenStack\Common\Exception {}
+class MethodNotAllowedException extends RequestException
+{
+}

@@ -19,8 +19,8 @@
  */
 
 namespace OpenStack\Identity\v2;
-
-use OpenStack\Common\Transport\GuzzleClient;
+use OpenStack\Common\Transport\ClientInterface;
+use OpenStack\Common\Transport\Guzzle\GuzzleAdapter;
 
 /**
  * IdentityService provides authentication and authorization.
@@ -203,7 +203,7 @@ class IdentityService
      *
      * @param \OpenStack\Common\Transport\ClientInterface $client An optional HTTP client to use when making the requests.
      */
-    public function __construct($url, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public function __construct($url, ClientInterface $client = null)
     {
         $parts = parse_url($url);
 
@@ -215,7 +215,7 @@ class IdentityService
 
         // Guzzle is the default client to use.
         if (is_null($client)) {
-            $this->client = new GuzzleClient();
+            $this->client = GuzzleAdapter::create();
         } else {
             $this->client = $client;
         }
@@ -278,13 +278,13 @@ class IdentityService
 
         $body = json_encode($envelope);
 
-        $headers = array(
-            'Content-Type' => 'application/json',
-            'Accept' => self::ACCEPT_TYPE,
+        $headers = [
+            'Content-Type'   => 'application/json',
+            'Accept'         => self::ACCEPT_TYPE,
             'Content-Length' => strlen($body),
-        );
+        ];
 
-        $response = $this->client->doRequest($url, 'POST', $headers, $body);
+        $response = $this->client->post($url, $body, ['headers' => $headers]);
 
         $this->handleResponse($response);
 
@@ -327,7 +327,7 @@ class IdentityService
             'passwordCredentials' => array(
                 'username' => $username,
                 'password' => $password,
-            ),
+            )
         );
 
         // If a tenant ID is provided, added it to the auth array.
@@ -599,18 +599,14 @@ class IdentityService
             $token = $this->token();
         }
 
-        $headers = array(
+        $headers = [
             'X-Auth-Token' => $token,
-            'Accept' => 'application/json',
-            //'Content-Type' => 'application/json',
-        );
+            'Accept'       => 'application/json'
+        ];
 
-        $response = $this->client->doRequest($url, 'GET', $headers);
+        $response = $this->client->get($url, ['headers' => $headers]);
 
-        $json = $response->json();
-
-        return $json['tenants'];
-
+        return $response->json()['tenants'];
     }
 
     /**
@@ -644,25 +640,24 @@ class IdentityService
     public function rescopeUsingTenantId($tenantId)
     {
         $url = $this->url() . '/tokens';
-        $token = $this->token();
-        $data = array(
-            'auth' => array(
+
+        $body = json_encode([
+            'auth' => [
                 'tenantId' => $tenantId,
-                'token' => array(
-                    'id' => $token,
-                ),
-            ),
-        );
-        $body = json_encode($data);
+                'token' => [
+                    'id' => $this->token(),
+                ]
+            ]
+        ]);
 
-        $headers = array(
-            'Accept' => self::ACCEPT_TYPE,
-            'Content-Type' => 'application/json',
-            'Content-Length' => strlen($body),
-            //'X-Auth-Token' => $token,
-        );
+        $headers = [
+            'Accept'         => self::ACCEPT_TYPE,
+            'Content-Type'   => 'application/json',
+            'Content-Length' => strlen($body)
+        ];
 
-        $response = $this->client->doRequest($url, 'POST', $headers, $body);
+        $response = $this->client->post($url, $body, ['headers' => $headers]);
+
         $this->handleResponse($response);
 
         return $this->token();
@@ -699,25 +694,24 @@ class IdentityService
     public function rescopeUsingTenantName($tenantName)
     {
         $url = $this->url() . '/tokens';
-        $token = $this->token();
-        $data = array(
-            'auth' => array(
+
+        $body = json_encode([
+            'auth' => [
                 'tenantName' => $tenantName,
-                'token' => array(
-                    'id' => $token,
-                ),
-            ),
-        );
-        $body = json_encode($data);
+                'token' => [
+                    'id' => $this->token()
+                ]
+            ]
+        ]);
 
-        $headers = array(
-            'Accept' => self::ACCEPT_TYPE,
-            'Content-Type' => 'application/json',
-            'Content-Length' => strlen($body),
-            //'X-Auth-Token' => $token,
-        );
+        $headers = [
+            'Accept'         => self::ACCEPT_TYPE,
+            'Content-Type'   => 'application/json',
+            'Content-Length' => strlen($body)
+        ];
 
-        $response = $this->client->doRequest($url, 'POST', $headers, $body);
+        $response = $this->client->post($url, $body, ['headers' => $headers]);
+
         $this->handleResponse($response);
 
         return $this->token();

@@ -27,17 +27,21 @@
 
 namespace OpenStack\Tests;
 
+use GuzzleHttp\Exception\ClientException;
+use OpenStack\Bootstrap;
+use OpenStack\Common\Transport\Exception\ResourceNotFoundException;
 use OpenStack\Identity\v2\IdentityService;
 use OpenStack\ObjectStore\v1\ObjectStorage;
+use OpenStack\Common\Transport\Guzzle\GuzzleAdapter;
 
 /**
  * @ingroup Tests
  */
-class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
-    public static $settings = array();
+    public static $settings = [];
 
-    public static $ostore = null;
+    protected $objectStoreService;
 
     /**
      * The IdentityService instance.
@@ -48,26 +52,20 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
     protected $containerFixture = null;
 
-    public static function setUpBeforeClass()
+    protected static function setConfiguration()
     {
-        global $bootstrap_settings;
-
-        if (!isset($bootstrap_settings)) {
-            $bootstrap_settings = array();
-        }
-        self::$settings = $bootstrap_settings;
-
-        //$this->setTestNamespace('Tests\Units');
         if (file_exists('tests/settings.ini')) {
-            self::$settings += parse_ini_file('tests/settings.ini');
+            self::$settings = parse_ini_file('tests/settings.ini');
         } else {
             throw new \Exception('Could not access test/settings.ini');
         }
 
-        \OpenStack\Autoloader::useAutoloader();
-        \OpenStack\Bootstrap::setConfiguration(self::$settings);
+        Bootstrap::setConfiguration(self::$settings);
+    }
 
-        //parent::__construct($score, $locale, $adapter);
+    public static function setUpBeforeClass()
+    {
+        self::setConfiguration();
     }
 
     /**
@@ -129,11 +127,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
     protected function objectStore($reset = false)
     {
-        if ($reset || empty(self::$ostore)) {
-            self::$ostore = self::createObjectStoreService();
+        if ($reset || !$this->objectStoreService) {
+            $this->objectStoreService = self::createObjectStoreService();
         }
 
-        return self::$ostore;
+        return $this->objectStoreService;
     }
 
     /**
@@ -148,15 +146,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
             try {
                 $store->createContainer($cname);
                 $this->containerFixture = $store->container($cname);
-
-            }
-            // This is why PHP needs 'finally'.
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 // Delete the container.
                 $store->deleteContainer($cname);
                 throw $e;
             }
-
         }
 
         return $this->containerFixture;
@@ -177,9 +171,8 @@ class TestCase extends \PHPUnit_Framework_TestCase
         $store = $this->objectStore();
         try {
             $container = $store->container($cname);
-        }
-        // The container was never created.
-        catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $e) {
+        } catch (ResourceNotFoundException $e) {
+            // The container was never created.
             return;
         }
 
@@ -202,6 +195,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
     {
         if (is_null(self::$httpClient)) {
             $options = [];
+
             if (isset(self::$settings['transport.proxy'])) {
                 $options['proxy'] = self::$settings['transport.proxy'];
             }
@@ -215,7 +209,9 @@ class TestCase extends \PHPUnit_Framework_TestCase
                 $options['timeout'] = self::$settings['transport.timeout'];
             }
 
-            self::$httpClient = new self::$settings['transport']($options);
+            self::$httpClient = GuzzleAdapter::create([
+                'defaults' => $options
+            ]);
         }
 
         return self::$httpClient;
@@ -235,7 +231,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
             $container = $store->container($cname);
         }
         // The container was never created.
-        catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $e) {
+        catch (ResourceNotFoundException $e) {
             return;
         }
 

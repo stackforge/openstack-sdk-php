@@ -20,7 +20,8 @@
 
 namespace OpenStack\ObjectStore\v1\Resource;
 
-use OpenStack\Common\Transport\GuzzleClient;
+use OpenStack\Common\Transport\ClientInterface;
+use OpenStack\Common\Transport\Guzzle\GuzzleAdapter;
 use OpenStack\ObjectStore\v1\Exception;
 
 /**
@@ -76,7 +77,7 @@ class RemoteObject extends Object
      * @param $url The URL to the object on the remote server
      * @param \OpenStack\Common\Transport\ClientInterface $client A HTTP transport client.
      */
-    public static function newFromJSON($data, $token, $url, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public static function newFromJSON($data, $token, $url, ClientInterface $client = null)
     {
         $object = new RemoteObject($data['name']);
         $object->setContentType($data['content_type']);
@@ -92,7 +93,7 @@ class RemoteObject extends Object
         // back in JSON?
 
         if (is_null($client)) {
-            $client = new GuzzleClient();
+            $client = GuzzleAdapter::create();
         }
         $object->setClient($client);
 
@@ -115,7 +116,7 @@ class RemoteObject extends Object
      *
      * @return \OpenStack\ObjectStore\v1\Resource\RemoteObject A new RemoteObject.
      */
-    public static function newFromHeaders($name, $headers, $token, $url, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public static function newFromHeaders($name, $headers, $token, $url, ClientInterface $client = null)
     {
         $object = new RemoteObject($name);
 
@@ -152,7 +153,7 @@ class RemoteObject extends Object
         $object->url = $url;
 
         if (is_null($client)) {
-            $client = new GuzzleClient();
+            $client = GuzzleAdapter::create();
         }
         $object->setClient($client);
 
@@ -164,7 +165,7 @@ class RemoteObject extends Object
      *
      * @param OpenStackTransportClientInterface $client The HTTP Client
      */
-    public function setClient(\OpenStack\Common\Transport\ClientInterface $client)
+    public function setClient(ClientInterface $client)
     {
         $this->client = $client;
     }
@@ -348,7 +349,7 @@ class RemoteObject extends Object
      *
      * @return string The contents of the file as a string.
      *
-     * @throws \OpenStack\Common\Transport\Exception\FileNotFoundException when the requested content cannot be
+     * @throws \OpenStack\Common\Transport\Exception\ResourceNotFoundException when the requested content cannot be
      *                                                                     located on the remote server.
      * @throws \OpenStack\Common\Exception                                 when an unknown exception (usually an
      *                                                                     abnormal network condition) occurs.
@@ -370,7 +371,7 @@ class RemoteObject extends Object
         // Should fix that.
         $check = md5($content);
         if ($this->isVerifyingContent() && $check != $this->etag()) {
-            throw new ContentVerificationException("Checksum $check does not match Etag " . $this->etag());
+            throw new Exception\ContentVerificationException("Checksum $check does not match Etag " . $this->etag());
         }
 
         // If we are caching, set the content locally when we retrieve
@@ -624,11 +625,11 @@ class RemoteObject extends Object
     {
         $method = $fetchContent ? 'GET' : 'HEAD';
 
-        $headers = array(
-            'X-Auth-Token' => $this->token,
-        );
+        $headers = ['X-Auth-Token' => $this->token];
 
-        $response = $this->client->doRequest($this->url, $method, $headers);
+        $response = $this->client->send(
+            $this->client->createRequest($method, $this->url, null, ['headers' => $headers])
+        );
 
         if ($response->getStatusCode() != 200) {
             throw new \OpenStack\Common\Exception('An unknown exception occurred during transmission.');

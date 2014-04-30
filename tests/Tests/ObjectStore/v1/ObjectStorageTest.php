@@ -251,15 +251,10 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
         // we get some data back.
         $url = $container->url() . '?format=xml';
 
-        // Use CURL to get better debugging:
-        //$client = \OpenStack\Transport::instance();
-        //$response = $client->doRequest($url, 'GET');
-
         $data = file_get_contents($url);
         $this->assertNotEmpty($data, $url);
 
         $containers = $store->containers();
-        //throw new \Exception(print_r($containers, true));
 
         $store->deleteContainer($testCollection);
     }
@@ -276,13 +271,14 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
         }
         $ret = $store->createContainer($testCollection);
 
-        $acl = \OpenStack\ObjectStore\v1\Resource\ACL::makePublic();
+        $acl = ACL::makePublic();
         $ret = $store->changeContainerACL($testCollection, $acl);
 
         $this->assertFalse($ret);
 
         $container = $store->container($testCollection);
         $url = $container->url() . '?format=xml';
+
         $data = file_get_contents($url);
         $this->assertNotEmpty($data, $url);
 

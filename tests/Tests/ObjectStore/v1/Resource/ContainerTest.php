@@ -19,60 +19,42 @@
  */
 namespace OpenStack\Tests\ObjectStore\v1\Resource;
 
+use OpenStack\Bootstrap;
 use \OpenStack\ObjectStore\v1\Resource\Container;
 use \OpenStack\ObjectStore\v1\Resource\Object;
 use \OpenStack\ObjectStore\v1\Resource\ACL;
+use OpenStack\Tests\TestCase;
 
-class ContainerTest extends \OpenStack\Tests\TestCase
+class ContainerTest extends TestCase
 {
     const FILENAME = 'unit-test-dummy.txt';
     const FILESTR = 'This is a test.';
+    const FNAME = 'testSave';
+    const FCONTENT = 'This is a test.';
+    const FTYPE = 'application/x-monkey-file';
 
-    // The factory functions (newFrom*) are tested in the
-    // ObjectStorage tests, as they are required there.
-    // Rather than build a Mock to achieve the same test here,
-    // we just don't test them again.
-
-    public function testConstructor()
+    public function testConstructorSetsName()
     {
         $container = new Container('foo');
         $this->assertEquals('foo', $container->name());
-
-        // These will now cause the system to try to fetch a remote
-        // container.
-        //$this->assertEquals(0, $container->bytes());
-        //$this->assertEquals(0, $container->count());
     }
 
     /**
      * @expectedException \OpenStack\Common\Exception
      */
-    public function testConstructorFailure()
+    public function testExceptionIsThrownWhenContainerNotFound()
     {
         $container = new Container('foo');
-        $this->assertEquals('foo', $container->name());
-
-        // These will now cause the system to try to fetch a remote
-        // container. This is a failure condition.
-        $this->assertEquals(0, $container->bytes());
+        $container->bytes();
     }
 
     public function testCountable()
     {
-        // Verify that the interface Countable is properly
-        // implemented.
-
-        $mockJSON = array('count' => 5, 'bytes' => 128, 'name' => 'foo');
-
+        // Verify that the interface Countable is properly implemented.
+        $mockJSON  = array('count' => 5, 'bytes' => 128, 'name' => 'foo');
         $container = Container::newFromJSON($mockJSON, 'fake', 'fake');
-
-        $this->assertEquals(5, count($container));
-
+        $this->assertCount(5, $container);
     }
-
-    const FNAME = 'testSave';
-    const FCONTENT = 'This is a test.';
-    const FTYPE = 'application/x-monkey-file';
 
     public function testSave()
     {
@@ -81,13 +63,13 @@ class ContainerTest extends \OpenStack\Tests\TestCase
 
         $container = $this->containerFixture();
 
-        $obj = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
-        $obj->setMetadata(array('foo' => '1234'));
+        $object = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
+        $object->setMetadata(array('foo' => '1234'));
 
-        $this->assertEquals(self::FCONTENT, $obj->content());
+        $this->assertEquals(self::FCONTENT, $object->content());
 
         try {
-            $ret = $container->save($obj);
+            $ret = $container->save($object);
         } catch (\Exception $e) {
             $this->destroyContainerFixture();
             throw $e;
@@ -188,7 +170,7 @@ class ContainerTest extends \OpenStack\Tests\TestCase
         try {
             $foo = $container->object('no/such');
         } catch (\OpenStack\Common\Exception $e) {
-            $this->assertInstanceOf('\OpenStack\Common\Transport\Exception\FileNotFoundException', $e);
+            $this->assertInstanceOf('OpenStack\Common\Transport\Exception\ResourceNotFoundException', $e);
         }
     }
 
@@ -229,7 +211,6 @@ class ContainerTest extends \OpenStack\Tests\TestCase
             ++$i;
         }
         $this->assertEquals(3, $i);
-
     }
 
     /**
@@ -286,35 +267,6 @@ class ContainerTest extends \OpenStack\Tests\TestCase
 
         $o = array_shift($objects);
         $this->assertEquals('a/b/' . self::FNAME, $o->name());
-
-        /*
-         * The Open Stack documentation is unclear about how best to
-         * use paths. Experimentation suggests that if you rely on paths
-         * instead of prefixes, your best bet is to create directory
-         * markers.
-         */
-
-        // Test subdir listings:
-        // This does not work (by design?) with Path. You have to use prefix
-        // or else create directory markers.
-        // $obj1 = new Object('a/aa/aaa/' . self::FNAME, self::FCONTENT, self::FTYPE);
-        // $container->save($obj1);
-        // $objects = $container->objectsByPath('a/aaa', '/');
-
-        // $this->assertEquals(1, count($objects), 'One subdir');
-
-        // $objects = $container->objectsByPath('a/');
-        // throw new \Exception(print_r($objects, true));
-        // $this->assertEquals(2, count($objects));
-
-        // foreach ($objects as $o) {
-        //   if ($o instanceof Object) {
-        //     $this->assertEquals('a/' . self::FNAME, $o->name());
-        //   }
-        //   else {
-        //     $this->assertEquals('a/b/', $o->path());
-        //   }
-        // }
     }
 
     /**
@@ -397,7 +349,6 @@ class ContainerTest extends \OpenStack\Tests\TestCase
 
     }
 
-
     /**
      * @depends testSave
      */
@@ -412,7 +363,6 @@ class ContainerTest extends \OpenStack\Tests\TestCase
         $this->destroyContainerFixture();
         $this->assertTrue($ret);
         $this->assertFalse($fail);
-
     }
 
     /**
@@ -429,7 +379,6 @@ class ContainerTest extends \OpenStack\Tests\TestCase
 
         $store->createContainer($cname, ACL::makePublic());
 
-
         $store->containers();
         $container = $store->container($cname);
 
@@ -439,7 +388,5 @@ class ContainerTest extends \OpenStack\Tests\TestCase
         $this->assertTrue($acl->isPublic());
 
         $store->deleteContainer($cname);
-
     }
-
 }

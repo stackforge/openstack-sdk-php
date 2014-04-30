@@ -25,9 +25,14 @@
 
 namespace OpenStack\ObjectStore\v1;
 
+use OpenStack\Common\Exception;
+use OpenStack\Common\Transport\ClientInterface;
+use OpenStack\Common\Transport\Exception\ConflictException;
+use OpenStack\Common\Transport\Exception\ResourceNotFoundException;
+use OpenStack\Common\Transport\Guzzle\GuzzleAdapter;
+use OpenStack\ObjectStore\v1\Exception\ContainerNotEmptyException;
 use OpenStack\ObjectStore\v1\Resource\Container;
 use OpenStack\ObjectStore\v1\Resource\ACL;
-use OpenStack\Common\Transport\GuzzleClient;
 
 /**
  * Access to ObjectStorage (Swift).
@@ -126,9 +131,7 @@ class ObjectStorage
             if ($catalog[$i]['type'] == self::SERVICE_TYPE) {
                 foreach ($catalog[$i]['endpoints'] as $endpoint) {
                     if (isset($endpoint['publicURL']) && $endpoint['region'] == $region) {
-                        $os = new ObjectStorage($authToken, $endpoint['publicURL'], $client);
-
-                        return $os;
+                        return new ObjectStorage($authToken, $endpoint['publicURL'], $client);
                     }
                 }
             }
@@ -150,14 +153,14 @@ class ObjectStorage
      *                          after authentication.
      * @param \OpenStack\Common\Transport\ClientInterface $client The HTTP client
      */
-    public function __construct($authToken, $url, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public function __construct($authToken, $url, ClientInterface $client = null)
     {
         $this->token = $authToken;
         $this->url = $url;
 
         // Guzzle is the default client to use.
         if (is_null($client)) {
-            $this->client = new GuzzleClient();
+            $this->client = GuzzleAdapter::create();
         } else {
             $this->client = $client;
         }
@@ -226,7 +229,9 @@ class ObjectStorage
             $url .= sprintf('&marker=%d', $marker);
         }
 
-        $containers = $this->get($url);
+        $headers = ['X-Auth-Token' => $this->token];
+        $response = $this->client->get($url, ['headers' => $headers]);
+        $containers = $response->json();
 
         $containerList = array();
         foreach ($containers as $container) {
@@ -246,23 +251,24 @@ class ObjectStorage
      *
      * @return \OpenStack\ObjectStore\v1\Resource\Container A container.
      *
-     * @throws \OpenStack\Common\Transport\Exception\FileNotFoundException if the named container is not
+     * @throws \OpenStack\Common\Transport\Exception\ResourceNotFoundException if the named container is not
      *                                                                     found on the remote server.
      */
     public function container($name)
     {
         $url = $this->url() . '/' . rawurlencode($name);
-        $data = $this->req($url, 'HEAD', false);
 
-        $status = $data->getStatusCode();
+        $headers = ['X-Auth-Token' => $this->token()];
+        $response = $this->client->head($url, ['headers' => $headers]);
+
+        $status = $response->getStatusCode();
+
         if ($status == 204) {
-            $container = Container::newFromResponse($name, $data, $this->token(), $this->url());
-
-            return $container;
+            return Container::newFromResponse($name, $response, $this->token(), $this->url());
         }
 
         // If we get here, it's not a 404 and it's not a 204.
-        throw new \OpenStack\Common\Exception("Unknown status: $status");
+        throw new Exception(sprintf("Unknown status: %d", $status));
     }
 
     /**
@@ -282,7 +288,7 @@ class ObjectStorage
     {
         try {
             $container = $this->container($name);
-        } catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $fnfe) {
+        } catch (ResourceNotFoundException $e) {
             return false;
         }
 
@@ -351,9 +357,7 @@ class ObjectStorage
     public function createContainer($name, ACL $acl = null, $metadata = array())
     {
         $url = $this->url() . '/' . rawurlencode($name);
-        $headers = array(
-            'X-Auth-Token' => $this->token(),
-        );
+        $headers = ['X-Auth-Token' => $this->token()];
 
         if (!empty($metadata)) {
             $prefix = Container::CONTAINER_METADATA_HEADER_PREFIX;
@@ -365,8 +369,7 @@ class ObjectStorage
             $headers += $acl->headers();
         }
 
-        $data = $this->client->doRequest($url, 'PUT', $headers);
-        //syslog(LOG_WARNING, print_r($data, true));
+        $data = $this->client->put($url, null, ['headers' => $headers]);
 
         $status = $data->getStatusCode();
 
@@ -374,10 +377,9 @@ class ObjectStorage
             return true;
         } elseif ($status == 202) {
             return false;
-        }
-        // According to the OpenStack docs, there are no other return codes.
-        else {
-            throw new \OpenStack\Common\Exception('Server returned unexpected code: ' . $status);
+        } else {
+            // According to the OpenStack docs, there are no other return codes.
+            throw new Exception('Server returned unexpected code: ' . $status);
         }
     }
 
@@ -442,14 +444,18 @@ class ObjectStorage
         $url = $this->url() . '/' . rawurlencode($name);
 
         try {
-            $data = $this->req($url, 'DELETE', false);
-        } catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $e) {
+            $headers = ['X-Auth-Token' => $this->token()];
+            $data = $this->client->delete($url, ['headers' => $headers]);
+        } catch (ResourceNotFoundException $e) {
             return false;
-        }
-        // XXX: I'm not terribly sure about this. Why not just throw the
-        // ConflictException?
-        catch (\OpenStack\Common\Transport\Exception\ConflictException $e) {
-            throw new Exception\ContainerNotEmptyException("Non-empty container cannot be deleted.");
+        } catch (ConflictException $e) {
+            // XXX: I'm not terribly sure about this. Why not just throw the
+            // ConflictException?
+            throw new ContainerNotEmptyException(
+                "Non-empty container cannot be deleted",
+                $e->getRequest(),
+                $e->getResponse()
+            );
         }
 
         $status = $data->getStatusCode();
@@ -457,11 +463,9 @@ class ObjectStorage
         // 204 indicates that the container has been deleted.
         if ($status == 204) {
             return true;
-        }
-        // OpenStacks documentation doesn't suggest any other return
-        // codes.
-        else {
-            throw new \OpenStack\Common\Exception('Server returned unexpected code: ' . $status);
+        } else {
+            // OpenStacks documentation doesn't suggest any other return codes.
+            throw new Exception('Server returned unexpected code: ' . $status);
         }
     }
 
@@ -483,43 +487,13 @@ class ObjectStorage
      */
     public function accountInfo()
     {
-        $url = $this->url();
-        $data = $this->req($url, 'HEAD', false);
+        $headers = ['X-Auth-Token' => $this->token()];
+        $response = $this->client->head($this->url(), ['headers' => $headers]);
 
-        $results = array(
-            'bytes' => $data->getHeader('X-Account-Bytes-Used', 0),
-            'containers' => $data->getHeader('X-Account-Container-Count', 0),
-            'objects' => $data->getHeader('X-Account-Container-Count', 0),
-        );
-
-        return $results;
-    }
-
-    /**
-     * Do a GET on Swift.
-     *
-     * This is a convenience method that handles the
-     * most common case of Swift requests.
-     */
-    protected function get($url, $jsonDecode = true)
-    {
-        return $this->req($url, 'GET', $jsonDecode);
-    }
-
-    /**
-     * Internal request issuing command.
-     */
-    protected function req($url, $method = 'GET', $jsonDecode = true, $body = '')
-    {
-        $headers = array(
-                'X-Auth-Token' => $this->token(),
-        );
-
-        $res = $this->client->doRequest($url, $method, $headers, $body);
-        if (!$jsonDecode) {
-            return $res;
-        }
-
-        return $res->json();
+        return [
+            'bytes'      => $response->getHeader('X-Account-Bytes-Used', 0),
+            'containers' => $response->getHeader('X-Account-Container-Count', 0),
+            'objects'    => $response->getHeader('X-Account-Container-Count', 0)
+        ];
     }
 }

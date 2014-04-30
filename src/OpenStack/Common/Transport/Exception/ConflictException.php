@@ -16,11 +16,14 @@
 ============================================================================ */
 
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Represents an HTTP 409 error.
+ * Exception that represents a 409 Conflict HTTP error.
  *
- * During DELETE requests, this occurs when a remote resource cannot be
- * deleted because the resource is not empty or deleteable. (viz.
- * containers).
+ * This class is thrown when a request could not be completed due to a conflict
+ * with the current state of the API resource. For example, when a remote
+ * container cannot be deleted because it is not empty.
  */
-class ConflictException extends \OpenStack\Common\Exception {}
+class ConflictException extends RequestException
+{
+}

@@ -16,10 +16,13 @@
 ============================================================================ */
 
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Represents an HTTP 422 error.
+ * Exception that represents a 422 Unprocessable Entity HTTP error.
  *
- * This often represents a case where a checksum or hash did not match
- * the generated checksum on the remote end.
+ * This class is thrown when a request was well-formed but was unable to be
+ * processed due to semantic errors.
  */
-class UnprocessableEntityException extends \OpenStack\Common\Exception {}
+class UnprocessableEntityException extends RequestException
+{
+}

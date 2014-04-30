@@ -20,7 +20,10 @@
 
 namespace OpenStack\ObjectStore\v1\Resource;
 
-use OpenStack\Common\Transport\GuzzleClient;
+use OpenStack\Common\Exception;
+use OpenStack\Common\Transport\ClientInterface;
+use OpenStack\Common\Transport\Exception\ResourceNotFoundException;
+use OpenStack\Common\Transport\Guzzle\GuzzleAdapter;
 
 /**
  * A container in an ObjectStorage.
@@ -77,8 +80,7 @@ class Container implements \Countable, \IteratorAggregate
     //protected $properties = array();
     protected $name = null;
 
-    // These were both changed from 0 to null to allow
-    // lazy loading.
+    // These were both changed from 0 to null to allow lazy loading.
     protected $count = null;
     protected $bytes = null;
 
@@ -209,7 +211,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return \OpenStack\ObjectStore\v1\Resource\Container A new container object.
      */
-    public static function newFromJSON($jsonArray, $token, $url, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public static function newFromJSON($jsonArray, $token, $url, ClientInterface $client = null)
     {
         $container = new Container($jsonArray['name'], null, null, $client);
 
@@ -249,7 +251,7 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return \OpenStack\ObjectStore\v1\Resource\Container The Container object, initialized and ready for use.
      */
-    public static function newFromResponse($name, $response, $token, $url, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public static function newFromResponse($name, $response, $token, $url, ClientInterface $client = null)
     {
         $container = new Container($name, null, null, $client);
         $container->bytes = $response->getHeader('X-Container-Bytes-Used', 0);
@@ -310,7 +312,7 @@ class Container implements \Countable, \IteratorAggregate
      * @param string $token The auth token.
      * @param \OpenStack\Common\Transport\ClientInterface $client A HTTP transport client.
      */
-    public function __construct($name , $url = null, $token = null, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public function __construct($name , $url = null, $token = null, ClientInterface $client = null)
     {
         $this->name = $name;
         $this->url = $url;
@@ -318,7 +320,7 @@ class Container implements \Countable, \IteratorAggregate
 
         // Guzzle is the default client to use.
         if (is_null($client)) {
-            $this->client = new GuzzleClient();
+            $this->client = GuzzleAdapter::create();
         } else {
             $this->client = $client;
         }
@@ -453,10 +455,10 @@ class Container implements \Countable, \IteratorAggregate
     public function save(Object $obj, $file = null)
     {
         if (empty($this->token)) {
-            throw new \OpenStack\Common\Exception('Container does not have an auth token.');
+            throw new Exception('Container does not have an auth token.');
         }
         if (empty($this->url)) {
-            throw new \OpenStack\Common\Exception('Container does not have a URL to send data.');
+            throw new Exception('Container does not have a URL to send data.');
         }
 
         //$url = $this->url . '/' . rawurlencode($obj->name());
@@ -507,11 +509,10 @@ class Container implements \Countable, \IteratorAggregate
             } else {
                 $headers['Content-Length'] = $obj->contentLength();
             }
-            $response = $this->client->doRequest($url, 'PUT', $headers, $obj->content());
+            $response = $this->client->put($url, $obj->content(), ['headers' => $headers]);
         } else {
             // Rewind the file.
             rewind($file);
-
 
             // XXX: What do we do about Content-Length header?
             //$headers['Transfer-Encoding'] = 'chunked';
@@ -527,12 +528,11 @@ class Container implements \Countable, \IteratorAggregate
             // Not sure if this is necessary:
             rewind($file);
 
-            $response = $this->client->doRequestWithResource($url, 'PUT', $headers, $file);
-
+            $response = $this->client->put($url, $file, ['headers' => $headers]);
         }
 
         if ($response->getStatusCode() != 201) {
-            throw new \OpenStack\Common\Exception('An unknown error occurred while saving: ' . $response->status());
+            throw new Exception('An unknown error occurred while saving: ' . $response->status());
         }
 
         return true;
@@ -553,32 +553,33 @@ class Container implements \Countable, \IteratorAggregate
      *
      * @return boolean true if the metadata was updated.
      *
-     * @throws \OpenStack\Common\Transport\Exception\FileNotFoundException if the object does not already
+     * @throws \OpenStack\Common\Transport\Exception\ResourceNotFoundException if the object does not already
      *                                                           exist on the object storage.
      */
     public function updateMetadata(Object $obj)
     {
-        //$url = $this->url . '/' . rawurlencode($obj->name());
         $url = self::objectUrl($this->url, $obj->name());
-        $headers = array();
+        $headers = ['X-Auth-Token' => $this->token];
 
         // See if we have any metadata. We post this even if there
         // is no metadata.
-        $md = $obj->metadata();
-        if (!empty($md)) {
-            $headers = self::generateMetadataHeaders($md, Container::METADATA_HEADER_PREFIX);
+        $metadata = $obj->metadata();
+        if (!empty($metadata)) {
+            $headers += self::generateMetadataHeaders($metadata, Container::METADATA_HEADER_PREFIX);
         }
-        $headers['X-Auth-Token'] = $this->token;
 
         // In spite of the documentation's claim to the contrary,
         // content type IS reset during this operation.
         $headers['Content-Type'] = $obj->contentType();
 
         // The POST verb is for updating headers.
-        $response = $this->client->doRequest($url, 'POST', $headers, $obj->content());
+
+        $response = $this->client->post($url, $obj->content(), ['headers' => $headers]);
 
         if ($response->getStatusCode() != 202) {
-            throw new \OpenStack\Common\Exception('An unknown error occurred while saving: ' . $response->status());
+            throw new Exception(sprintf(
+                "An unknown error occurred while saving: %d", $response->status()
+            ));
         }
 
         return true;
@@ -609,11 +610,10 @@ class Container implements \Countable, \IteratorAggregate
      */
     public function copy(Object $obj, $newName, $container = null)
     {
-        //$sourceUrl = $obj->url(); // This doesn't work with Object; only with RemoteObject.
         $sourceUrl = self::objectUrl($this->url, $obj->name());
 
         if (empty($newName)) {
-            throw new \OpenStack\Common\Exception("An object name is required to copy the object.");
+            throw new Exception("An object name is required to copy the object.");
         }
 
         // Figure out what container we store in.
@@ -623,16 +623,18 @@ class Container implements \Countable, \IteratorAggregate
         $container = rawurlencode($container);
         $destUrl = self::objectUrl('/' . $container, $newName);
 
-        $headers = array(
+        $headers = [
             'X-Auth-Token' => $this->token,
-            'Destination' => $destUrl,
+            'Destination'  => $destUrl,
             'Content-Type' => $obj->contentType(),
+        ];
+
+        $response = $this->client->send(
+            $this->client->createRequest('COPY', $sourceUrl, null, ['headers' => $headers])
         );
 
-        $response = $this->client->doRequest($sourceUrl, 'COPY', $headers);
-
         if ($response->getStatusCode() != 201) {
-            throw new \OpenStack\Common\Exception("An unknown condition occurred during copy. " . $response->getStatusCode());
+            throw new Exception("An unknown condition occurred during copy. " . $response->getStatusCode());
         }
 
         return true;
@@ -664,15 +666,12 @@ class Container implements \Countable, \IteratorAggregate
     public function object($name)
     {
         $url = self::objectUrl($this->url, $name);
-        $headers = array();
+        $headers = ['X-Auth-Token' => $this->token];
 
-        // Auth token.
-        $headers['X-Auth-Token'] = $this->token;
-
-        $response = $this->client->doRequest($url, 'GET', $headers);
+        $response = $this->client->get($url, ['headers' => $headers]);
 
         if ($response->getStatusCode() != 200) {
-            throw new \OpenStack\Common\Exception('An unknown error occurred while saving: ' . $response->status());
+            throw new Exception('An unknown error occurred while saving: ' . $response->status());
         }
 
         $remoteObject = RemoteObject::newFromHeaders($name, self::reformatHeaders($response->getHeaders()), $this->token, $url, $this->client);
@@ -712,21 +711,17 @@ class Container implements \Countable, \IteratorAggregate
     public function proxyObject($name)
     {
         $url = self::objectUrl($this->url, $name);
-        $headers = array(
-            'X-Auth-Token' => $this->token,
-        );
+        $headers = ['X-Auth-Token' => $this->token];
 
-        $response = $this->client->doRequest($url, 'HEAD', $headers);
+        $response = $this->client->head($url, ['headers' => $headers]);
 
         if ($response->getStatusCode() != 200) {
-            throw new \OpenStack\Common\Exception('An unknown error occurred while saving: ' . $response->status());
+            throw new Exception('An unknown error occurred while saving: ' . $response->status());
         }
 
         $headers = self::reformatHeaders($response->getHeaders());
 
-        $obj = RemoteObject::newFromHeaders($name, $headers, $this->token, $url, $this->client);
-
-        return $obj;
+        return RemoteObject::newFromHeaders($name, $headers, $this->token, $url, $this->client);
     }
 
     /**
@@ -758,9 +753,7 @@ class Container implements \Countable, \IteratorAggregate
      */
     public function objects($limit = null, $marker = null)
     {
-        $params = array();
-
-        return $this->objectQuery($params, $limit, $marker);
+        return $this->objectQuery([], $limit, $marker);
     }
 
     /**
@@ -818,10 +811,10 @@ class Container implements \Countable, \IteratorAggregate
      */
     public function objectsWithPrefix($prefix, $delimiter = '/', $limit = null, $marker = null)
     {
-        $params = array(
-            'prefix' => $prefix,
-            'delimiter' => $delimiter,
-        );
+        $params = [
+            'prefix'    => $prefix,
+            'delimiter' => $delimiter
+        ];
 
         return $this->objectQuery($params, $limit, $marker);
     }
@@ -862,10 +855,10 @@ class Container implements \Countable, \IteratorAggregate
      */
     public function objectsByPath($path, $delimiter = '/', $limit = null, $marker = null)
     {
-        $params = array(
-            'path' => $path,
+        $params = [
+            'path'      => $path,
             'delimiter' => $delimiter,
-        );
+        ];
 
         return $this->objectQuery($params, $limit, $marker);
     }
@@ -920,18 +913,17 @@ class Container implements \Countable, \IteratorAggregate
      */
     protected function loadExtraData()
     {
-        // If URL and token are empty, we are dealing with
-        // a local item that has not been saved, and was not
-        // created with Container::createContainer(). We treat
-        // this as an error condition.
+        // If URL and token are empty, we are dealing with a local item that
+        // has not been saved, and was not created with Container::createContainer().
+        // We treat this as an error condition.
         if (empty($this->url) || empty($this->token)) {
-            throw new \OpenStack\Common\Exception('Remote data cannot be fetched. A Token and endpoint URL are required.');
+            throw new Exception('Remote data cannot be fetched. A Token and endpoint URL are required.');
         }
+
         // Do a GET on $url to fetch headers.
-        $headers = array(
-            'X-Auth-Token' => $this->token,
-        );
-        $response = $this->client->doRequest($this->url, 'GET', $headers);
+        $headers  = ['X-Auth-Token' => $this->token];
+        $response = $this->client->get($this->url, ['headers' => $headers]);
+
         $headers = self::reformatHeaders($response->getHeaders());
         // Get ACL.
         $this->acl = ACL::newFromHeaders($headers);
@@ -967,16 +959,14 @@ class Container implements \Countable, \IteratorAggregate
         $query = str_replace('%2F', '/', $query);
         $url = $this->url . '?' . $query;
 
-        $headers = array(
-            'X-Auth-Token' => $this->token,
-        );
+        $headers = ['X-Auth-Token' => $this->token];
 
-        $response = $this->client->doRequest($url, 'GET', $headers);
+        $response = $this->client->get($url, ['headers' => $headers]);
 
         // The only codes that should be returned are 200 and the ones
-        // already thrown by doRequest.
+        // already thrown by GET.
         if ($response->getStatusCode() != 200) {
-            throw new \OpenStack\Common\Exception('An unknown exception occurred while processing the request.');
+            throw new Exception('An unknown exception occurred while processing the request.');
         }
 
         $json = $response->json();
@@ -987,7 +977,7 @@ class Container implements \Countable, \IteratorAggregate
             if (!empty($item['subdir'])) {
                 $list[] = new Subdir($item['subdir'], $params['delimiter']);
             } elseif (empty($item['name'])) {
-                throw new \OpenStack\Common\Exception('Unexpected entity returned.');
+                throw new Exception('Unexpected entity returned.');
             } else {
                 //$url = $this->url . '/' . rawurlencode($item['name']);
                 $url = self::objectUrl($this->url, $item['name']);
@@ -1044,13 +1034,15 @@ class Container implements \Countable, \IteratorAggregate
         );
 
         try {
-            $response = $this->client->doRequest($url, 'DELETE', $headers);
-        } catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $fnfe) {
+            $response = $this->client->delete($url, ['headers' => $headers]);
+        } catch (ResourceNotFoundException $e) {
             return false;
         }
 
         if ($response->getStatusCode() != 204) {
-            throw new \OpenStack\Common\Exception("An unknown exception occured while deleting $name.");
+            throw new Exception(sprintf(
+                "An unknown exception occured while deleting %s", $name
+            ));
         }
 
         return true;
@@ -1090,5 +1082,4 @@ class Container implements \Countable, \IteratorAggregate
 
         return $newHeaders;
     }
-
 }

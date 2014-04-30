@@ -23,6 +23,8 @@
 namespace OpenStack;
 
 use OpenStack\Identity\v2\IdentityService;
+use OpenStack\ObjectStore\v1\Resource\StreamWrapper;
+use OpenStack\ObjectStore\v1\Resource\StreamWrapperFS;
 
 /**
  * Bootstrapping services.
@@ -50,7 +52,7 @@ use OpenStack\Identity\v2\IdentityService;
  *     <?php
  *     $config = array(
  *       // We use Guzzle, which defaults to CURL, for a transport layer.
- *       'transport' => '\OpenStack\Common\Transport\GuzzleClient',
+ *       'transport' => 'OpenStack\Common\Transport\Guzzle\GuzzleAdapter',
  *       // Set the HTTP max wait time to 500 seconds.
  *       'transport.timeout' => 500,
  *     );
@@ -81,9 +83,11 @@ use OpenStack\Identity\v2\IdentityService;
  */
 class Bootstrap
 {
+    const VERSION = '0.0.1';
+
     public static $config = array(
         // The transport implementation. By default, we use the Guzzle Client
-        'transport' => '\OpenStack\Common\Transport\GuzzleClient',
+        'transport' => 'OpenStack\Common\Transport\Guzzle\GuzzleAdapter',
     );
 
     /**
@@ -119,17 +123,29 @@ class Bootstrap
      */
     public static function useStreamWrappers()
     {
-        $swift = stream_wrapper_register(
-            \OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapper::DEFAULT_SCHEME,
-            '\OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapper'
+        self::enableStreamWrapper(
+            StreamWrapper::DEFAULT_SCHEME,
+            'OpenStack\ObjectStore\v1\Resource\StreamWrapper'
         );
-
-        $swiftfs = stream_wrapper_register(
-            \OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapperFS::DEFAULT_SCHEME,
-            '\OpenStack\ObjectStore\v1\ObjectStorage\StreamWrapperFS'
+        self::enableStreamWrapper(
+            StreamWrapperFS::DEFAULT_SCHEME,
+            'OpenStack\ObjectStore\v1\Resource\StreamWrapperFS'
         );
+    }
 
-        return ($swift && $swiftfs);
+    /**
+     * Register a stream wrapper according to its scheme and class
+     *
+     * @param $scheme Stream wrapper's scheme
+     * @param $class  The class that contains stream wrapper functionality
+     */
+    private static function enableStreamWrapper($scheme, $class)
+    {
+        if (in_array($scheme, stream_get_wrappers())) {
+            stream_wrapper_unregister($scheme);
+        }
+
+        stream_wrapper_register($scheme, $class);
     }
 
     /**
@@ -144,7 +160,7 @@ class Bootstrap
      * Common configuration directives:
      *
      * - 'transport': The namespaced classname for the transport that
-     *   should be used. Example: \OpenStack\Common\Transport\GuzzleClient
+     *   should be used. Example: \OpenStack\Common\Transport\Guzzle\GuzzleAdapter
      * - 'transport.debug': The integer 1 for enabling debug, 0 for
      *   disabling. Enabling will turn on verbose debugging output
      *   for any transport that supports it.
@@ -276,8 +292,8 @@ class Bootstrap
                 $options['proxy'] = $proxy;
             }
 
-            $klass = self::config('transport');
-            self::$transport = new $klass($options);
+            $class = self::config('transport');
+            self::$transport = $class::create($options);
         }
 
         return self::$transport;

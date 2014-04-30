@@ -16,7 +16,13 @@
 ============================================================================ */
 
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Represents an HTTP File Not Found error.
+ * Exception that represents a 404 Not Found HTTP error.
+ *
+ * This class is thrown when a server has not found any resource matching the
+ * Request's URI.
  */
-class FileNotFoundException extends \OpenStack\Common\Exception {}
+class ResourceNotFoundException extends RequestException
+{
+}

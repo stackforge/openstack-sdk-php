@@ -21,7 +21,9 @@
 namespace OpenStack\ObjectStore\v1\Resource;
 
 use \OpenStack\Bootstrap;
+use OpenStack\Common\Transport\Exception\ResourceNotFoundException;
 use \OpenStack\ObjectStore\v1\ObjectStorage;
+use OpenStack\Common\Exception;
 
 /**
  * Provides stream wrapping for Swift.
@@ -604,6 +606,7 @@ class StreamWrapper
 
         // Force-clear the memory hogs.
         unset($this->obj);
+
         fclose($this->objStream);
     }
 
@@ -793,10 +796,9 @@ class StreamWrapper
         // server roundtrip?
         try {
             $this->container = $this->store->container($containerName);
-        } catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $e) {
-                trigger_error('Container not found.', E_USER_WARNING);
-
-                return false;
+        } catch (ResourceNotFoundException $e) {
+            trigger_error('Container not found.', E_USER_WARNING);
+            return false;
         }
 
         try {
@@ -838,16 +840,15 @@ class StreamWrapper
             if ($this->isAppending) {
                 fseek($this->objStream, -1, SEEK_END);
             }
-        }
-
-        // If a 404 is thrown, we need to determine whether
-        // or not a new file should be created.
-        catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $nf) {
+        } catch (ResourceNotFoundException $nf) {
+            // If a 404 is thrown, we need to determine whether
+            // or not a new file should be created.
 
             // For many modes, we just go ahead and create.
             if ($this->createIfNotFound) {
                 $this->obj = new Object($objectName);
                 $this->objStream = fopen('php://temp', 'rb+');
+
                 $this->isDirty = true;
             } else {
                 //if ($this->triggerErrors) {
@@ -856,9 +857,8 @@ class StreamWrapper
                 return false;
             }
 
-        }
-        // All other exceptions are fatal.
-        catch (\OpenStack\Common\Exception $e) {
+        } catch (Exception $e) {
+            // All other exceptions are fatal.
             //if ($this->triggerErrors) {
                 trigger_error('Failed to fetch object: ' . $e->getMessage(), E_USER_WARNING);
             //}

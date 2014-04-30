@@ -16,9 +16,14 @@
 ============================================================================ */
 
 namespace OpenStack\Common\Transport\Exception;
+
 /**
- * Represents an HTTP 412 error.
+ * Exception that represents a 411 Length Required HTTP error.
  *
- * During some PUT requests, Content-Length is a required header.
+ * This class is thrown when a server refused to accept the request without a
+ * defined Content-Length or Content-Type header. For example, this might occur
+ * when uploading an object without the necessary Content- headers.
  */
-class LengthRequiredException extends \OpenStack\Common\Exception {}
+class LengthRequiredException extends RequestException
+{
+}
