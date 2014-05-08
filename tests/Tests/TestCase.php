@@ -27,6 +27,9 @@
 
 namespace OpenStack\Tests;
 
+use OpenStack\Identity\v2\IdentityService;
+use OpenStack\ObjectStore\v1\ObjectStorage;
+
 /**
  * @ingroup Tests
  */
@@ -43,7 +46,8 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
     public static $httpClient = null;
 
-    //public function __construct(score $score = null, locale $locale = null, adapter $adapter = null) {
+    protected $containerFixture = null;
+
     public static function setUpBeforeClass()
     {
         global $bootstrap_settings;
@@ -81,19 +85,26 @@ class TestCase extends \PHPUnit_Framework_TestCase
         return $default;
     }
 
-    protected $containerFixture = null;
-
-    /**
-     * @deprecated
-     */
-    protected function swiftAuth()
+    protected static function createIdentityService()
     {
-        $user = self::$settings['openstack.swift.account'];
-        $key = self::$settings['openstack.swift.key'];
-        $url = self::$settings['openstack.swift.url'];
-        //$url = self::$settings['openstack.identity.url'];
-        return \OpenStack\ObjectStore\v1\ObjectStorage::newFromSwiftAuth($user, $key, $url, $this->getTransportClient());
+        $username = self::conf('openstack.identity.username');
+        $password = self::conf('openstack.identity.password');
+        $url      = self::conf('openstack.identity.url');
+        $tenantId = self::conf('openstack.identity.tenantId');
 
+        $service = new IdentityService($url);
+        $service->authenticateAsUser($username, $password, $tenantId);
+
+        return $service;
+    }
+
+    protected static function createObjectStoreService()
+    {
+        return ObjectStorage::newFromIdentity(
+            self::createIdentityService(),
+            self::$settings['openstack.swift.region'],
+            self::getTransportClient()
+        );
     }
 
     /**
@@ -110,17 +121,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
     protected function identity($reset = false)
     {
         if ($reset || empty(self::$ident)) {
-            $user = self::conf('openstack.identity.username');
-            $pass = self::conf('openstack.identity.password');
-            $tenantId = self::conf('openstack.identity.tenantId');
-            $url = self::conf('openstack.identity.url');
-
-            $is = new \OpenStack\Identity\v2\IdentityService($url);
-
-            $token = $is->authenticateAsUser($user, $pass, $tenantId);
-
-            self::$ident = $is;
-
+            self::$ident = self::createIdentityService();
         }
 
         return self::$ident;
@@ -129,12 +130,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
     protected function objectStore($reset = false)
     {
         if ($reset || empty(self::$ostore)) {
-            $ident = $this->identity($reset);
-
-            $objStore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($ident,  self::$settings['openstack.swift.region'], $this->getTransportClient());
-
-            self::$ostore = $objStore;
-
+            self::$ostore = self::createObjectStoreService();
         }
 
         return self::$ostore;
@@ -200,7 +196,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * Retrieve the HTTP Transport Client
      *
-     * @return \OpenStack\Transport\ClientInterface A transport client.
+     * @return \OpenStack\Common\Transport\ClientInterface A transport client.
      */
     public static function getTransportClient()
     {

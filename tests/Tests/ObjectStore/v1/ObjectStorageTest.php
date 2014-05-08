@@ -24,24 +24,9 @@ use \OpenStack\ObjectStore\v1\Resource\ACL;
 
 class ObjectStorageTest extends \OpenStack\Tests\TestCase
 {
-    /**
-     * Canary test.
-     */
     public function testSettings()
     {
         $this->assertTrue(!empty(self::$settings));
-    }
-
-    /**
-     * Test Swift-based authentication.
-     * @group deprecated
-     */
-    public function testSwiftAuthentication()
-    {
-        $ostore = $this->swiftAuth();
-
-        $this->assertInstanceOf('\OpenStack\ObjectStore\v1\ObjectStorage', $ostore);
-        $this->assertTrue(strlen($ostore->token()) > 0);
     }
 
     /**
@@ -92,18 +77,6 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
         $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($ident, self::$settings['openstack.swift.region'], $this->getTransportClient());
         $this->assertInstanceOf('\OpenStack\ObjectStore\v1\ObjectStorage', $ostore);
         $this->assertTrue(strlen($ostore->token()) > 0);
-    }
-
-    public function testNewFromIdentityAltRegion()
-    {
-        $ident = $this->identity();
-        $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($ident, 'region-b.geo-1', $this->getTransportClient());
-        $this->assertInstanceOf('\OpenStack\ObjectStore\v1\ObjectStorage', $ostore);
-        $this->assertTrue(strlen($ostore->token()) > 0);
-
-        // Make sure the store is not the same as the default region.
-        $ostoreDefault = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($ident, self::$settings['openstack.swift.region'], $this->getTransportClient());
-        $this->assertNotEquals($ostore, $ostoreDefault);
     }
 
     /**

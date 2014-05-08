@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit colors="true">
+<phpunit colors="true" bootstrap="./tests/bootstrap.php">
     <testsuites>
         <testsuite name="PHPUnit">
-          <directory>tests/Tests/</directory>
+            <directory>tests/Tests/</directory>
         </testsuite>
     </testsuites>
     <logging>
@@ -16,6 +16,6 @@
             highLowerBound="70"
             showUncoveredFiles="true"
             />
-          <log type="coverage-clover" target="build/logs/clover.xml"/>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
     </logging>
 </phpunit>

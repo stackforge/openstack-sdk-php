@@ -17,46 +17,33 @@
 /**
  * Unit tests for the stream wrapper.
  */
+
 namespace OpenStack\Tests\ObjectStore\v1\Resource;
 
-use \OpenStack\ObjectStore\v1\Resource\StreamWrapper;
-use \OpenStack\ObjectStore\v1\Resource\Container;
-use \OpenStack\ObjectStore\v1\Resource\Object;
+use OpenStack\Common\Transport\Exception\FileNotFoundException;
+use OpenStack\ObjectStore\v1\Resource\StreamWrapper;
+use OpenStack\Tests\TestCase;
 
 /**
  * @group streamWrapper
  */
-class StreamWrapperTest extends \OpenStack\Tests\TestCase
+class StreamWrapperTest extends TestCase
 {
     const FNAME = 'streamTest.txt';
     const FTYPE = 'application/x-tuna-fish; charset=iso-8859-13';
 
-    /**
-     * Cleaning up the test container so we can reuse it for other tests.
-     */
     public static function tearDownAfterClass()
     {
-        // First we get an identity
-        $user = self::conf('openstack.identity.username');
-        $pass = self::conf('openstack.identity.password');
-        $tenantId = self::conf('openstack.identity.tenantId');
-        $url = self::conf('openstack.identity.url');
-
-        $ident = new \OpenStack\Identity\v2\IdentityService($url, self::getTransportClient());
-
-        $token = $ident->authenticateAsUser($user, $pass, $tenantId);
-
-        // Then we need to get an instance of storage
-        $store = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($ident, self::conf('openstack.swift.region'), self::getTransportClient());
+        /** @var \OpenStack\ObjectStore\v1\ObjectStorage $store */
+        $store = self::createObjectStoreService();
 
         // Delete the container and all the contents.
         $cname = self::$settings['openstack.swift.container'];
 
         try {
             $container = $store->container($cname);
-        }
-        // The container was never created.
-        catch (\OpenStack\Common\Transport\Exception\FileNotFoundException $e) {
+        } catch (FileNotFoundException $e) {
+            // The container was never created.
             return;
         }
 
@@ -115,30 +102,24 @@ class StreamWrapperTest extends \OpenStack\Tests\TestCase
     /**
      * This performs authentication via context.
      */
-    protected function authSwiftContext($add = array(), $scheme = null)
+    protected function authSwiftContext(array $params = [], $scheme = null)
     {
-        $cname    = self::$settings['openstack.swift.container'];
-        $username = self::$settings['openstack.identity.username'];
-        $password = self::$settings['openstack.identity.password'];
-        $tenant   = self::$settings['openstack.identity.tenantId'];
-        $baseURL  = self::$settings['openstack.identity.url'];
-
         if (empty($scheme)) {
             $scheme = StreamWrapper::DEFAULT_SCHEME;
         }
 
-        $params = $add + array(
-            'username' => $username,
-            'password' => $password,
-            'endpoint' => $baseURL,
-            'tenantid' => $tenant,
+        $params += [
+            'username' => self::$settings['openstack.identity.username'],
+            'password' => self::$settings['openstack.identity.password'],
+            'endpoint' => self::$settings['openstack.identity.url'],
+            'tenantid' => self::$settings['openstack.identity.tenantId'],
             'content_type' => self::FTYPE,
-            'transport_client' => $this->getTransportClient(),
-        );
-        $cxt = array($scheme => $params);
+            'transport_client' => $this->getTransportClient()
+        ];
 
-        return stream_context_create($cxt);
-
+        return stream_context_create([
+            $scheme => $params
+        ]);
     }
 
     /**
