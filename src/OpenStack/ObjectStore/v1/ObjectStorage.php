@@ -58,7 +58,7 @@ use OpenStack\Common\Transport\GuzzleClient;
  *
  * @todo ObjectStorage is not yet constrained to a particular version
  * of the API. It attempts to use whatever version is passed in to the
- * URL. This is different than IdentityService, which used a fixed version.
+ * URL. This is different from IdentityService, which uses a fixed version.
  */
 class ObjectStorage
 {
@@ -70,8 +70,6 @@ class ObjectStorage
     const SERVICE_TYPE = 'object-store';
 
     const API_VERSION = '1';
-
-    const DEFAULT_REGION = 'region-a.geo-1';
 
     /**
      * The authorization token.
@@ -88,7 +86,7 @@ class ObjectStorage
     protected $client;
 
     /**
-     * Create a new instance after getting an authenitcation token.
+     * Create a new instance after getting an authentication token.
      *
      * THIS METHOD IS DEPRECATED. OpenStack now uses Keyston to authenticate.
      * You should use \OpenStack\Identity\v2\IdentityService to authenticate.
@@ -154,11 +152,13 @@ class ObjectStorage
      * of an \OpenStack\Identity\v2\IdentityService object.
      *
      * @param \OpenStack\Identity\v2\IdentityService $identity An identity services object that already
-     *                                                          has a valid token and a service catalog.
+     *                                                         has a valid token and a service catalog.
+     * @param string $region The Object Storage region
+     * @param \OpenStack\Common\Transport\ClientInterface $client The HTTP client
      *
      * @return \OpenStack\ObjectStore\v1\ObjectStorage A new ObjectStorage instance.
      */
-    public static function newFromIdentity($identity, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public static function newFromIdentity($identity, $region, \OpenStack\Common\Transport\ClientInterface $client = null)
     {
         $cat = $identity->serviceCatalog();
         $tok = $identity->token();
@@ -167,22 +167,26 @@ class ObjectStorage
     }
 
     /**
-     * Given a service catalog and an token, create an ObjectStorage instance.
+     * Given a service catalog and a token, create an ObjectStorage instance.
      *
      * The IdentityService object contains a service catalog listing all of the
      * services to which the present user has access.
      *
      * This builder can scan the catalog and generate a new ObjectStorage
-     * instance pointed to the first object storage endpoint in the catalog.
+     * instance pointed to the first object storage endpoint in the catalog
+     * that matches the specified parameters.
      *
-     * @param array  $catalog   The serice catalog from IdentityService::serviceCatalog().
+     * @param array  $catalog   The service catalog from IdentityService::serviceCatalog().
      *                          This can be either the entire catalog or a catalog
      *                          filtered to just ObjectStorage::SERVICE_TYPE.
      * @param string $authToken The auth token returned by IdentityService.
+     * @param string $region    The Object Storage region
+     * @param \OpenStack\Common\Transport\ClientInterface $client The HTTP client
+     *
      *
      * @return \OpenStack\ObjectStore\v1\ObjectStorage A new ObjectStorage instance.
      */
-    public static function newFromServiceCatalog($catalog, $authToken, $region = ObjectStorage::DEFAULT_REGION, \OpenStack\Common\Transport\ClientInterface $client = null)
+    public static function newFromServiceCatalog($catalog, $authToken, $region, \OpenStack\Common\Transport\ClientInterface $client = null)
     {
         $c = count($catalog);
         for ($i = 0; $i < $c; ++$i) {
@@ -211,6 +215,7 @@ class ObjectStorage
      *                          correctly.
      * @param string $url       The URL to the endpoint. This typically is returned
      *                          after authentication.
+     * @param \OpenStack\Common\Transport\ClientInterface $client The HTTP client
      */
     public function __construct($authToken, $url, \OpenStack\Common\Transport\ClientInterface $client = null)
     {
@@ -583,6 +588,5 @@ class ObjectStorage
         }
 
         return $res->json();
-
     }
 }
