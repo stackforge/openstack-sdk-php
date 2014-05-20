@@ -68,11 +68,6 @@ if (!empty($argv[4 + $offset])) {
     $tenantId = $argv[4 + $offset];
 }
 
-/*
-$store = ObjectStorage::newFromSwiftAuth($user, $key, $uri);
-
-$token = $store->token();
- */
 $cs = new IdentityService($uri);
 
 $token = $cs->authenticateAsUser($user, $password, $tenantId);

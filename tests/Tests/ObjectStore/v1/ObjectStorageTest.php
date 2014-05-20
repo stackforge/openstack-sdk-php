@@ -95,7 +95,7 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
 
         $this->assertNotEmpty($testCollection, "Canary: container name must be in settings file.");
 
-        $store = $this->objectStore();//swiftAuth();
+        $store = $this->objectStore();
 
         $this->destroyContainerFixture();
         /*

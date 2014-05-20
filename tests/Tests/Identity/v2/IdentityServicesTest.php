@@ -316,7 +316,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
      * @group tenant
      * @depends testTenants
      */
-    public function testRescope()
+    public function testRescopeUsingTenantId()
     {
         $service = new IdentityService(self::conf('openstack.identity.url'), $this->getTransportClient());
         $user = self::conf('openstack.identity.username');
@@ -367,7 +367,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         $this->assertEquals($tenantName, $details['tenant']['name']);
 
         // Test unscoping
-        $service->rescope('');
+        $service->rescopeUsingTenantName('');
         $details = $service->tokenDetails();
         $this->assertFalse(isset($details['tenant']));
     }

@@ -42,9 +42,12 @@ use OpenStack\Common\Transport\GuzzleClient;
  *     use \OpenStack\ObjectStore\v1\Resource\Container;
  *     use \OpenStack\ObjectStore\v1\Resource\Object;
  *
- *     // Create a new ObjectStorage instance, logging in with older Swift
- *     // credentials.
- *     $store = ObjectStorage::newFromSwiftAuth('user', 'key', 'http://example.com');
+ *     // Create a new ObjectStorage instance
+ *     // For more examples on authenticating and creating an ObjectStorage
+ *     // instance see functions below
+ *     // @see \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity()
+ *     // @see \OpenStack\ObjectStore\v1\ObjectStorage::newFromServiceCatalog()
+ *     $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($yourIdentity, $yourRegion, $yourTransportClient);
  *
  *     // Get the container called 'foo'.
  *     $container = $store->container('foo');
@@ -645,7 +648,7 @@ class Container implements \Countable, \IteratorAggregate
      * whose contents will be processed.
      *
      * For larger files or files whose content may never be accessed, use
-     * remoteObject(), which delays loading the content until one of its
+     * proxyObject(), which delays loading the content until one of its
      * content methods (e.g. RemoteObject::content()) is called.
      *
      * This does not yet support the following features of Swift:
@@ -694,7 +697,7 @@ class Container implements \Countable, \IteratorAggregate
      * its content. This may not be desireable for cases where the object
      * is large.
      *
-     * This method can featch the relevant metadata, but delay fetching
+     * This method can fetch the relevant metadata, but delay fetching
      * the content until it is actually needed.
      *
      * Since RemoteObject extends Object, all of the calls that can be
@@ -724,15 +727,6 @@ class Container implements \Countable, \IteratorAggregate
         $obj = RemoteObject::newFromHeaders($name, $headers, $this->token, $url, $this->client);
 
         return $obj;
-    }
-    /**
-     * This has been replaced with proxyObject().
-     *
-     * @deprecated
-     */
-    public function remoteObject($name)
-    {
-        return $this->proxyObject($name);
     }
 
     /**

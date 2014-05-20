@@ -61,7 +61,8 @@ use OpenStack\Common\Transport\GuzzleClient;
  * - During authentication, provide a tenant ID. This will attach a tenant at
  *   the outset.
  * - After authentication, "rescope" the token to attach it to a tenant. This
- *   is done with the rescope() method.
+ *   is done with either the rescopeUsingTenantId() or rescopeUsingTenantName()
+ *   method.
  *
  * Where do I get a tenant ID?
  *
@@ -101,7 +102,7 @@ use OpenStack\Common\Transport\GuzzleClient;
  *     $tenants = $ident->tenants();
  *
  *     // Switch to a different tenant.
- *     $ident->rescope($tenants[0]['id']);
+ *     $ident->rescopeUsingTenantId($tenants[0]['id']);
  *
  *     ?>
  *
@@ -112,7 +113,8 @@ use OpenStack\Common\Transport\GuzzleClient;
  * - authenticate()
  * - authenticateAsUser()
  * - tenants()
- * - rescope()
+ * - rescopeUsingTenantId()
+ * - rescopeUsingTenantName()
  *
  * Serializing
  *
@@ -303,7 +305,7 @@ class IdentityService
      * given, not both.
      *
      * If no tenant ID or tenant Name is given, it will likely be necessary to
-     * rescope() the request (See also tenants()).
+     * rescopeUsingTenantId() the request (See also tenants()).
      *
      * Other authentication methods:
      * - authenticate()
@@ -612,15 +614,6 @@ class IdentityService
     }
 
     /**
-     * @see \OpenStack\Identity\v2\IdentityService::rescopeUsingTenantId()
-     * @deprecated
-     */
-    public function rescope($tenantId)
-    {
-        return $this->rescopeUsingTenantId($tenantId);
-    }
-
-        /**
      * Rescope the authentication token to a different tenant.
      *
      * Note that this will rebuild the service catalog and user information for

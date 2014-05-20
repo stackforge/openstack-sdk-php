@@ -226,9 +226,6 @@ use \OpenStack\ObjectStore\v1\ObjectStorage;
  * - password: A password. MUST be accompanied by 'username' and 'tenantid' (or 'tenantname').
  * - endpoint: The URL to the authentication endpoint. Necessary if you are not
  *     using a 'token' and 'swift_endpoint'.
- * - use_swift_auth: If this is set to true, it will force the app to use
- *     the deprecated swiftAuth instead of IdentityService authentication.
- *     In general, you should avoid using this.
  * - content_type: This is effective only when writing files. It will
  *     set the Content-Type of the file during upload.
  * - tenantid: The tenant ID for the services you will use. (A user may
@@ -542,7 +539,7 @@ class StreamWrapper
         try {
             $container = $this->store->container($src['host']);
 
-            $object = $container->remoteObject($src['path']);
+            $object = $container->proxyObject($src['path']);
 
             $ret = $container->copy($object, $dest['path'], $dest['host']);
             if ($ret) {
@@ -1086,7 +1083,7 @@ class StreamWrapper
             $endpoint_url = $this->store->url() . '/' . rawurlencode($name);
             $client = $this->cxt('transport_client', null);
             $container = new \OpenStack\ObjectStore\v1\Resource\Container($name, $endpoint_url, $token, $client);
-            $obj = $container->remoteObject($url['path']);
+            $obj = $container->proxyObject($url['path']);
         } catch (\OpenStack\Common\Exception $e) {
             // Apparently file_exists does not set STREAM_URL_STAT_QUIET.
             //if ($flags & STREAM_URL_STAT_QUIET) {
@@ -1421,15 +1418,10 @@ class StreamWrapper
      * - password: A password. MUST be accompanied by 'username' and 'tenantname'.
      * - endpoint: The URL to the authentication endpoint. Necessary if you are not
      *     using a 'token' and 'swift_endpoint'.
-     * - use_swift_auth: If this is set to true, it will force the app to use
-     *     the deprecated swiftAuth instead of IdentityService authentication.
-     *     In general, you should avoid using this.
      * - transport_client: A transport client for the HTTP requests.
      *
      * To find these params, the method first checks the supplied context. If the
      * key is not found there, it checks the Bootstrap::conf().
-     *
-     * @fixme This should be rewritten to use \ObjectStorage::newFromServiceCatalog().
      */
     protected function initializeObjectStorage()
     {
@@ -1473,7 +1465,6 @@ class StreamWrapper
         }
 
         return !empty($this->store);
-
     }
 
     protected function authenticate()

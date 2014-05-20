@@ -99,10 +99,10 @@ class ContainerTest extends \OpenStack\Tests\TestCase
     /**
      * @depends testSave
      */
-    public function testRemoteObject()
+    public function testProxyObject()
     {
         $container = $this->containerFixture();
-        $object = $container->remoteObject(self::FNAME);
+        $object = $container->proxyObject(self::FNAME);
 
         $this->assertEquals(self::FNAME, $object->name());
         $this->assertEquals(self::FTYPE, $object->contentType());
@@ -135,12 +135,12 @@ class ContainerTest extends \OpenStack\Tests\TestCase
 
 
     /**
-     * @depends testRemoteObject
+     * @depends testProxyObject
      */
     public function testRefresh()
     {
         $container = $this->containerFixture();
-        $object = $container->remoteObject(self::FNAME);
+        $object = $container->proxyObject(self::FNAME);
 
         $content = (string) $object->content();
         $object->setContent('FOO');
@@ -155,7 +155,7 @@ class ContainerTest extends \OpenStack\Tests\TestCase
     }
 
     /**
-     * @depends testRemoteObject
+     * @depends testProxyObject
      */
     public function testObject()
     {
@@ -318,12 +318,12 @@ class ContainerTest extends \OpenStack\Tests\TestCase
     }
 
     /**
-     * @depends testRemoteObject
+     * @depends testProxyObject
      */
     public function testUpdateMetadata()
     {
         $container = $this->containerFixture();
-        $object = $container->remoteObject(self::FNAME);
+        $object = $container->proxyObject(self::FNAME);
 
         $md = $object->metadata();
 
@@ -335,7 +335,7 @@ class ContainerTest extends \OpenStack\Tests\TestCase
 
         $container->updateMetadata($object);
 
-        $copy = $container->remoteObject(self::FNAME);
+        $copy = $container->proxyObject(self::FNAME);
 
         $this->assertEquals('456', $md['Foo']);
         $this->assertEquals('bert', $md['Bar']);
@@ -348,16 +348,16 @@ class ContainerTest extends \OpenStack\Tests\TestCase
     }
 
     /**
-     * @depends testRemoteObject
+     * @depends testProxyObject
      */
     public function testCopy()
     {
         $container = $this->containerFixture();
-        $object = $container->remoteObject(self::FNAME);
+        $object = $container->proxyObject(self::FNAME);
 
         $container->copy($object, 'FOO-1.txt');
 
-        $copy = $container->remoteObject('FOO-1.txt');
+        $copy = $container->proxyObject('FOO-1.txt');
 
         $this->assertEquals($object->contentType(), $copy->contentType());
         $this->assertEquals($object->etag(), $copy->etag());
@@ -383,13 +383,13 @@ class ContainerTest extends \OpenStack\Tests\TestCase
 
         // Get teh old container and its object.
         $container = $this->containerFixture();
-        $object = $container->remoteObject(self::FNAME);
+        $object = $container->proxyObject(self::FNAME);
 
         $ret = $container->copy($object, 'foo-1.txt', $cname);
 
         $this->assertTrue($ret);
 
-        $copy = $newContainer->remoteObject('foo-1.txt');
+        $copy = $newContainer->proxyObject('foo-1.txt');
 
         $this->assertEquals($object->etag(), $copy->etag());
 

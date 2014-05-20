@@ -104,9 +104,6 @@ class StreamWrapperFSTest extends TestCase
 
     /**
      * This performs authentication via context.
-     *
-     * UPDATE: This now users IdentityService instead of deprecated
-     * swauth.
      */
     protected function authSwiftContext(array $params = [], $scheme = null)
     {

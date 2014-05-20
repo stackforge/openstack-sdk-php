@@ -64,7 +64,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         $container = $this->containerFixture();
         $this->createAnObject();
 
-        $obj = $container->remoteObject(self::FNAME);
+        $obj = $container->proxyObject(self::FNAME);
 
         $this->assertInstanceOf('\OpenStack\ObjectStore\v1\Resource\RemoteObject', $obj);
 
@@ -225,8 +225,8 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         $content = $obj->content();
         $this->assertEquals(self::FCONTENT, $content);
 
-        // Make sure remoteObject retrieves the same content.
-        $obj = $container->remoteObject(self::FNAME);
+        // Make sure proxyObject retrieves the same content.
+        $obj = $container->proxyObject(self::FNAME);
         $content = $obj->content();
         $this->assertEquals(self::FCONTENT, $content);
 
@@ -238,7 +238,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
     public function testCaching()
     {
         $container = $this->containerFixture();
-        $obj = $container->remoteObject(self::FNAME);
+        $obj = $container->proxyObject(self::FNAME);
 
         $this->assertFalse($obj->isCaching());
 
@@ -284,7 +284,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
     public function testIsDirty()
     {
         $container = $this->containerFixture();
-        $obj = $container->remoteObject(self::FNAME);
+        $obj = $container->proxyObject(self::FNAME);
 
         // THere is no content. Assert false.
         $this->assertFalse($obj->isDirty());
@@ -307,7 +307,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
     public function testRefresh()
     {
         $container = $this->containerFixture();
-        $obj = $container->remoteObject(self::FNAME);
+        $obj = $container->proxyObject(self::FNAME);
 
         $obj->setContent('foo');
         $this->assertTrue($obj->isDirty());

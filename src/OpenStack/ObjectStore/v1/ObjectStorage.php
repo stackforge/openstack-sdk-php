@@ -40,15 +40,8 @@ use OpenStack\Common\Transport\GuzzleClient;
  * to PHP's streams system. For common use of an object store, you may
  * prefer to use that system. (@see \OpenStack\Bootstrap).
  *
- * When constructing a new ObjectStorage object, you will need to know
- * what kind of authentication you are going to perform. Older
- * implementations of OpenStack provide a separate authentication
- * mechanism for Swift. You can use ObjectStorage::newFromSwiftAuth() to
- * perform this type of authentication.
- *
- * Newer versions use the IdentityService authentication mechanism (@see
- * \OpenStack\Identity\v2\IdentityService). That method is the preferred
- * method.
+ * To authenticate, use the IdentityService authentication mechanism (@see
+ * \OpenStack\Identity\v2\IdentityService).
  *
  * Common Tasks
  *
@@ -84,66 +77,6 @@ class ObjectStorage
      * The HTTP Client
      */
     protected $client;
-
-    /**
-     * Create a new instance after getting an authentication token.
-     *
-     * THIS METHOD IS DEPRECATED. OpenStack now uses Keyston to authenticate.
-     * You should use \OpenStack\Identity\v2\IdentityService to authenticate.
-     * Then use this class's constructor to create an object.
-     *
-     * This uses the legacy Swift authentication facility to authenticate
-     * to swift, get a new token, and then create a new ObjectStorage
-     * instance with that token.
-     *
-     * To use the legacy Object Storage authentication mechanism, you will
-     * need the follwing pieces of information:
-     *
-     * - Account ID: This will typically be a combination of your tenantId and
-     *   username.
-     * - Key: Typically this will be your password.
-     * - Endpoint URL: The URL given to you by your service provider.
-     *
-     * @param string $account Your account name.
-     * @param string $key     Your secret key.
-     * @param string $url     The URL to the object storage endpoint.
-     *
-     * @throws \OpenStack\Common\Transport\Exception\AuthorizationException if the authentication failed.
-     * @throws \OpenStack\Common\Transport\Exception\FileNotFoundException  if the URL is wrong.
-     * @throws \OpenStack\Common\Exception                                  if some other exception occurs.
-     *
-     * @deprecated Newer versions of OpenStack use Keystone auth instead
-     * of Swift auth.
-     */
-    public static function newFromSwiftAuth($account, $key, $url, \OpenStack\Common\Transport\ClientInterface $client = null)
-    {
-        $headers = array(
-            'X-Auth-User' => $account,
-            'X-Auth-Key' => $key,
-        );
-
-        // Guzzle is the default client to use.
-        if (is_null($client)) {
-            $client = new GuzzleClient();
-        }
-
-        // This will throw an exception if it cannot connect or
-        // authenticate.
-        $res = $client->doRequest($url, 'GET', $headers);
-
-        // Headers that come back:
-        // X-Storage-Url: https://region-a.geo-1.objects.hpcloudsvc.com:443/v1/AUTH_d8e28d35-3324-44d7-a625-4e6450dc1683
-        // X-Storage-Token: AUTH_tkd2ffb4dac4534c43afbe532ca41bcdba
-        // X-Auth-Token: AUTH_tkd2ffb4dac4534c43afbe532ca41bcdba
-        // X-Trans-Id: tx33f1257e09f64bc58f28e66e0577268a
-
-        $token = $res->getHeader('X-Auth-Token');
-        $newUrl = $res->getHeader('X-Storage-Url');
-
-        $store = new ObjectStorage($token, $newUrl, $client);
-
-        return $store;
-    }
 
     /**
      * Given an IdentityService instance, create an ObjectStorage instance.
