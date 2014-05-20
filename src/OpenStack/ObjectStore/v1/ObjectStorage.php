@@ -233,7 +233,7 @@ class ObjectStorage
         $response = $this->client->get($url, ['headers' => $headers]);
         $containers = $response->json();
 
-        $containerList = array();
+        $containerList = [];
         foreach ($containers as $container) {
             $cname = $container['name'];
             $containerList[$cname] = Container::newFromJSON($container, $this->token(), $this->url(), $this->client);
@@ -354,7 +354,7 @@ class ObjectStorage
      * @return boolean true if the container was created, false if the container
      *                 was not created because it already exists.
      */
-    public function createContainer($name, ACL $acl = null, $metadata = array())
+    public function createContainer($name, ACL $acl = null, $metadata = [])
     {
         $url = $this->url() . '/' . rawurlencode($name);
         $headers = ['X-Auth-Token' => $this->token()];
@@ -391,7 +391,7 @@ class ObjectStorage
      * you are encouraged to use this alias in cases where you clearly intend
      * to update an existing container.
      */
-    public function updateContainer($name, ACL $acl = null, $metadata = array())
+    public function updateContainer($name, ACL $acl = null, $metadata = [])
     {
         return $this->createContainer($name, $acl, $metadata);
     }

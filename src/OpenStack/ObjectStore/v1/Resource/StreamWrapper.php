@@ -252,7 +252,7 @@ class StreamWrapper
      * course of a request. Caching the catalog can prevent numerous calls
      * to identity services.
      */
-    protected static $serviceCatalogCache = array();
+    protected static $serviceCatalogCache = [];
 
     /**
      * The stream context.
@@ -261,7 +261,7 @@ class StreamWrapper
      * PHP. Note that it is not set through a constructor.
      */
     public $context;
-    protected $contextArray = array();
+    protected $contextArray = [];
 
     protected $schemeName = self::DEFAULT_SCHEME;
     protected $authToken;
@@ -317,7 +317,7 @@ class StreamWrapper
      *
      * Used for directory methods.
      */
-    protected $dirListing = array();
+    protected $dirListing = [];
     protected $dirIndex = 0;
     protected $dirPrefix = '';
 
@@ -345,7 +345,7 @@ class StreamWrapper
     public function dir_closedir()
     {
         $this->dirIndex = 0;
-        $this->dirListing = array();
+        $this->dirListing = [];
 
         //syslog(LOG_WARNING, "CLOSEDIR called.");
         return true;
@@ -1215,7 +1215,7 @@ class StreamWrapper
         } else {
             $modTime = 0;
         }
-        $values = array(
+        $values = [
             'dev' => 0,
             'ino' => 0,
             'mode' => $mode,
@@ -1229,7 +1229,7 @@ class StreamWrapper
             'ctime' => $modTime,
             'blksize' => -1,
             'blocks' => -1,
-        );
+        ];
 
         $final = array_values($values) + $values;
 

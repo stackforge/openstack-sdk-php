@@ -191,7 +191,7 @@ class StreamWrapperFS extends StreamWrapper
         // Fake world-readible
         $mode = $type + $this->cxt('swiftfs_fake_stat_mode', 0777);
 
-        $values = array(
+        $values = [
             'dev' => 0,
             'ino' => 0,
             'mode' => $mode,
@@ -205,7 +205,7 @@ class StreamWrapperFS extends StreamWrapper
             'ctime' => $request_time,
             'blksize' => -1,
             'blocks' => -1,
-        );
+        ];
 
         $final = array_values($values) + $values;
 

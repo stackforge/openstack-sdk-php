@@ -128,7 +128,7 @@ class ACL
      */
     const HEADER_WRITE = 'X-Container-Write';
 
-    protected $rules = array();
+    protected $rules = [];
 
     /**
      * Allow READ access to the public.
@@ -190,7 +190,7 @@ class ACL
         $acl = new ACL();
 
         // READ rules.
-        $rules = array();
+        $rules = [];
         if (!empty($headers[self::HEADER_READ])) {
             $read = $headers[self::HEADER_READ];
             $rules = explode(',', $read);
@@ -203,7 +203,7 @@ class ACL
         }
 
         // WRITE rules.
-        $rules = array();
+        $rules = [];
         if (!empty($headers[self::HEADER_WRITE])) {
             $write = $headers[self::HEADER_WRITE];
             $rules = explode(',', $write);
@@ -245,10 +245,10 @@ class ACL
         // );
         $exp = '/^\s*(.r:([a-zA-Z0-9\*\-\.]+)|\.(rlistings)|([a-zA-Z0-9]+)(\:([a-zA-Z0-9]+))?)\s*$/';
 
-        $matches = array();
+        $matches = [];
         preg_match($exp, $rule, $matches);
 
-        $entry = array('mask' => $perm);
+        $entry = ['mask' => $perm];
         if (!empty($matches[2])) {
             $entry['host'] = $matches[2];
         } elseif (!empty($matches[3])) {
@@ -307,7 +307,7 @@ class ACL
      */
     public function addAccount($perm, $account, $user = null)
     {
-        $rule = array('account' => $account);
+        $rule = ['account' => $account];
 
         if (!empty($user)) {
             $rule['user'] = $user;
@@ -343,7 +343,7 @@ class ACL
      */
     public function addReferrer($perm, $host = '*')
     {
-        $this->addRule($perm, array('host' => $host));
+        $this->addRule($perm, ['host' => $host]);
 
         return $this;
     }
@@ -382,10 +382,10 @@ class ACL
      */
     public function allowListings()
     {
-        $this->rules[] = array(
+        $this->rules[] = [
             'mask' => self::READ,
             'rlistings' => true,
-        );
+        ];
 
         return $this;
     }
@@ -410,9 +410,9 @@ class ACL
      */
     public function headers()
     {
-        $headers = array();
-        $readers = array();
-        $writers = array();
+        $headers = [];
+        $readers = [];
+        $writers = [];
 
         // Create the rule strings. We need two copies, one for READ and
         // one for WRITE.
@@ -477,7 +477,7 @@ class ACL
 
             // Account + multiple users.
             elseif (is_array($rule['user'])) {
-                $buffer = array();
+                $buffer = [];
                 foreach ($rule['user'] as $user) {
                     $buffer[] = $rule['account'] . ':' . $user;
                 }
@@ -557,7 +557,7 @@ class ACL
     {
         $headers = $this->headers();
 
-        $buffer = array();
+        $buffer = [];
         foreach ($headers as $k => $v) {
             $buffer[] = $k . ': ' . $v;
         }

@@ -62,7 +62,7 @@ class RemoteObject extends Object
      * serve as a good indicator that the object does not have all
      * attributes set.
      */
-    protected $allHeaders = array();
+    protected $allHeaders = [];
 
     /**
      * The HTTP Client
@@ -232,7 +232,7 @@ class RemoteObject extends Object
      */
     public function setHeaders($headers)
     {
-        $this->allHeaders = array();
+        $this->allHeaders = [];
 
         foreach ($headers as $name => $value) {
             if (strpos($name, Container::METADATA_HEADER_PREFIX) !== 0) {
@@ -274,12 +274,12 @@ class RemoteObject extends Object
         return $additionalHeaders;
     }
 
-    protected $reservedHeaders = array(
+    protected $reservedHeaders = [
         'etag' => true, 'content-length' => true,
         'x-auth-token' => true,
         'transfer-encoding' => true,
         'x-trans-id' => true,
-    );
+    ];
 
     /**
      * Filter the headers.
@@ -289,7 +289,7 @@ class RemoteObject extends Object
      */
     public function filterHeaders(&$headers)
     {
-        $unset = array();
+        $unset = [];
         foreach ($headers as $name => $value) {
             $lower = strtolower($name);
             if (isset($this->reservedHeaders[$lower])) {

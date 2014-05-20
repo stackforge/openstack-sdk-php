@@ -169,7 +169,7 @@ class IdentityService
     /**
      * The service catalog.
      */
-    protected $catalog = array();
+    protected $catalog = [];
 
     protected $userDetails;
 
@@ -272,9 +272,9 @@ class IdentityService
     public function authenticate(array $ops)
     {
         $url = $this->url() . '/tokens';
-        $envelope = array(
+        $envelope = [
             'auth' => $ops,
-        );
+        ];
 
         $body = json_encode($envelope);
 
@@ -323,12 +323,12 @@ class IdentityService
      */
     public function authenticateAsUser($username, $password, $tenantId = null, $tenantName = null)
     {
-        $ops = array(
-            'passwordCredentials' => array(
+        $ops = [
+            'passwordCredentials' => [
                 'username' => $username,
                 'password' => $password,
-            )
-        );
+            ]
+        ];
 
         // If a tenant ID is provided, added it to the auth array.
         if (!empty($tenantId)) {
@@ -518,7 +518,7 @@ class IdentityService
             return $this->serviceCatalog;
         }
 
-        $list = array();
+        $list = [];
         foreach ($this->serviceCatalog as $entry) {
             if ($entry['type'] == $type) {
                 $list[] = $entry;

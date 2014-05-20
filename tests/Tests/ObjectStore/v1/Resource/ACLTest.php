@@ -59,7 +59,7 @@ class ACLTest extends \OpenStack\Tests\TestCase
 
         // Test with multiple users:
         $acl = new ACL();
-        $acl->addAccount(ACL::WRITE, 'admin', array('earnie', 'bert'));
+        $acl->addAccount(ACL::WRITE, 'admin', ['earnie', 'bert']);
         $rules = $acl->rules();
         $rule = array_shift($rules);
 
@@ -147,10 +147,10 @@ class ACLTest extends \OpenStack\Tests\TestCase
 
     public function testNewFromHeaders()
     {
-        $headers = array(
+        $headers = [
             ACL::HEADER_READ => '.r:.example.com,.rlistings,.r:-*.evil.net',
             ACL::HEADER_WRITE => 'testact2, testact3:earnie, .rlistings  ',
-        );
+        ];
 
         $acl = ACL::newFromHeaders($headers);
 

@@ -116,7 +116,7 @@ class Container implements \Countable, \IteratorAggregate
         if (empty($prefix)) {
             $prefix = Container::METADATA_HEADER_PREFIX;
         }
-        $headers = array();
+        $headers = [];
         foreach ($metadata as $key => $val) {
             $headers[$prefix . $key] = $val;
         }
@@ -150,7 +150,7 @@ class Container implements \Countable, \IteratorAggregate
         }
 
         $oParts = explode('/', $oname);
-        $buffer = array();
+        $buffer = [];
         foreach ($oParts as $part) {
             $buffer[] = rawurlencode($part);
         }
@@ -182,7 +182,7 @@ class Container implements \Countable, \IteratorAggregate
         if (empty($prefix)) {
             $prefix = Container::METADATA_HEADER_PREFIX;
         }
-        $attributes = array();
+        $attributes = [];
         $offset = strlen($prefix);
         foreach ($headers as $header => $value) {
 
@@ -465,7 +465,7 @@ class Container implements \Countable, \IteratorAggregate
         $url = self::objectUrl($this->url, $obj->name());
 
         // See if we have any metadata.
-        $headers = array();
+        $headers = [];
         $md = $obj->metadata();
         if (!empty($md)) {
             $headers = self::generateMetadataHeaders($md, Container::METADATA_HEADER_PREFIX);
@@ -943,7 +943,7 @@ class Container implements \Countable, \IteratorAggregate
      * Perform the HTTP query for a list of objects and de-serialize the
      * results.
      */
-    protected function objectQuery($params = array(), $limit = null, $marker = null)
+    protected function objectQuery($params = [], $limit = null, $marker = null)
     {
         if (isset($limit)) {
             $params['limit'] = (int) $limit;
@@ -972,7 +972,7 @@ class Container implements \Countable, \IteratorAggregate
         $json = $response->json();
 
         // Turn the array into a list of RemoteObject instances.
-        $list = array();
+        $list = [];
         foreach ($json as $item) {
             if (!empty($item['subdir'])) {
                 $list[] = new Subdir($item['subdir'], $params['delimiter']);
@@ -1029,9 +1029,9 @@ class Container implements \Countable, \IteratorAggregate
     public function delete($name)
     {
         $url = self::objectUrl($this->url, $name);
-        $headers = array(
+        $headers = [
             'X-Auth-Token' => $this->token,
-        );
+        ];
 
         try {
             $response = $this->client->delete($url, ['headers' => $headers]);

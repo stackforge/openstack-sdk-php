@@ -51,7 +51,8 @@ class ContainerTest extends TestCase
     public function testCountable()
     {
         // Verify that the interface Countable is properly implemented.
-        $mockJSON  = array('count' => 5, 'bytes' => 128, 'name' => 'foo');
+
+        $mockJSON = ['count' => 5, 'bytes' => 128, 'name' => 'foo'];
         $container = Container::newFromJSON($mockJSON, 'fake', 'fake');
         $this->assertCount(5, $container);
     }
@@ -64,7 +65,7 @@ class ContainerTest extends TestCase
         $container = $this->containerFixture();
 
         $object = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
-        $object->setMetadata(array('foo' => '1234'));
+        $object->setMetadata(['foo' => '1234']);
 
         $this->assertEquals(self::FCONTENT, $object->content());
 

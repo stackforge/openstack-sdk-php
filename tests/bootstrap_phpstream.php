@@ -18,6 +18,6 @@
  * Helpers for testing using the CurlTransport.
  */
 
-$bootstrap_settings = array(
+$bootstrap_settings = [
     'transport' => '\OpenStack\Transport\PHPStreamTransport',
-);
+];

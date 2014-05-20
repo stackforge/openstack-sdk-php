@@ -26,12 +26,12 @@ require_once $base . '/vendor/autoloader.php';
 use \OpenStack\ObjectStore\v1\ObjectStorage;
 use \OpenStack\Identity\v2\IdentityService;
 
-$config = array(
+$config = [
     'transport' => 'OpenStack\Common\Transport\Guzzle\GuzzleAdapter',
     'transport.timeout' => 240,
     //'transport.debug' => 1,
     'transport.ssl.verify' => 0,
-);
+];
 
 \OpenStack\Autoloader::useAutoloader();
 \OpenStack\Bootstrap::setConfiguration($config);

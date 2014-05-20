@@ -77,7 +77,7 @@ class Object
     /**
      * Associative array of stored metadata.
      */
-    protected $metadata = array();
+    protected $metadata = [];
 
     protected $contentEncoding;
     protected $contentDisposition;
@@ -85,7 +85,7 @@ class Object
     /**
      * Extension mechanism for new headers.
      */
-    protected $additionalHeaders = array();
+    protected $additionalHeaders = [];
 
     /**
      * Construct a new object for storage.

@@ -57,34 +57,34 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
     public function testAuthenticate($service)
     {
         // Canary: Make sure all the required params are declared.
-        $settings = array(
+        $settings = [
             'openstack.identity.username',
             'openstack.identity.password',
             'openstack.identity.tenantId',
-        );
+        ];
         foreach ($settings as $setting) {
             $this->assertNotEmpty(self::conf($setting), "Required param: " . $setting);
         }
 
         // Test username/password auth.
-        $auth = array(
-            'passwordCredentials' => array(
+        $auth = [
+            'passwordCredentials' => [
                 'username' => self::conf('openstack.identity.username'),
                 'password' => self::conf('openstack.identity.password'),
-            ),
+            ],
             'tenantId' => self::conf('openstack.identity.tenantId'),
-        );
+        ];
         $tok = $service->authenticate($auth);
         $this->assertNotEmpty($tok);
 
         // Again with no tenant ID.
-        $auth = array(
-            'passwordCredentials' => array(
+        $auth = [
+            'passwordCredentials' => [
                 'username' => self::conf('openstack.identity.username'),
                 'password' => self::conf('openstack.identity.password'),
-            ),
+            ],
             //'tenantId' => self::conf('openstack.identity.tenantId'),
-        );
+        ];
         $tok = $service->authenticate($auth);
         $this->assertNotEmpty($tok);
     }
@@ -385,7 +385,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         $reset = Bootstrap::$config;
 
         // Test authenticating as a user.
-        $settings = array(
+        $settings = [
             'username' => self::conf('openstack.identity.username'),
             'password' => self::conf('openstack.identity.password'),
             'endpoint' => self::conf('openstack.identity.url'),
@@ -393,7 +393,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
             'transport' => self::conf('transport'),
             'transport.debug' => self::conf('transport.debug', false),
             'transport.ssl_verify' => self::conf('transport.ssl', true),
-        );
+        ];
         if (self::conf('transport.timeout')) {
             $setting['transport.timeout'] = self::conf('transport.timeout');
         }
@@ -416,7 +416,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
         Bootstrap::$config = $reset;
 
         // Test with tenant name
-        $settings = array(
+        $settings = [
             'username' => self::conf('openstack.identity.username'),
             'password' => self::conf('openstack.identity.password'),
             'endpoint' => self::conf('openstack.identity.url'),
@@ -424,7 +424,7 @@ class IdentityServicesTest extends \OpenStack\Tests\TestCase
             'transport' => self::conf('transport'),
             'transport.debug' => self::conf('transport.debug', false),
             'transport.ssl_verify' => self::conf('transport.ssl', true),
-        );
+        ];
         if (self::conf('transport.timeout')) {
             $setting['transport.timeout'] = self::conf('transport.timeout');
         }

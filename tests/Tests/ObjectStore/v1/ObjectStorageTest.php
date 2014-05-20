@@ -104,7 +104,7 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
         }
          */
 
-        $md = array('Foo' => 1234);
+        $md = ['Foo' => 1234];
 
         $ret = $store->createContainer($testCollection, null, $md);
         $this->assertTrue($ret, "Create container");

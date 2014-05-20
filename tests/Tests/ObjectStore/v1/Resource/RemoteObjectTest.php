@@ -41,13 +41,13 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
         $container = $this->containerFixture();
 
         $object = new Object(self::FNAME, self::FCONTENT, self::FTYPE);
-        $object->setMetadata(array(self::FMETA_NAME => self::FMETA_VALUE));
+        $object->setMetadata([self::FMETA_NAME => self::FMETA_VALUE]);
         $object->setDisposition(self::FDISPOSITION);
         $object->setEncoding(self::FENCODING);
-        $object->setAdditionalHeaders(array(
+        $object->setAdditionalHeaders([
             'Access-Control-Allow-Origin' => 'http://example.com',
             'Access-control-allow-origin' => 'http://example.com',
-        ));
+        ]);
 
         // Need some headers that Swift actually stores and returns. This
         // one does not seem to be returned ever.
@@ -154,7 +154,7 @@ class RemoteObjectTest extends \OpenStack\Tests\TestCase
 
         $this->assertNotEmpty($headers['Date']);
 
-        $obj->removeHeaders(array('Date'));
+        $obj->removeHeaders(['Date']);
 
         $headers = $obj->headers();
         $this->assertFalse(isset($headers['Date']));

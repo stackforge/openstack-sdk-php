@@ -7,12 +7,12 @@ Autoloader::useAutoloader();
 Bootstrap::useStreamWrappers();
 
 $ini = parse_ini_file(getenv('HOME') . '/.OpenStack.ini');
-$settings = array(
+$settings = [
     'account' => $ini['account'],
     'key' => $ini['secret'],
     'tenantid' => $ini['tenantId'],
     'endpoint' => $ini['url'],
-);
+];
 Bootstrap::setConfiguration($settings);
 
 // Create a new file and write it to the object store.
@@ -29,13 +29,13 @@ if (file_exists('swift://Example/my_file.txt')) {
 $file = file_get_contents('swift://Example/my_file.txt');
 print 'File: ' . $file . PHP_EOL;
 
-$cxt = stream_context_create(array(
-    'swift' => array(
+$cxt = stream_context_create([
+    'swift' => [
         'account' => $ini['account'],
         'key' => $ini['secret'],
         'tenantid' => $ini['tenantId'],
         'endpoint' => $ini['url'],
-    ),
-));
+    ],
+]);
 
 print file_get_contents('swift://Example/my_file.txt', FALSE, $cxt);

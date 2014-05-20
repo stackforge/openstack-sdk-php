@@ -110,12 +110,12 @@ class ObjectTest extends \OpenStack\Tests\TestCase
 
     public function testMetadata()
     {
-        $md = array(
+        $md = [
             'Immanuel' => 'Kant',
             'David' => 'Hume',
             'Gottfried' => 'Leibniz',
             'Jean-Jaques' => 'Rousseau',
-        );
+        ];
 
         $o = $this->basicObjectFixture();
         $o->setMetadata($md);
@@ -132,17 +132,17 @@ class ObjectTest extends \OpenStack\Tests\TestCase
     {
         $o = $this->basicObjectFixture();
 
-        $extra = array(
+        $extra = [
             'a' => 'b',
             'aaa' => 'bbb',
             'ccc' => 'bbb',
-        );
+        ];
         $o->setAdditionalHeaders($extra);
 
         $got = $o->additionalHeaders();
         $this->assertEquals(3, count($got));
 
-        $o->removeHeaders(array('ccc'));
+        $o->removeHeaders(['ccc']);
 
         $got = $o->additionalHeaders();
         $this->assertEquals(2, count($got));

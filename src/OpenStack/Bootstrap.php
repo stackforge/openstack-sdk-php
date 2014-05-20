@@ -85,10 +85,10 @@ class Bootstrap
 {
     const VERSION = '0.0.1';
 
-    public static $config = array(
+    public static $config = [
         // The transport implementation. By default, we use the Guzzle Client
         'transport' => 'OpenStack\Common\Transport\Guzzle\GuzzleAdapter',
-    );
+    ];
 
     /**
      * @var \OpenStack\Identity\v2\IdentityService An identity services object
