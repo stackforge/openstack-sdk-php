@@ -12,6 +12,13 @@
   "require-dev": {
     "phpunit/phpunit": "4.*"
   },
+  "support": {
+    "irc": "irc://irc.freenode.org/openstack-sdks",
+    "issues": "https://bugs.launchpad.net/openstack-sdk-php",
+    "forum": "https://ask.openstack.org/",
+    "wiki": "https://wiki.openstack.org/wiki/OpenStack-SDK-PHP",
+    "source": "http://git.openstack.org/cgit/stackforge/openstack-sdk-php"
+  },
   "autoload": {
     "psr-4": {
       "OpenStack\\": "src/OpenStack",
