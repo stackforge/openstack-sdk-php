@@ -24,6 +24,7 @@ use \OpenStack\ObjectStore\v1\Resource\ACL;
 
 class ObjectStorageTest extends \OpenStack\Tests\TestCase
 {
+
     public function testSettings()
     {
         $this->assertTrue(!empty(self::$settings));
@@ -57,7 +58,9 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
         $ident = $this->identity();
         $tok = $ident->token();
         $cat = $ident->serviceCatalog();
-        $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromServiceCatalog($cat, $tok, self::$settings['openstack.swift.region'], $this->getTransportClient());
+        $region = self::$settings['openstack.swift.region'];
+        $client = $this->getTransportClient();
+        $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromServiceCatalog($cat, $tok, $region, $client);
         $this->assertInstanceOf('\OpenStack\ObjectStore\v1\ObjectStorage', $ostore);
         $this->assertTrue(strlen($ostore->token()) > 0);
     }
@@ -67,21 +70,24 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
         $ident = $this->identity();
         $tok = $ident->token();
         $cat = $ident->serviceCatalog();
-        $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromServiceCatalog($cat, $tok, 'region-w.geo-99999.fake', $this->getTransportClient());
+        $client = $this->getTransportClient();
+        $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromServiceCatalog($cat, $tok, 'region-w.geo-99999.fake');
         $this->assertEmpty($ostore);
     }
 
-    public function testNewFromIdnetity()
+    public function testNewFromIdentity()
     {
         $ident = $this->identity();
-        $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($ident, self::$settings['openstack.swift.region'], $this->getTransportClient());
+        $region = self::$settings['openstack.swift.region'];
+        $client = $this->getTransportClient();
+        $ostore = \OpenStack\ObjectStore\v1\ObjectStorage::newFromIdentity($ident, $region, $client);
         $this->assertInstanceOf('\OpenStack\ObjectStore\v1\ObjectStorage', $ostore);
         $this->assertTrue(strlen($ostore->token()) > 0);
     }
 
     /**
      * @group auth
-     * @ group acl
+     * @group acl
      */
     public function testCreateContainer()
     {
@@ -140,7 +146,6 @@ class ObjectStorageTest extends \OpenStack\Tests\TestCase
 
         // Make sure we get back an ACL:
         $this->assertInstanceOf('\OpenStack\ObjectStore\v1\Resource\ACL', $testContainer->acl());
-
     }
 
     /**

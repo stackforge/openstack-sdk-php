@@ -1467,7 +1467,7 @@ class StreamWrapper
             $serviceCatalog = $ident->serviceCatalog();
             self::$serviceCatalogCache[$token] = $serviceCatalog;
 
-            $region = $this->cxt('openstack.swift.region') ?: ObjectStorage::DEFAULT_REGION;
+            $region = $this->cxt('openstack.swift.region');
 
             $this->store = ObjectStorage::newFromServiceCatalog($serviceCatalog, $token, $region, $client);
         }
