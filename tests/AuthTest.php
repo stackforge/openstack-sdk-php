@@ -21,7 +21,7 @@
  */
 
 $base = dirname(__DIR__);
-require_once $base . '/vendor/autoloader.php';
+require_once $base . '/vendor/autoload.php';
 
 use \OpenStack\ObjectStore\v1\ObjectStorage;
 use \OpenStack\Identity\v2\IdentityService;
@@ -33,7 +33,6 @@ $config = [
     'transport.ssl.verify' => 0,
 ];
 
-\OpenStack\Autoloader::useAutoloader();
 \OpenStack\Bootstrap::setConfiguration($config);
 
 $help = "Authenticate against OpenStack Identity Service.

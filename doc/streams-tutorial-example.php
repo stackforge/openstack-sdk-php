@@ -1,9 +1,8 @@
 <?php
-require_once __DIR__ . '/../src/OpenStack/Autoloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-use \OpenStack\Autoloader;
 use \OpenStack\Bootstrap;
-Autoloader::useAutoloader();
+
 Bootstrap::useStreamWrappers();
 
 $ini = parse_ini_file(getenv('HOME') . '/.OpenStack.ini');

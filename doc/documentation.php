@@ -52,13 +52,7 @@
  * The super-simple stream API:
  *
  *     <?php
- *     // This is only required if you don't have a PSR-4
- *     // autoloader to do the hard work for you.
- *     require 'OpenStack/Autoloader.php';
- *
- *     // If you aren't using a PSR-4 autoloader,
- *     // you might want to use this:
- *     \OpenStack\Autoloader::useAutoloader();
+ *     require 'vendor/autoload.php';
  *
  *     // Turn on stream wrappers.
  *     \OpenStack\Bootstrap::useStreamWrappers();
@@ -101,13 +95,7 @@
  * to log in and then dump a list of services that are available to you:
  *
  *     <?php
- *     // This is only required if you don't have a PSR-4
- *     // autoloader to do the hard work for you.
- *     require 'OpenStack/Autoloader.php';
- *
- *     // If you aren't using a PSR-4 autoloader,
- *     // you might want to use this:
- *     \OpenStack\Autoloader::useAutoloader();
+ *     require 'vendor/autoload.php';
  *
  *     use \OpenStack\Identity\v1\IdentityService;
  *

@@ -51,24 +51,17 @@ What we will do is first load the PHP-Client Bootstrap.php file, and then
 use the autoloader in that file to load the rest of the library:
 
     <?php
-    require_once '/OpenStack/Autoloader.php';
+    require 'vendor/autoload.php';
 
-    use \OpenStack\Autoloader;
     use \OpenStack\Bootstrap;
-    Autoloader::useAutoloader();
-    Bootstrap::useStreamWrappers();
-    ?>
 
-The first thing the example above does is require the Autoloader.php
+    Bootstrap::useStreamWrappers();
+
+The first thing the example above does is require Composer's autoloader
 file, which contains code necessary to autoload anything else we will need.
 
-Next, we call two static methods:
-
-- Autoloader::useAutoLoader(): This tells the PHP-Client to load any other
-  classes on demand. Since we use this, we don't need any more `require`
-  or `include` statements.
-- Bootstrap::useStreamWrappers(): This tells OpenStack to register its
-  stream wrapper classes.
+Next, we call Bootstrap::useStreamWrappers(), which tells OpenStack to register
+its stream wrapper classes.
 
 In a nutshell, PHP allows libraries to map a particular URL pattern to a
 stream wrapper. PHP-Client registers the `swift://` URL prefix. So any
@@ -181,11 +174,10 @@ tokens in a database and re-using them).
 Here's how a stream context is used:
 
     <?php
-    require_once __DIR__ . '/../src/OpenStack/Autoloader.php';
+    require __DIR__ . '/../vendor/autoload.php';
 
-    use \OpenStack\Autoloader;
     use \OpenStack\Bootstrap;
-    Autoloader::useAutoloader();
+
     Bootstrap::useStreamWrappers();
 
     $cxt = stream_context_create(array(

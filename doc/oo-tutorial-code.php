@@ -1,12 +1,9 @@
 <?php
-require_once __DIR__ . '/../src/OpenStack/Autoloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-use \OpenStack\Autoloader;
 use \OpenStack\Identity\v2\IdentityService;
 use \OpenStack\ObjectStore\v1\ObjectStorage;
 use \OpenStack\ObjectStore\v1\ObjectStorage\Object;
-
-Autoloader::useAutoloader();
 
 // Load these from an ini file.
 $ini = parse_ini_file(getenv('HOME') . '/.OpenStack.ini');
