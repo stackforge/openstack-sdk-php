@@ -1,1 +1,0 @@
-Executable scripts for the OpenStack PHP-Client.
