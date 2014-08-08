@@ -6,11 +6,10 @@
   "license": "Apache-2.0",
   "require": {
     "php": ">=5.4.0",
-    "guzzlehttp/guzzle": "4.*",
-    "guzzlehttp/streams": "1.*"
+    "guzzlehttp/guzzle": "~4.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "4.*"
+    "phpunit/phpunit": "~4.1"
   },
   "support": {
     "irc": "irc://irc.freenode.org/openstack-sdks",
