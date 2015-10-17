@@ -1,9 +1,0 @@
-.idea/
-build/
-vendor/
-
-.DS_Store
-composer.lock
-composer.phar
-phpunit.xml
-tests/settings.ini*
